@@ -5,7 +5,7 @@ import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.security.JwtValidator;
+import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,27 +30,30 @@ public class FileController {
 
 
     private final FileService fileService;
-    private JwtValidator validator;
 
     @Autowired
-    public FileController(FileService fileService, JwtValidator validator) {
+    public FileController(FileService fileService) {
         this.fileService = fileService;
-        this.validator = validator;
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/upload/file/{id}")
     @ResponseBody
     public File uploadFile(@RequestParam("file") MultipartFile receivedFile, @PathVariable(name = "id") int extensionId, HttpServletRequest request) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
 
-        int userId = validator.getUserIdFromToken(request);
         return fileService.storeFile(receivedFile, extensionId, userId);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/upload/image/{id}")
     public File uploadImage(@RequestParam("image") MultipartFile receivedImage, @PathVariable(name = "id") int extensionId, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         return fileService.storeImage(receivedImage, extensionId, userId);
     }
 

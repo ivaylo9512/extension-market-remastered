@@ -1,25 +1,18 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
-import com.tick42.quicksilver.exceptions.InvalidParameterException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.exceptions.UserNotFoundException;
 import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHubModel;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
-import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -81,15 +74,15 @@ public class FileServiceImplTests {
     @Test(expected = UnauthorizedExtensionModificationException.class)
     public void storeFile_whenUserisNotOwnerAndNotAdmin_ShouldThrow() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("USER");
-        User owner = new User();
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("USER");
+        UserModel owner = new UserModel();
         owner.setId(2);
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
@@ -99,15 +92,15 @@ public class FileServiceImplTests {
     @Test(expected = UnauthorizedExtensionModificationException.class)
     public void storeImage_whenUserisNotOwnerAndNotAdmin_ShouldThrow() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("USER");
-        User owner = new User();
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("USER");
+        UserModel owner = new UserModel();
         owner.setId(2);
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act

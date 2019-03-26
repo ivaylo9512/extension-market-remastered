@@ -2,8 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.TagRepositoryImpl;
-import com.tick42.quicksilver.repositories.base.TagRepository;
-import com.tick42.quicksilver.security.JwtGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,9 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

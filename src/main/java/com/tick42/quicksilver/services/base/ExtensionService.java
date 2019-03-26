@@ -5,7 +5,8 @@ import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface ExtensionService {
 
     ExtensionDTO create(ExtensionSpec model, int id);
 
-    ExtensionDTO findById(int id, User user);
+    ExtensionDTO findById(int id, UserDetails loggedUser);
 
     ExtensionDTO update(int extensionId, ExtensionSpec extension, int userId);
 

@@ -1,14 +1,17 @@
 package com.tick42.quicksilver.config;
 
-import com.tick42.quicksilver.security.JwtAuthenticationEntryPoint;
-import com.tick42.quicksilver.security.JwtAuthenticationProvider;
-import com.tick42.quicksilver.security.JwtAuthenticationTokenFilter;
-import com.tick42.quicksilver.security.JwtSuccessHandler;
+import com.tick42.quicksilver.security.AuthenticationFilter;
+import com.tick42.quicksilver.security.AuthorizationFilter;
+import com.tick42.quicksilver.security.AuthorizationProvider;
+import com.tick42.quicksilver.security.FailureHandler;
+import com.tick42.quicksilver.services.UserServiceImpl;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,6 +20,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Collections;
 
@@ -25,46 +32,63 @@ import java.util.Collections;
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-
     @Autowired
-    private JwtAuthenticationProvider authenticationProvider;
+    private UserServiceImpl userService;
     @Autowired
-    private JwtAuthenticationEntryPoint entryPoint;
-
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthorizationProvider authorizationProvider;
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userService).passwordEncoder(new BCryptPasswordEncoder());
+    }
     @Bean
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(Collections.singletonList(authenticationProvider));
+    public AuthenticationManager authenticationManagerAuthorization() {
+        return new ProviderManager(Collections.singletonList(authorizationProvider));
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");  // TODO: lock down before deploying
+        config.addAllowedHeader("*");
+        config.addExposedHeader(HttpHeaders.AUTHORIZATION);
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
-
-    @Bean
-    public JwtAuthenticationTokenFilter authenticationTokenFilter() {
-        JwtAuthenticationTokenFilter filter = new JwtAuthenticationTokenFilter();
-        filter.setAuthenticationManager(authenticationManager());
-        filter.setAuthenticationSuccessHandler(new JwtSuccessHandler());
-        return filter;
-    }
-
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http.cors()
                 .and()
                 .csrf()
-                .disable()
-                .authorizeRequests().antMatchers("**/api/auth/**").authenticated()
+                .disable().authorizeRequests()
+                .antMatchers("**/api/auth/**").authenticated()
                 .and()
-                .exceptionHandling().authenticationEntryPoint(entryPoint)
-                .and()
+                .addFilterBefore(authenticationFilter(), ConcurrentSessionFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(authenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers().cacheControl();
-
     }
+
+    private AuthorizationFilter authorizationFilter() {
+        AuthorizationFilter filter = new AuthorizationFilter();
+        filter.setAuthenticationManager(authenticationManagerAuthorization());
+        filter.setAuthenticationFailureHandler(new FailureHandler());
+        filter.setAuthenticationSuccessHandler((request, response, authentication) -> {});
+        return filter;
+    }
+
+    private AuthenticationFilter authenticationFilter() throws Exception{
+        final AuthenticationFilter authenticationFilter = new AuthenticationFilter();
+        authenticationFilter.setFilterProcessesUrl("/login");
+        authenticationFilter.setAuthenticationFailureHandler(new FailureHandler());
+        authenticationFilter.setAuthenticationManager(authenticationManager());
+        return authenticationFilter;
+    }
+
 }

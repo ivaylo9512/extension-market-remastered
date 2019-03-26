@@ -3,12 +3,13 @@ package com.tick42.quicksilver.controllers;
 import com.tick42.quicksilver.exceptions.ExtensionUnavailableException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.exceptions.UserNotFoundException;
-import com.tick42.quicksilver.security.JwtValidator;
+import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,24 +19,28 @@ import javax.servlet.http.HttpServletRequest;
 public class RatingController {
     private final ExtensionService extensionService;
     private final RatingService ratingService;
-    private JwtValidator validator;
 
     @Autowired
-    public RatingController(ExtensionService extensionService, RatingService ratingService, JwtValidator validator) {
+    public RatingController(ExtensionService extensionService, RatingService ratingService) {
         this.extensionService = extensionService;
         this.ratingService = ratingService;
-        this.validator = validator;
     }
 
     @PatchMapping(value = "/auth/rating/{id}/{rating}")
     public double rating(@PathVariable("id") int id, @PathVariable("rating") int rating, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         return ratingService.rate(id, rating, userId);
     }
 
     @GetMapping(value = "/auth/userRating/{id}")
     public int userRatingForExtension(@PathVariable("id") int id, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         return ratingService.userRatingForExtension(id, userId);
     }
 

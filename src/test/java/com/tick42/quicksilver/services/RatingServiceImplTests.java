@@ -2,11 +2,9 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.InvalidRatingException;
-import com.tick42.quicksilver.exceptions.InvalidStateException;
-import com.tick42.quicksilver.exceptions.UserNotFoundException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.RatingRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -104,22 +102,22 @@ public class RatingServiceImplTests {
     public void userRatingOnExtensionDelete(){
 
         //Arrange
-        User user = new User();
-        user.setRating(4);
-        user.setExtensionsRated(2);
+        UserModel userModel = new UserModel();
+        userModel.setRating(4);
+        userModel.setExtensionsRated(2);
 
         Extension extension = new Extension();
         extension.setId(1);
         extension.setRating(4);
         extension.setTimesRated(2);
-        extension.setOwner(user);
+        extension.setOwner(userModel);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert
 
-        Assert.assertEquals(4,user.getRating(),0);
+        Assert.assertEquals(4, userModel.getRating(),0);
 
     }
 
@@ -127,45 +125,45 @@ public class RatingServiceImplTests {
     public void userRatingOnExtensionDelete_whenUserHasOnlyOneExtension_ShouldReturnZero(){
 
         //Arrange
-        User user = new User();
-        user.setRating(4);
-        user.setExtensionsRated(1);
+        UserModel userModel = new UserModel();
+        userModel.setRating(4);
+        userModel.setExtensionsRated(1);
 
         Extension extension = new Extension();
         extension.setId(1);
         extension.setRating(4);
         extension.setTimesRated(2);
-        extension.setOwner(user);
+        extension.setOwner(userModel);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert
 
-        Assert.assertEquals(0,user.getRating(),0);
-        Assert.assertEquals(0,user.getExtensionsRated(),0);
+        Assert.assertEquals(0, userModel.getRating(),0);
+        Assert.assertEquals(0, userModel.getExtensionsRated(),0);
     }
 
     @Test
     public void UserRatingOnExtensionDelete_WhenExtensionRatingIsZero_ShouldReturnSame(){
 
         //Arrange
-        User user = new User();
-        user.setRating(4);
-        user.setExtensionsRated(2);
+        UserModel userModel = new UserModel();
+        userModel.setRating(4);
+        userModel.setExtensionsRated(2);
 
         Extension extension = new Extension();
         extension.setId(1);
         extension.setRating(0);
         extension.setTimesRated(0);
-        extension.setOwner(user);
+        extension.setOwner(userModel);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert
 
-        Assert.assertEquals(4,user.getRating(),0);
-        Assert.assertEquals(2,user.getExtensionsRated(),0);
+        Assert.assertEquals(4, userModel.getRating(),0);
+        Assert.assertEquals(2, userModel.getExtensionsRated(),0);
     }
 }

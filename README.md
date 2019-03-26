@@ -3,23 +3,23 @@
 [![codecov](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository/branch/master/graph/badge.svg)](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository)
 [![Build Status](https://travis-ci.org/Smytt/Tick42-ExtensionRepository.svg?branch=master)](https://travis-ci.org/Smytt/Tick42-ExtensionRepository)
 
-Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every user can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessability:
+Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every userModel can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessability:
 
 ## Guest
 
-A Guest user can browse through the extensions, search and download them.
+A Guest userModel can browse through the extensions, search and download them.
 
-## Registered user
+## Registered userModel
 
-A registered user can do everything the guest can, plus the following:
+A registered userModel can do everything the guest can, plus the following:
 * upload, edit and delete their own extensions - including image and file upload and linking to a github repository
 * rate others' extensions and receive ratings for own extensions
 * update own password
 
 ## Administrator
 
-An administrator can do everything a registered user can, plus the following:
-* enable / diasble user profiles along with all their extensions
+An administrator can do everything a registered userModel can, plus the following:
+* enable / diasble userModel profiles along with all their extensions
 * enable / disable extensions
 * feature / unefature extensions
 * force github data refresh - fetch latest data for last commit date, pull requests and open issues
@@ -43,7 +43,7 @@ Run the app:
 
 The ap runs on the :8080 port by default, so make your requests to http://localhost:8080/
 
-There is one admin user preset in the database:
+There is one admin userModel preset in the database:
 `username: SystemAdmin`, `pssword: SystemDefaultPassword1`
 
 ### Where is the documentation?

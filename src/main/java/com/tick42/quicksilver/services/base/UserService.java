@@ -3,8 +3,8 @@ package com.tick42.quicksilver.services.base;
 import com.tick42.quicksilver.models.DTO.UserDTO;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
-import com.tick42.quicksilver.models.User;
-import org.apache.http.auth.InvalidCredentialsException;
+import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
 
 
 import java.util.List;
@@ -15,13 +15,9 @@ public interface UserService {
 
     List<UserDTO> findAll(String state);
 
-    UserDTO findById(int id, User loggedUser);
+    UserDTO findById(int id, UserDetails loggedUser);
 
-    User login(User user) throws InvalidCredentialsException;
-
-    User register(UserSpec userSpec, String role);
-
-    String generateToken(User user);
+    UserModel register(UserSpec userSpec, String role);
 
     UserDTO changePassword(int id, ChangeUserPasswordSpec changePasswordSpec);
 }

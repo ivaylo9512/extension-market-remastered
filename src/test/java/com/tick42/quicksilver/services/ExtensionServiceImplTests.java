@@ -7,26 +7,21 @@ import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.Tag;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import com.tick42.quicksilver.security.JwtValidator;
-import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.TagService;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.mockito.ArgumentMatchers.*;
@@ -52,8 +47,8 @@ public class ExtensionServiceImplTests {
     @Test(expected = UserNotFoundException.class)
     public void create_whenUserIsNull_shouldThrow() {
         //Arrange
-        User user = null;
-        when(userRepository.findById(1)).thenReturn(user);
+        UserModel userModel = null;
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         extensionService.create(new ExtensionSpec(), 1);
@@ -73,10 +68,10 @@ public class ExtensionServiceImplTests {
         extensionSpec.setGithub("gitHubLink");
         extensionSpec.setTags("tag1, tag2");
 
-        User user = new User();
-        user.setUsername("username");
-        user.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(user);
+        UserModel userModel = new UserModel();
+        userModel.setUsername("username");
+        userModel.setId(userId);
+        when(userRepository.findById(userId)).thenReturn(userModel);
 
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
@@ -93,7 +88,7 @@ public class ExtensionServiceImplTests {
         extension.setVersion("1.0");
         extension.setDescription("description");
         extension.setIsPending(true);
-        extension.setOwner(user);
+        extension.setOwner(userModel);
         extension.setUploadDate(uploadTime);
         extension.setTags(tags);
         extension.setGithub(github);
@@ -257,19 +252,19 @@ public class ExtensionServiceImplTests {
     @Test(expected = ExtensionNotFoundException.class)
     public void findById_whenExtensionDoesntExist_shouldThrow() {
         //Arrange
-        User user = new User();
+        UserModel userModel = new UserModel();
         when(extensionRepository.findById(1)).thenReturn(null);
 
         //Act
-        extensionService.findById(1, user);
+        extensionService.findById(1, userModel);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenOwnerIsInactiveaAndUserIsNull_shouldThrow() {
         //Arrange
-        User user = null;
+        UserModel userModel = null;
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(false);
 
         Extension extension = new Extension();
@@ -278,16 +273,16 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, user);
+        extensionService.findById(1, userModel);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenOwnerIsInactiveaAndUserIsNotAdmin_shouldThrow() {
         //Arrange
-        User user = new User();
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(false);
 
         Extension extension = new Extension();
@@ -296,15 +291,15 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, user);
+        extensionService.findById(1, userModel);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNull_shouldThrow() {
         //Arrange
-        User user = null;
+        UserModel userModel = null;
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(true);
 
         Extension extension = new Extension();
@@ -314,17 +309,17 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, user);
+        extensionService.findById(1, userModel);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldThrow() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(true);
         owner.setId(2);
 
@@ -335,17 +330,17 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, user);
+        extensionService.findById(1, userModel);
     }
 
     @Test
     public void findById_whenExtensionIsPendingAndOwnerIsInactiveAndUserIsAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_ADMIN");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_ADMIN");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(false);
 
         Extension extension = new Extension();
@@ -356,7 +351,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
@@ -365,11 +360,11 @@ public class ExtensionServiceImplTests {
     @Test
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(true);
         owner.setId(1);
 
@@ -381,7 +376,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
@@ -390,11 +385,11 @@ public class ExtensionServiceImplTests {
     @Test
     public void findById_whenExtensionIsNotPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(true);
         owner.setId(2);
 
@@ -406,7 +401,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
@@ -436,18 +431,18 @@ public class ExtensionServiceImplTests {
     @Test(expected = UnauthorizedExtensionModificationException.class)
     public void update_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
         //Assert
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setId(2);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         extensionService.update(1, new ExtensionSpec(), 1);
@@ -458,11 +453,11 @@ public class ExtensionServiceImplTests {
         //Assert
         Date commitTime = new Date();
 
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setId(1);
 
         ExtensionSpec extensionSpec = new ExtensionSpec();
@@ -491,7 +486,7 @@ public class ExtensionServiceImplTests {
         extension.setTags(tags);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
@@ -505,11 +500,11 @@ public class ExtensionServiceImplTests {
         //Assert
         Date commitTime = new Date();
 
-        User user = new User();
-        user.setId(2);
-        user.setRole("ROLE_ADMIN");
+        UserModel userModel = new UserModel();
+        userModel.setId(2);
+        userModel.setRole("ROLE_ADMIN");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setId(1);
 
         ExtensionSpec extensionSpec = new ExtensionSpec();
@@ -538,7 +533,7 @@ public class ExtensionServiceImplTests {
         extension.setTags(tags);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
@@ -571,18 +566,18 @@ public class ExtensionServiceImplTests {
     @Test
     public void delete_whenUserIsOwner_ShouldNotThrow() {
         //Assert
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_USER");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_USER");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setId(1);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         try {
@@ -596,18 +591,18 @@ public class ExtensionServiceImplTests {
     @Test
     public void delete_whenUserIsAdmin_ShouldNotThrow() {
         //Assert
-        User user = new User();
-        user.setId(1);
-        user.setRole("ROLE_ADMIN");
+        UserModel userModel = new UserModel();
+        userModel.setId(1);
+        userModel.setRole("ROLE_ADMIN");
 
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setId(2);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         try {
@@ -860,12 +855,12 @@ public class ExtensionServiceImplTests {
     @Test
     public void delete_whenExtensionsFound_shouldInvokeDeleteInRepository() {
         //Arrange
-        User user = new User();
+        UserModel userModel = new UserModel();
         Extension extension = new Extension();
-        extension.setOwner(user);
+        extension.setOwner(userModel);
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
         doNothing().when(extensionRepository).delete(isA(Extension.class));
 
         extensionService.delete(1, 1);
@@ -893,7 +888,7 @@ public class ExtensionServiceImplTests {
 
     @Test(expected = ExtensionUnavailableException.class)
     public void increaseDownloadCount_whenOwnerIsDeactivated_shouldThrow() {
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(false);
         Extension extension = new Extension();
         extension.setOwner(owner);
@@ -908,7 +903,7 @@ public class ExtensionServiceImplTests {
     @Test
     public void increaseDownloadCount_whenExtensionAvailable_shouldIncreasseTimesDownlaoded() {
         int times = 1;
-        User owner = new User();
+        UserModel owner = new UserModel();
         owner.setIsActive(true);
         Extension extension = new Extension();
         extension.setOwner(owner);
@@ -952,11 +947,11 @@ public class ExtensionServiceImplTests {
     public void fetchGitHub_whenUserIsNotAdmin_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
-        User user = new User();
-        user.setRole("USER");
+        UserModel userModel = new UserModel();
+        userModel.setRole("USER");
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         //Act
         extensionService.fetchGitHub(1, 1);
@@ -967,11 +962,11 @@ public class ExtensionServiceImplTests {
     public void fetchGitHub_whenEtensionIsAvailableAndUserIsAdmin_ShouldNotThrow() {
         //Arrange
         Extension extension = new Extension();
-        User user = new User();
-        user.setRole("ROLE_ADMIN");
+        UserModel userModel = new UserModel();
+        userModel.setRole("ROLE_ADMIN");
 
         when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(user);
+        when(userRepository.findById(1)).thenReturn(userModel);
 
         try {
             extensionService.fetchGitHub(1, 1);

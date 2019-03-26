@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.models.DTO;
 
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +19,18 @@ public class UserDTO {
 
     }
 
-    public UserDTO(User user) {
-        this.setId(user.getId());
-        this.setUsername(user.getUsername());
+    public UserDTO(UserModel userModel) {
+        this.setId(userModel.getId());
+        this.setUsername(userModel.getUsername());
         this.setExtensions(
-                user.getExtensions()
+                userModel.getExtensions()
                         .stream()
                         .map(ExtensionDTO::new)
                         .collect(Collectors.toList()));
         this.setTotalExtensions(this.extensions.size());
-        this.setIsActive(user.getIsActive());
-        this.setExtensions_rated(user.getExtensionsRated());
-        this.setRating(user.getRating());
+        this.setIsActive(userModel.getIsActive());
+        this.setExtensions_rated(userModel.getExtensionsRated());
+        this.setRating(userModel.getRating());
     }
 
     public int getId() {

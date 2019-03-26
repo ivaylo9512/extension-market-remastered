@@ -1,20 +1,19 @@
 package com.tick42.quicksilver.repositories.base;
 
-import com.tick42.quicksilver.models.Tag;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 
 import java.util.List;
 
 public interface UserRepository {
-    User create(User user);
+    UserModel create(UserModel userModel);
 
-    User update(User user);
+    UserModel update(UserModel userModel);
 
-    User findById(int id);
+    UserModel findById(int id);
 
-    User findByUsername(String username);
+    UserModel findByUsername(String username);
 
-    List<User> findAll();
+    List<UserModel> findAll();
 
-    List<User> findUsersByState(boolean state);
+    List<UserModel> findUsersByState(boolean state);
 }

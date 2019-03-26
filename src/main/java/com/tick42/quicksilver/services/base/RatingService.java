@@ -2,7 +2,7 @@ package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 
 public interface RatingService {
 
@@ -12,5 +12,5 @@ public interface RatingService {
 
     Extension newExtensionRating(double userRatingForExtension, Rating newRating, Extension extension);
 
-    User userRatingOnExtensionDelete(int userExtension);
+    UserModel userRatingOnExtensionDelete(int userExtension);
 }

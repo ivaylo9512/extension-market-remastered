@@ -4,7 +4,7 @@ import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.InvalidRatingException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.RatingRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -51,17 +51,17 @@ public class RatingServiceImpl implements RatingService {
     }
 
     private void newUserRating(double currentExtensionRating, Extension extension, int rating) {
-        User user = extension.getOwner();
-        double userRating = user.getRating();
-        int extensionsRated = user.getExtensionsRated();
+        UserModel userModel = extension.getOwner();
+        double userRating = userModel.getRating();
+        int extensionsRated = userModel.getExtensionsRated();
 
         if (currentExtensionRating == 0) {
-            user.setRating((userRating * extensionsRated + rating) / (extensionsRated + 1));
-            user.setExtensionsRated(user.getExtensionsRated() + 1);
-            userRepository.update(user);
+            userModel.setRating((userRating * extensionsRated + rating) / (extensionsRated + 1));
+            userModel.setExtensionsRated(userModel.getExtensionsRated() + 1);
+            userRepository.update(userModel);
         } else {
-            user.setRating(((userRating * extensionsRated - currentExtensionRating) + extension.getRating()) / extensionsRated);
-            userRepository.update(user);
+            userModel.setRating(((userRating * extensionsRated - currentExtensionRating) + extension.getRating()) / extensionsRated);
+            userRepository.update(userModel);
         }
     }
 
@@ -83,29 +83,29 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public User userRatingOnExtensionDelete(int userExtension) {
+    public UserModel userRatingOnExtensionDelete(int userExtension) {
         Extension extension = extensionRepository.findById(userExtension);
         if (extension == null) {
             throw new ExtensionNotFoundException("Extension Not Found");
         }
 
         double extensionRating = extension.getRating();
-        User user = extension.getOwner();
+        UserModel userModel = extension.getOwner();
 
-        double userRating = user.getRating();
-        int userRatedExtensions = user.getExtensionsRated();
+        double userRating = userModel.getRating();
+        int userRatedExtensions = userModel.getExtensionsRated();
 
         if (userRatedExtensions > 1 || extensionRating == 0) {
             if (extensionRating > 0) {
-                user.setRating((userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1));
-                user.setExtensionsRated(userRatedExtensions - 1);
-                userRepository.update(user);
+                userModel.setRating((userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1));
+                userModel.setExtensionsRated(userRatedExtensions - 1);
+                userRepository.update(userModel);
             }
         }else{
-            user.setRating(0);
-            user.setExtensionsRated(0);
-            userRepository.update(user);
+            userModel.setRating(0);
+            userModel.setExtensionsRated(0);
+            userRepository.update(userModel);
         }
-        return user;
+        return userModel;
     }
 }

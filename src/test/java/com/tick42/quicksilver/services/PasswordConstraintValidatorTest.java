@@ -1,14 +1,12 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.models.Spec.UserSpec;
-import com.tick42.quicksilver.models.User;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.Registration;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;

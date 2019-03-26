@@ -4,8 +4,8 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.User;
-import com.tick42.quicksilver.security.JwtValidator;
+import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.ExtensionService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,29 +27,26 @@ import java.util.List;
 public class ExtensionController {
 
     private final ExtensionService extensionService;
-    private JwtValidator validator;
     private RatingService ratingService;
 
     @Autowired
-    public ExtensionController(ExtensionService extensionService, JwtValidator validator, RatingService ratingService) {
+    public ExtensionController(ExtensionService extensionService, RatingService ratingService) {
         this.extensionService = extensionService;
-        this.validator = validator;
         this.ratingService = ratingService;
     }
 
     @GetMapping("/extensions/{id}")
     public ExtensionDTO get(@PathVariable(name = "id") int id, HttpServletRequest request) {
-        User user = null;
-        int rating = 0;
-        if (request.getHeader("Authorization") != null) {
-            try {
-                user = validator.validate(request.getHeader("Authorization").substring(6));
-                rating = ratingService.userRatingForExtension(id, user.getId());
-            } catch (Exception e) {
-                user = null;
-            }
+        UserDetails loggedUser;
+        int rating;
+        try {
+            loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
+            rating = ratingService.userRatingForExtension(id, loggedUser.getId());
+        } catch (Exception e) {
+            loggedUser = null;
+            rating = 0;
         }
-        ExtensionDTO extensionDTO = extensionService.findById(id, user);
+        ExtensionDTO extensionDTO = extensionService.findById(id, loggedUser);
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
     }
@@ -75,22 +73,31 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/extensions")
-    public ExtensionDTO create(@Valid @RequestBody ExtensionSpec extension, HttpServletRequest request) {
-        int id = validator.getUserIdFromToken(request);
-        return extensionService.create(extension, id);
+    public ExtensionDTO create(@Valid @RequestBody ExtensionSpec extension) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        return extensionService.create(extension, userId);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping("/auth/extensions/{id}")
-    public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extension, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+    public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extension) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         return extensionService.update(id, extension, userId);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @DeleteMapping("/auth/extensions/{id}")
-    public void delete(@PathVariable(name = "id") int id, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+    public void delete(@PathVariable(name = "id") int id) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         ratingService.userRatingOnExtensionDelete(id);
         extensionService.delete(id, userId);
     }
@@ -115,8 +122,11 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/extensions/{id}/github")
-    public ExtensionDTO fetchGitHubData(@PathVariable("id") int id, HttpServletRequest request) {
-        int userId = validator.getUserIdFromToken(request);
+    public ExtensionDTO fetchGitHubData(@PathVariable("id") int id) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
         return extensionService.fetchGitHub(id, userId);
     }
 

@@ -4,23 +4,23 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.GitHubModel;
-import com.tick42.quicksilver.models.Rating;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import com.tick42.quicksilver.security.JwtValidator;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,30 +29,28 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final ExtensionRepository extensionRepository;
     private final TagService tagService;
     private final GitHubService gitHubService;
-    private JwtValidator validator;
     private UserRepository userRepository;
 
     @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
-                                GitHubService gitHubService, JwtValidator jwtValidator, UserRepository userRepository) {
+                                GitHubService gitHubService, UserRepository userRepository) {
         this.extensionRepository = extensionRepository;
         this.tagService = tagService;
         this.gitHubService = gitHubService;
-        this.validator = jwtValidator;
         this.userRepository = userRepository;
     }
 
     @Override
     public ExtensionDTO create(ExtensionSpec extensionSpec, int id) {
 
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(id);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
         Extension extension = new Extension(extensionSpec);
         extension.setIsPending(true);
-        extension.setOwner(user);
+        extension.setOwner(userModel);
         extension.setTimesDownloaded(0);
         extension.setUploadDate(new Date());
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
@@ -62,10 +60,10 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO findById(int id, User user) {
+    public ExtensionDTO findById(int id, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(id);
 
-        checkRequestingUserVsRequestedExtension(extension, user);
+        checkUserAndExtension(extension, loggedUser);
 
         return new ExtensionDTO(extension);
     }
@@ -78,12 +76,12 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new ExtensionNotFoundException("Extension not found.");
         }
 
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(userId);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
+        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
         }
 
@@ -111,12 +109,12 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new ExtensionNotFoundException("Extension not found.");
         }
 
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(userId);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
+        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to delete this extension.");
         }
 
@@ -252,12 +250,12 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new ExtensionNotFoundException("Extension not found.");
         }
 
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(userId);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
-        if (!user.getRole().equals("ROLE_ADMIN")) {
+        if (!userModel.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to trgigger a github refresh.");
         }
 
@@ -281,20 +279,24 @@ public class ExtensionServiceImpl implements ExtensionService {
         return new ExtensionDTO(extensionRepository.update(extension));
     }
 
-    private void checkRequestingUserVsRequestedExtension(Extension extension, User user) {
+    private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
         if (extension == null) {
             throw new ExtensionNotFoundException("Extension doesn't exist.");
         }
+        boolean admin = false;
+        if(loggedUser != null){
+            Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
+            admin = authorities.contains("ROLE_ADMIN");
+        }
 
         if (!extension.getOwner().getIsActive() &&
-                ((user == null) || (!user.getRole().equals("ROLE_ADMIN")))) {
+                ((loggedUser == null) || (!admin))) {
             throw new ExtensionUnavailableException("Extension is unavailable.");
         }
 
         if (extension.getIsPending() &&
-                ((user == null) ||
-                        (extension.getOwner().getId() != user.getId()) &&
-                                (!user.getRole().equals("ROLE_ADMIN")))) {
+                ((loggedUser == null) ||
+                        (extension.getOwner().getId() != loggedUser.getId()) && !admin)) {
             throw new ExtensionUnavailableException("Extension is unavailable.");
         }
     }

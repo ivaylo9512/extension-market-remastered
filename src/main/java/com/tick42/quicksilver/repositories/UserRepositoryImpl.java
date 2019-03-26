@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.repositories;
 
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -21,88 +21,88 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User create(User user) {
+    public UserModel create(UserModel userModel) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            session.save(user);
+            session.save(userModel);
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return user;
+        return userModel;
     }
 
     @Override
-    public User update(User user) {
+    public UserModel update(UserModel userModel) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            session.update(user);
+            session.update(userModel);
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return user;
+        return userModel;
     }
 
     @Override
-    public List<User> findAll() {
-        List<User> users = new ArrayList<>();
+    public List<UserModel> findAll() {
+        List<UserModel> userModels = new ArrayList<>();
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            users = session
-                    .createQuery("from User order by username asc")
+            userModels = session
+                    .createQuery("from UserModel order by username asc")
                     .list();
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return users;
+        return userModels;
     }
 
     @Override
-    public User findById(int id) {
+    public UserModel findById(int id) {
 
-        User user = null;
+        UserModel userModel = null;
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            user = session.get(User.class, id);
+            userModel = session.get(UserModel.class, id);
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
-        return user;
+        return userModel;
     }
 
     @Override
-    public User findByUsername(String username) {
-        User user = null;
+    public UserModel findByUsername(String username) {
+        UserModel userModel = null;
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            user = (User) session
-                    .createQuery("from User where username = :username")
+            userModel = (UserModel) session
+                    .createQuery("from UserModel where username = :username")
                     .setParameter("username", username)
                     .uniqueResult();
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return user;
+        return userModel;
     }
 
     @Override
-    public List<User> findUsersByState(boolean state) {
-        List<User> users = new ArrayList<>();
+    public List<UserModel> findUsersByState(boolean state) {
+        List<UserModel> userModels = new ArrayList<>();
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            users = session
-                    .createQuery("from User where isActive = :enabled order by username asc ")
+            userModels = session
+                    .createQuery("from UserModel where isActive = :enabled order by username asc ")
                     .setParameter("enabled", state)
                     .list();
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return users;
+        return userModels;
     }
 }

@@ -46,7 +46,7 @@ public class Extension {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner")
-    private User owner;
+    private UserModel owner;
 
     @Column(name = "is_pending")
     private boolean isPending;
@@ -121,11 +121,11 @@ public class Extension {
         this.tags = tags;
     }
 
-    public User getOwner() {
+    public UserModel getOwner() {
         return owner;
     }
 
-    public void setOwner(User owner) {
+    public void setOwner(UserModel owner) {
         this.owner = owner;
     }
 

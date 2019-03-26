@@ -3,7 +3,7 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.User;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.FileRepositoryImpl;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -56,12 +56,12 @@ public class FileServiceImpl implements FileService {
             throw new ExtensionNotFoundException("Extension not found.");
         }
 
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(userId);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
+        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add files to this extension.");
         }
 
@@ -88,12 +88,12 @@ public class FileServiceImpl implements FileService {
             throw new ExtensionNotFoundException("Extension not found.");
         }
 
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        UserModel userModel = userRepository.findById(userId);
+        if (userModel == null) {
+            throw new UserNotFoundException("UserModel not found.");
         }
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
+        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add images to this extension.");
         }
 
