@@ -5,6 +5,7 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.UserDTO;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
+import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import org.junit.Assert;
@@ -13,10 +14,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -33,44 +36,44 @@ public class UserModelServiceImplTests {
     @Test(expected = UserNotFoundException.class)
     public void findById_withNonExistingUser_shouldThrow() {
         //Arrange
-        UserModel userModel = new UserModel();
+        UserDetails user = new UserDetails("Test", "Test", new ArrayList<>(), 1);
         when(userRepository.findById(1)).thenReturn(null);
 
         //Act
-        userService.findById(1, userModel);
+        userService.findById(1, user);
     }
 
     @Test(expected = UserProfileUnavailableException.class)
     public void findById_whenUserProfileIsNotActive_andCurrentUserIsNotAdmin_shouldThrow(){
         //Arrange
-        UserModel loggedUserModel = new UserModel();
-        loggedUserModel.setUsername("test");
-        loggedUserModel.setRole("ROLE_USER");
-        loggedUserModel.setIsActive(true);
-        UserModel blockedUserModel = new UserModel();
-        blockedUserModel.setIsActive(false);
-        blockedUserModel.setUsername("test");
-        blockedUserModel.setRole("ROLE_USER");
-        when(userRepository.findById(1)).thenReturn(blockedUserModel);
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 1);
+
+        UserModel blockedUser = new UserModel();
+        blockedUser.setIsActive(false);
+        blockedUser.setUsername("test");
+        blockedUser.setRole("ROLE_USER");
+        when(userRepository.findById(1)).thenReturn(blockedUser);
 
         //Act
-        userService.findById(1, loggedUserModel);
+        userService.findById(1, loggedUser);
     }
     @Test()
     public void findById_whenUserProfileIsNotActive_andCurrentUserIsAdmin_ShouldReturnUser(){
         //Arrange
-        UserModel loggedUserModel = new UserModel();
-        loggedUserModel.setUsername("test");
-        loggedUserModel.setRole("ROLE_ADMIN");
-        loggedUserModel.setIsActive(true);
-        UserModel blockedUserModel = new UserModel();
-        blockedUserModel.setIsActive(false);
-        blockedUserModel.setUsername("test");
-        blockedUserModel.setRole("ROLE_USER");
-        when(userRepository.findById(1)).thenReturn(blockedUserModel);
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 1);
+
+        UserModel blockedUser = new UserModel();
+        blockedUser.setIsActive(false);
+        blockedUser.setUsername("test");
+        blockedUser.setRole("ROLE_USER");
+        when(userRepository.findById(1)).thenReturn(blockedUser);
 
         //Act
-        userService.findById(1, loggedUserModel);
+        userService.findById(1, loggedUser);
     }
 
     @Test
@@ -202,25 +205,8 @@ public class UserModelServiceImplTests {
         UserDTO usersDTO = userService.setState(1,"Active");
     }
 
-    @Test(expected = InvalidCredentialsException.class)
-    public void LoginUserWithWrongPassword_InvalidCredentialsException_shouldThrow() {
-
-        //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setUsername("test");
-        userModel.setPassword(BCrypt.hashpw("k",BCrypt.gensalt(4)));
-        UserModel userModelInvalid = new UserModel();
-        userModelInvalid.setUsername("test");
-        userModelInvalid.setPassword(BCrypt.hashpw("wrong password)",BCrypt.gensalt(4)));
-
-        when(userRepository.findByUsername("test")).thenReturn(userModel);
-
-        //Act
-        userService.login(userModelInvalid);
-    }
-
-    @Test(expected = InvalidCredentialsException.class)
-    public void LoginUserWithWrongUsername_InvalidCredentialsException_shouldThrow() {
+    @Test(expected = BadCredentialsException.class)
+    public void LoginUserWithWrongUsername_BadCredentialsException_shouldThrow() {
 
         //Arrange
         UserModel userModelInvalid = new UserModel();
@@ -229,7 +215,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findByUsername("test")).thenReturn(null);
 
         //Act
-        userService.login(userModelInvalid);
+        userService.loadUserByUsername("test");
     }
 
     @Test(expected = BlockedUserException.class)
@@ -246,28 +232,28 @@ public class UserModelServiceImplTests {
         when(userRepository.findByUsername("test")).thenReturn(foundUserModel);
 
         //Act
-        userService.login(userModel);
+        userService.loadUserByUsername("test");
     }
 
     @Test
     public void LoginUser_ShouldReturnLoggedUser(){
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setUsername("test");
-        userModel.setPassword("password");
-        userModel.setIsActive(true);
-
         UserModel foundUserModel = new UserModel();
         foundUserModel.setUsername("test");
         foundUserModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
         foundUserModel.setIsActive(true);
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        UserDetails userDetails = new UserDetails(foundUserModel,authorities);
         when(userRepository.findByUsername("test")).thenReturn(foundUserModel);
 
         //Act
-        UserModel loggedUserModel = userService.login(userModel);
+        UserDetails loggedUserModel = userService.loadUserByUsername("test");
 
         //Assert
-        Assert.assertEquals(foundUserModel, loggedUserModel);
+        Assert.assertEquals(userDetails, loggedUserModel);
     }
 
     @Test(expected = UsernameExistsException.class)

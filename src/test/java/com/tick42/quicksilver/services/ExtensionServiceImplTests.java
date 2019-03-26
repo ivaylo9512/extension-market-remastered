@@ -1,13 +1,10 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.Tag;
-import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
@@ -18,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -252,17 +251,16 @@ public class ExtensionServiceImplTests {
     @Test(expected = ExtensionNotFoundException.class)
     public void findById_whenExtensionDoesntExist_shouldThrow() {
         //Arrange
-        UserModel userModel = new UserModel();
+        UserDetails user = new UserDetails("text", "test", new ArrayList<>(), 1);
         when(extensionRepository.findById(1)).thenReturn(null);
 
         //Act
-        extensionService.findById(1, userModel);
+        extensionService.findById(1, user);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenOwnerIsInactiveaAndUserIsNull_shouldThrow() {
         //Arrange
-        UserModel userModel = null;
 
         UserModel owner = new UserModel();
         owner.setIsActive(false);
@@ -273,14 +271,15 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, userModel);
+        extensionService.findById(1, null);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenOwnerIsInactiveaAndUserIsNotAdmin_shouldThrow() {
+    public void findById_whenOwnerIsInactiveAndUserIsNotAdmin_shouldThrow() {
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setRole("ROLE_USER");
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
         owner.setIsActive(false);
@@ -291,14 +290,12 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, userModel);
+        extensionService.findById(1, user);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNull_shouldThrow() {
         //Arrange
-        UserModel userModel = null;
-
         UserModel owner = new UserModel();
         owner.setIsActive(true);
 
@@ -309,15 +306,15 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, userModel);
+        extensionService.findById(1, null);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldThrow() {
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
         owner.setIsActive(true);
@@ -330,15 +327,15 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        extensionService.findById(1, userModel);
+        extensionService.findById(1, user);
     }
 
     @Test
     public void findById_whenExtensionIsPendingAndOwnerIsInactiveAndUserIsAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_ADMIN");
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
         owner.setIsActive(false);
@@ -351,7 +348,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
@@ -360,9 +357,9 @@ public class ExtensionServiceImplTests {
     @Test
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
         owner.setIsActive(true);
@@ -376,7 +373,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
@@ -385,9 +382,9 @@ public class ExtensionServiceImplTests {
     @Test
     public void findById_whenExtensionIsNotPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldReturnExtensionDTO() {
         //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+        Collection<GrantedAuthority> authorities = new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
         owner.setIsActive(true);
@@ -401,7 +398,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(extension);
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, userModel);
+        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
 
         //Assert
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
