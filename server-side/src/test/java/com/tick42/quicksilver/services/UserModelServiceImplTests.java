@@ -238,22 +238,23 @@ public class UserModelServiceImplTests {
     @Test
     public void LoginUser_ShouldReturnLoggedUser(){
         //Arrange
-        UserModel foundUserModel = new UserModel();
-        foundUserModel.setUsername("test");
-        foundUserModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
-        foundUserModel.setIsActive(true);
+        UserModel foundUser = new UserModel();
+        foundUser.setUsername("test");
+        foundUser.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
+        foundUser.setIsActive(true);
+        foundUser.setRole("ROLE_ADMIN");
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
-        UserDetails userDetails = new UserDetails(foundUserModel,authorities);
-        when(userRepository.findByUsername("test")).thenReturn(foundUserModel);
+        UserDetails userDetails = new UserDetails(foundUser,authorities);
+        when(userRepository.findByUsername("test")).thenReturn(foundUser);
 
         //Act
-        UserDetails loggedUserModel = userService.loadUserByUsername("test");
+        UserDetails loggedUser = userService.loadUserByUsername("test");
 
         //Assert
-        Assert.assertEquals(userDetails, loggedUserModel);
+        Assert.assertEquals(userDetails, loggedUser);
     }
 
     @Test(expected = UsernameExistsException.class)
