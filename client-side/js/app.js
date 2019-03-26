@@ -160,23 +160,12 @@ let app = (() => {
         if (e) {
             id = $(this).attr('extensionId');
         }
-        if (remote.isAuth()) {
-            remote.getExtension(id).then(
-                res => {
-                    res = render.extension(res)
-                    show.extension(res)
-                }
-            ).catch(e => {
-                handle(e);
-            });
-        } else {
-            remote.getExtension(id).then(
-                res => {
-                    res = render.extension(res)
-                    show.extension(res, 0)
-                }
-            )
-        }
+        remote.getExtension(id).then(res => {
+            res = render.extension(res);
+            show.extension(res)
+        }).catch(e => {
+            handle(e);
+        })
     }
 
     let rateExtension = function (e) {
@@ -196,13 +185,13 @@ let app = (() => {
                     rating => {
                         rating = render.extensionRating(rating);
                         let displayRating = {
-                            rating: rating.toFixed(2),
+                            rating,
                             timesRated
                         }
                         if (currentRatedStatus == 0) {
                             timesRated = parseInt(timesRated) + 1;
                             displayRating = {
-                                rating: rating.toFixed(2),
+                                rating,
                                 timesRated
                             }
                             $('.info .rating').attr('id', rating);
@@ -320,6 +309,8 @@ let app = (() => {
     let register = function (e) {
         preventDefault(e);
 
+        $('.errors').empty();
+
         let username = $('#username').val();
         let password = $('#password').val();
         let repeatPassword = $('#repeatPassword').val();
@@ -350,6 +341,8 @@ let app = (() => {
     let login = function (e) {
         preventDefault(e);
 
+        $('.errors').empty();
+
         let username = $('#username').val();
         let password = $('#password').val();
 
@@ -360,10 +353,11 @@ let app = (() => {
 
         remote.login(user).then(
             res => {
-                localStorage.setItem('Authorization', res['token']);
-                localStorage.setItem('id', res['id']);
-                localStorage.setItem('username', res['username']);
-                localStorage.setItem('role', res['role']);
+                let userDetails = JSON.parse(res);
+                localStorage.setItem('Authorization', userDetails['token']);
+                localStorage.setItem('id', userDetails['id']);
+                localStorage.setItem('username', userDetails['username']);
+                localStorage.setItem('role', userDetails['role']);
                 getHomeView();
             }
         ).catch(e => {
@@ -449,6 +443,7 @@ let app = (() => {
         if (!hitEnter(e)) {
             return;
         }
+        $('.errors').empty();
 
         let extensionId = $(this).attr('extensionId');
 
@@ -663,23 +658,16 @@ let app = (() => {
     }
 
     function handle(e) {
-        $('.errors').empty();
-        try {
+        if(e['responseJSON'] != null){
             e['responseJSON'].forEach(error => $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + error + '</p>'));
             console.log(e['responseJSON'])
-        }
-        catch (err) {
-            try {
+        }else{
+            $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + e['responseText'] + '</p>');
+            console.log(e['responseText'])
+            if (e['responseText'] == "Jwt token has expired.") {
+                logout();
+                getLoginView();
                 $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + e['responseJSON'].message + '</p>');
-                console.log(e['responseJSON'].message)
-                if (e['responseJSON'].message == "Jwt token has expired.") {
-                    logout();
-                    getLoginView();
-                    $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + e['responseJSON'].message + '</p>');
-                }
-            } catch (e) {
-                $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + e['responseText'] + '</p>');
-                console.log(e['responseText'])
             }
         }
     }
