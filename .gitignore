@@ -3,6 +3,7 @@
 !gradle/wrapper/gradle-wrapper.jar
 /server-side/out
 /server-side/gradle
+/server-side/classes
 
 ### STS ###
 .apt_generated

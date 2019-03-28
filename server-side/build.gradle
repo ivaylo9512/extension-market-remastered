@@ -15,7 +15,6 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'jacoco'
-apply plugin: 'war'
 
 group = 'com.tick42'
 version = '0.0.1-SNAPSHOT'
@@ -44,6 +43,10 @@ dependencies {
 	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
 	compile group: 'commons-io', name: 'commons-io', version: '2.6'
 	compile group: 'org.kohsuke', name: 'github-api', version: '1.93'
+	compile('javax.xml.bind:jaxb-api:2.3.0')
+	compile('javax.activation:activation:1.1')
+	compile('org.glassfish.jaxb:jaxb-runtime:2.3.0')
+
 }
 
 jacocoTestReport {

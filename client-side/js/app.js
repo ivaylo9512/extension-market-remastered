@@ -460,7 +460,7 @@ let app = (() => {
         let image = $('#image').prop('files')[0];
         let imageData = new FormData();
         imageData.append('image', image);
-
+        imageData.append('file', image);
 
         let extension = {
             name,
@@ -478,6 +478,10 @@ let app = (() => {
             remote.submitExtension(extension).then(
                 res => {
                     let extensionId = res['id'];
+                            remote.submitExtension(extension).then(
+                                    res => {
+                                        remote.upload(extensionId, imageData)
+                                    })
                     if (file) {
                         m.find('div').html('uploading file...');
                         remote.submitFile(extensionId, fileData).then(
@@ -504,11 +508,11 @@ let app = (() => {
                     }
                     else if (image) {
                         m.find('div').html('uploading image...');
-                        remote.submitImage(extensionId, fileData).then(
+                        remote.submitImage(extensionId, imageData).then(
                             resFile => {
                                 if (file) {
                                     m.find('div').html('uploading file...');
-                                    remote.submitFile(extensionId, imageData).then(
+                                    remote.submitFile(extensionId, fileData).then(
                                         resImage => {
                                             getExtensionView(null, extensionId)
                                         }

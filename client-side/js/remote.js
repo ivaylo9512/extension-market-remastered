@@ -1,6 +1,6 @@
 remote = (() => {
 
-    const base = "http://localhost:8090";
+    const base = "http://localhost:8080";
 
     let isAuth = () => {
         return localStorage.getItem('Authorization') !== null;
@@ -86,6 +86,18 @@ remote = (() => {
         })
     }
 
+    let upload = (id, image) => {
+        return $.ajax({
+            type: 'POST',
+            url: base + '/api/auth/upload/' + id,
+            data: image,
+            contentType: false,
+            processData: false,
+            headers: {
+                'Authorization': localStorage.getItem('Authorization')
+            },
+        })
+    }
     let submitImage = (id, image) => {
         return $.ajax({
             type: 'POST',
@@ -124,7 +136,7 @@ remote = (() => {
     let login = (user) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/users/login',
+            url: base + '/login',
             data: JSON.stringify(user),
             contentType: 'application/json'
         })
@@ -303,6 +315,7 @@ remote = (() => {
         downloadFile,
         rateExtension,
         changePassword,
-        getCurrentGitHubSettings
+        getCurrentGitHubSettings,
+        upload
     }
 })()
