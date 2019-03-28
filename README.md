@@ -5,6 +5,13 @@
 
 Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every userModel can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessability:
 
+##How to run
+You can run the program from the executable JAR file it has all dependencies the application is written in Java 8 - jre 1.8
+You should download the server-side-Jar folder because it uses it for the images and the files for the uploaded extensions.
+It runs the application on 8080, you should check your ports first and kill any tasks on the port.
+If for some reason the application doesn't start on your device you can run it from cmd with java -jar server-side-main.jar to investigate further.
+//TODO: The Jar uses inner database so you don't need to execute the sql.
+
 ## Guest
 
 A Guest userModel can browse through the extensions, search and download them.
@@ -45,6 +52,3 @@ The ap runs on the :8080 port by default, so make your requests to http://localh
 
 There is one admin userModel preset in the database:
 `username: SystemAdmin`, `pssword: SystemDefaultPassword1`
-
-### Where is the documentation?
-Find all the request routs here: .....
