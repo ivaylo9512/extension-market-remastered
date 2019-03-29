@@ -4,7 +4,9 @@ import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
+import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.File;
+import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.FileService;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.IOException;
 
 @RestController
@@ -37,24 +40,20 @@ public class FileController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/upload/file/{id}")
-    @ResponseBody
-    public File uploadFile(@RequestParam("file") MultipartFile receivedFile, @PathVariable(name = "id") int extensionId, HttpServletRequest request) {
+    @PostMapping("/auth/upload/extensionFiles/{extensionId}")
+    public void createExtension(@PathVariable(name = "extensionId") int extensionId,
+                                @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
+                                @RequestParam(name = "file", required = false) MultipartFile extensionFile) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
+        if(extensionImage != null){
+            fileService.storeImage(extensionImage, extensionId, userId);
+        }
+        if(extensionFile != null){
+            fileService.storeFile(extensionFile, extensionId, userId);
+        }
 
-        return fileService.storeFile(receivedFile, extensionId, userId);
-    }
-
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/upload/image/{id}")
-    public File uploadImage(@RequestParam("image") MultipartFile receivedImage, @PathVariable(name = "id") int extensionId, HttpServletRequest request) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-
-        return fileService.storeImage(receivedImage, extensionId, userId);
     }
 
     @GetMapping("/download/{fileName:.+}")

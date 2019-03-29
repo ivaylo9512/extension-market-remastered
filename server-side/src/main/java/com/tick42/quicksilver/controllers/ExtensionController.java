@@ -11,6 +11,7 @@ import com.tick42.quicksilver.services.base.ExtensionService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,11 +29,13 @@ import java.util.List;
 public class ExtensionController {
 
     private final ExtensionService extensionService;
+    private final FileService fileService;
     private RatingService ratingService;
 
     @Autowired
-    public ExtensionController(ExtensionService extensionService, RatingService ratingService) {
+    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService) {
         this.extensionService = extensionService;
+        this.fileService = fileService;
         this.ratingService = ratingService;
     }
 
@@ -61,6 +65,17 @@ public class ExtensionController {
         return extensionService.findAll(name, orderBy, page, perPage);
     }
 
+
+    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
+    @PostMapping("/auth/extensions/create")
+    public ExtensionDTO createExtension(@Valid @RequestBody ExtensionSpec extension) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        return extensionService.create(extension, userId);
+    }
+
     @GetMapping("/extensions/featured")
     public List<ExtensionDTO> featured() {
         return extensionService.findFeatured();
@@ -69,16 +84,6 @@ public class ExtensionController {
     @GetMapping("/auth/extensions/download/{id}")
     public ExtensionDTO download(@PathVariable(name = "id") int id) {
         return extensionService.increaseDownloadCount(id);
-    }
-
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions")
-    public ExtensionDTO create(@Valid @RequestBody ExtensionSpec extension) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-
-        return extensionService.create(extension, userId);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
