@@ -5,8 +5,8 @@ import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
-import com.tick42.quicksilver.repositories.SettingsRepositoryImpl;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
+import com.tick42.quicksilver.repositories.base.SettingsRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
 import org.kohsuke.github.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,12 @@ public class GitHubServiceImpl implements GitHubService {
     private final GitHubRepository gitHubRepository;
     private final Scheduler scheduler;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
-    private SettingsRepositoryImpl settingsRepository;
+    private SettingsRepository settingsRepository;
     private Settings settings;
 
 
     @Autowired
-    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepositoryImpl settingsRepository) throws IOException {
+    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepository settingsRepository) throws IOException {
         this.gitHubRepository = gitHubRepository;
         this.scheduler = scheduler;
         this.threadPoolTaskScheduler = threadPoolTaskScheduler;
@@ -40,7 +40,7 @@ public class GitHubServiceImpl implements GitHubService {
     @Override
     public void setRemoteDetails(GitHubModel gitHubModel) {
         try {
-            settings = settingsRepository.get();
+            settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
             GitHub gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
 
             GHRepository repo = null;
@@ -90,14 +90,14 @@ public class GitHubServiceImpl implements GitHubService {
         gitHubModels.forEach(gitHub -> {
             System.out.println("updating... " + gitHub.getRepo());
             setRemoteDetails(gitHub);
-            gitHubRepository.update(gitHub);
+            gitHubRepository.save(gitHub);
         });
     }
 
     @Override
     public void createScheduledTask(ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
 
-        settings = settingsRepository.get();
+        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
 
         if (gitHubSettingSpec != null) {
             Integer rate = gitHubSettingSpec.getRate();
@@ -109,7 +109,7 @@ public class GitHubServiceImpl implements GitHubService {
             settings.setWait(wait);
             settings.setToken(token);
             settings.setUsername(username);
-            settingsRepository.set(settings);
+            settingsRepository.save(settings);
         }
 
         if (settings.getToken() == null || settings.getUsername() == null) return;
@@ -131,7 +131,7 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public GitHubSettingSpec getSettings() {
-        settings = settingsRepository.get();
+        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
         GitHubSettingSpec currentSettings = new GitHubSettingSpec();
         currentSettings.setToken(settings.getToken());
         currentSettings.setUsername(settings.getUsername());

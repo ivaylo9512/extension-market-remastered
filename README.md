@@ -6,11 +6,29 @@
 Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every userModel can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessability:
 
 ##How to run
-You can run the program from the executable JAR file it has all dependencies the application is written in Java 8 - jre 1.8
-You should download the server-side-Jar folder because it uses it for the images and the files for the uploaded extensions.
+
+### From the Jar file
+
+You can run the application from the executable JAR file it has all dependencies, the application is written in Java 8 - jre 1.8
+
+You should download the server-side-Jar folder, because it uses the upload folder in it for the images and the files for the uploaded extensions.
+
 It runs the application on 8080, you should check your ports first and kill any tasks on the port.
+
 If for some reason the application doesn't start on your device you can run it from cmd with java -jar server-side-main.jar to investigate further.
 //TODO: The Jar uses inner database so you don't need to execute the sql.
+
+### Without the Jar file
+
+The
+
+Execute the sql:
+`$ mysql -u root -p < database.sql`
+
+Run the app:
+`$ ./gradlew bootRun`
+
+Again runs on :8080 port you can change that from Application.properties
 
 ## Guest
 

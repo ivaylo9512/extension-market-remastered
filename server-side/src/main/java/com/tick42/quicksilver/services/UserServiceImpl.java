@@ -36,29 +36,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDTO setState(int id, String state) {
-        UserModel userModel = userRepository.findById(id);
+    public UserDTO setState(int userId, String state) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
 
         switch (state) {
             case "enable":
-                userModel.setIsActive(true);
+                user.setIsActive(true);
                 break;
             case "block":
-                userModel.setIsActive(false);
+                user.setIsActive(false);
                 break;
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
-        return new UserDTO(userRepository.update(userModel));
+        return new UserDTO(userRepository.save(user));
     }
 
     @Override
     public List<UserDTO> findAll(String state) {
-        List<UserModel> userModels = new ArrayList<>();
+        List<UserModel> user;
 
         if (state == null) {
             state = "";
@@ -66,50 +64,46 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         switch (state) {
             case "active":
-                userModels = userRepository.findUsersByState(true);
+                user = userRepository.findByActive(true);
                 break;
             case "blocked":
-                userModels = userRepository.findUsersByState(false);
+                user = userRepository.findByActive(false);
                 break;
             case "all":
-                userModels = userRepository.findAll();
+                user = userRepository.findAll();
                 break;
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
-        List<UserDTO> usersDto = userModels
-                .stream()
+        return user.stream()
                 .map(UserDTO::new)
                 .collect(Collectors.toList());
-        return usersDto;
     }
 
     @Override
-    public UserDTO findById(int id, UserDetails loggedUser) {
-        UserModel userModel = userRepository.findById(id);
+    public UserDTO findById(int userId, UserDetails loggedUser) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel doesn't exist.");
-        }
         boolean admin = false;
         if(loggedUser != null) {
             Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
             admin = authorities.contains("ROLE_ADMIN");
         }
 
-        if (!userModel.getIsActive() && !admin) {
+        if (!user.getIsActive() && !admin) {
             throw new UserProfileUnavailableException("UserModel profile is disabled.");
         }
 
-        return new UserDTO(userModel);
+        return new UserDTO(user);
     }
 
     @Override
     public UserModel register(UserSpec userSpec, String role) {
-        UserModel userModel = userRepository.findByUsername(userSpec.getUsername());
+        UserModel user = userRepository.findByUsername(userSpec.getUsername());
 
-        if (userModel != null) {
+        if (user != null) {
             throw new UsernameExistsException("Username is already taken.");
         }
 
@@ -117,9 +111,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new PasswordsMissMatchException("Passwords must match.");
         }
 
-        userModel = new UserModel(userSpec, role);
-        userModel.setPassword(BCrypt.hashpw(userModel.getPassword(),BCrypt.gensalt(4)));
-        return userRepository.create(userModel);
+        user = new UserModel(userSpec, role);
+        user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(4)));
+        return userRepository.save(user);
     }
 
     @Override
@@ -140,18 +134,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDTO changePassword(int id, ChangeUserPasswordSpec changePasswordSpec){
-        UserModel userModel = userRepository.findById(id);
+    public UserDTO changePassword(int userId, ChangeUserPasswordSpec changePasswordSpec){
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
         if (!changePasswordSpec.getNewPassword().equals(changePasswordSpec.getRepeatNewPassword())){
             throw new PasswordsMissMatchException("passwords don't match");
         }
 
-        if (!userModel.getPassword().equals(changePasswordSpec.getCurrentPassword())){
+        if (!user.getPassword().equals(changePasswordSpec.getCurrentPassword())){
             throw new InvalidCredentialsException("Invalid current password.");
         }
-        userModel.setPassword(changePasswordSpec.getNewPassword());
-        userRepository.update(userModel);
-        return new UserDTO(userModel);
+        user.setPassword(changePasswordSpec.getNewPassword());
+        userRepository.save(user);
+        return new UserDTO(user);
 
     }
 }

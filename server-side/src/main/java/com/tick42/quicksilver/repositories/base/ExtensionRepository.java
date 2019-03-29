@@ -1,33 +1,22 @@
 package com.tick42.quicksilver.repositories.base;
 
 import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.Rating;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ExtensionRepository {
+public interface ExtensionRepository extends JpaRepository<Extension, Integer> {
 
-    Extension findById(int id);
+    @Query(value = "from Extension where pending = false and owner.active = true and name like :name%")
+    List<Extension> findAllOrderedBy(@Param("name") String name, Pageable pageRequest);
 
-    Extension create(Extension extension);
+    @Query(value = "select count(*) from Extension where pending = false and owner.active = true and name like :name%")
+    Long getTotalResults(@Param("name") String name);
 
-    Extension update(Extension extension);
+    List<Extension> findByFeatured(boolean state);
 
-    void delete(Extension extension);
-
-    List<Extension> findAll();
-
-    List<Extension> findAllByDate(String name, Integer page, Integer perPage);
-
-    List<Extension> findAllByCommit(String name, Integer page, Integer perPage);
-
-    List<Extension> findAllByName(String name, Integer page, Integer perPage);
-
-    List<Extension> findAllByDownloads(String name, Integer page, Integer perPage);
-
-    Long getTotalResults(String name);
-
-    List<Extension> findFeatured();
-
-    List<Extension> findPending();
+    List<Extension> findByPending(boolean state);
 }

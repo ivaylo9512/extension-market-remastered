@@ -48,14 +48,14 @@ public class Extension {
     @JoinColumn(name = "owner")
     private UserModel owner;
 
-    @Column(name = "is_pending")
-    private boolean isPending;
+    @Column(name = "pending")
+    private boolean pending;
 
     @Column(name = "upload_date")
     private Date uploadDate;
 
-    @Column(name = "is_featured")
-    private boolean isFeatured;
+    @Column(name = "featured")
+    private boolean featured;
 
     @Column(name = "rating")
     private double rating;
@@ -129,12 +129,12 @@ public class Extension {
         this.owner = owner;
     }
 
-    public boolean getIsPending() {
-        return isPending;
+    public boolean isPending() {
+        return pending;
     }
 
-    public void setIsPending(boolean pending) {
-        isPending = pending;
+    public void isPending(boolean pending) {
+        this.pending = pending;
     }
 
     public File getFile() {
@@ -145,12 +145,12 @@ public class Extension {
         this.file = file;
     }
 
-    public boolean getIsFeatured() {
-        return isFeatured;
+    public boolean isFeatured() {
+        return featured;
     }
 
-    public void setIsFeatured(boolean featured) {
-        isFeatured = featured;
+    public void isFeatured(boolean featured) {
+        this.featured = featured;
     }
 
     public Date getUploadDate() {

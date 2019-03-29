@@ -14,13 +14,13 @@ import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +30,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final TagService tagService;
     private final GitHubService gitHubService;
     private UserRepository userRepository;
+    private HashMap<Integer, Extension> featured;
+    private Queue<ExtensionDTO> lastUpload = new LinkedList<>();
 
     @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
@@ -41,27 +43,27 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO create(ExtensionSpec extensionSpec, int id) {
+    public ExtensionDTO create(ExtensionSpec extensionSpec, int userId) {
 
-        UserModel userModel = userRepository.findById(id);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
 
         Extension extension = new Extension(extensionSpec);
-        extension.setIsPending(true);
-        extension.setOwner(userModel);
+        extension.isPending(true);
+        extension.setOwner(user);
         extension.setTimesDownloaded(0);
         extension.setUploadDate(new Date());
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
-        return new ExtensionDTO(extensionRepository.create(extension));
+        return new ExtensionDTO(extensionRepository.save(extension));
     }
 
     @Override
-    public ExtensionDTO findById(int id, UserDetails loggedUser) {
-        Extension extension = extensionRepository.findById(id);
+    public ExtensionDTO findById(int extensionId, UserDetails loggedUser) {
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
         checkUserAndExtension(extension, loggedUser);
 
@@ -69,19 +71,16 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO update(int extensionsId, ExtensionSpec extensionSpec, int userId) {
+    public ExtensionDTO update(int extensionId, ExtensionSpec extensionSpec, int userId) {
 
-        Extension extension = extensionRepository.findById(extensionsId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        UserModel userModel = userRepository.findById(userId);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
 
-        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
         }
 
@@ -98,23 +97,21 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
 
-        extensionRepository.update(extension);
+        extensionRepository.save(extension);
         return new ExtensionDTO(extension);
     }
 
     @Override
-    public void delete(int extensionsId, int userId) {
-        Extension extension = extensionRepository.findById(extensionsId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+    public void delete(int extensionId, int userId) {
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        UserModel userModel = userRepository.findById(userId);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
 
-        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+
+        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to delete this extension.");
         }
 
@@ -123,14 +120,14 @@ public class ExtensionServiceImpl implements ExtensionService {
 
 
     @Override
-    public PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage) {
+    public PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer pageSize) {
 
-        if (page == null) {
-            page = 1;
+        if (page == null || page < 0) {
+            page = 0;
         }
 
-        if (perPage == null) {
-            perPage = 10;
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
         }
 
         if (name == null) {
@@ -141,34 +138,26 @@ public class ExtensionServiceImpl implements ExtensionService {
             orderBy = "date";
         }
 
-        if (page < 1) {
-            throw new InvalidParameterException("\"page\" should be a positive number.");
-        }
-
-        if (perPage < 1) {
-            throw new InvalidParameterException("\"perPage\" should be a positive number.");
-        }
-
         Long totalResults = extensionRepository.getTotalResults(name);
-        int totalPages = (int) Math.ceil(totalResults * 1.0 / perPage);
+        int totalPages = (int) Math.ceil(totalResults * 1.0 / pageSize);
 
         if (page > totalPages && totalResults != 0) {
             throw new InvalidParameterException("Page" + totalPages + " is the last page. Page " + page + " is invalid.");
         }
 
-        List<Extension> extensions = new ArrayList<>();
+        List<Extension> extensions;
         switch (orderBy) {
             case "date":
-                extensions = extensionRepository.findAllByDate(name, page, perPage);
+                extensions = extensionRepository.findAllOrderedBy(name,PageRequest.of(page, pageSize, Sort.Direction.DESC, "uploadDate"));
                 break;
             case "commits":
-                extensions = extensionRepository.findAllByCommit(name, page, perPage);
+                extensions = extensionRepository.findAllOrderedBy(name,PageRequest.of(page, pageSize, Sort.Direction.DESC, "github.lastCommit"));
                 break;
             case "name":
-                extensions = extensionRepository.findAllByName(name, page, perPage);
+                extensions = extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.ASC, "name"));
                 break;
             case "downloads":
-                extensions = extensionRepository.findAllByDownloads(name, page, perPage);
+                extensions = extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "timesDownloaded"));
                 break;
             default:
                 throw new InvalidParameterException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
@@ -180,103 +169,97 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public List<ExtensionDTO> findFeatured() {
-        List<Extension> extensions = extensionRepository.findFeatured();
+        List<Extension> extensions = extensionRepository.findByFeatured(true);
         return generateExtensionDTOList(extensions);
     }
 
     @Override
-    public ExtensionDTO setPublishedState(int id, String state) {
-        Extension extension = extensionRepository.findById(id);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+    public ExtensionDTO setPublishedState(int extensionId, String state) {
+
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
         switch (state) {
             case "publish":
-                extension.setIsPending(false);
+                extension.isPending(false);
                 break;
             case "unpublish":
-                extension.setIsPending(true);
+                extension.isPending(true);
                 break;
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
         }
 
-        extensionRepository.update(extension);
+        extensionRepository.save(extension);
         return new ExtensionDTO(extension);
     }
 
     @Override
-    public ExtensionDTO setFeaturedState(int id, String state) {
-        Extension extension = extensionRepository.findById(id);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+    public ExtensionDTO setFeaturedState(int extensionId, String state) {
+
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+
 
         switch (state) {
             case "feature":
-                extension.setIsFeatured(true);
+                extension.isFeatured(true);
                 break;
             case "unfeature":
-                extension.setIsFeatured(false);
+                extension.isFeatured(false);
                 break;
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
-
-        extensionRepository.update(extension);
+        extensionRepository.save(extension);
         return new ExtensionDTO(extension);
     }
 
     @Override
     public List<ExtensionDTO> findPending() {
-        return generateExtensionDTOList(extensionRepository.findPending());
+        return generateExtensionDTOList(extensionRepository.findByPending(true));
     }
 
     @Override
     public List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions) {
-        List<ExtensionDTO> extensionsDTO = extensions
-                .stream()
+        return extensions.stream()
                 .map(ExtensionDTO::new)
                 .collect(Collectors.toList());
-
-        return extensionsDTO;
     }
 
     @Override
     public ExtensionDTO fetchGitHub(int extensionId, int userId) {
-        Extension extension = extensionRepository.findById(extensionId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        UserModel userModel = userRepository.findById(userId);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
 
-        if (!userModel.getRole().equals("ROLE_ADMIN")) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+
+        if (!user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to trgigger a github refresh.");
         }
 
         gitHubService.setRemoteDetails(extension.getGithub());
 
-        extensionRepository.update(extension);
+        extensionRepository.save(extension);
 
         return new ExtensionDTO(extension);
     }
 
     @Override
-    public ExtensionDTO increaseDownloadCount(int id) {
-        Extension extension = extensionRepository.findById(id);
+    public ExtensionDTO increaseDownloadCount(int extensionId) {
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        if(extension == null || extension.getIsPending() || !extension.getOwner().getIsActive()) {
+        if(extension.isPending() || !extension.getOwner().getIsActive()) {
             throw new ExtensionUnavailableException("Download count won't increase - the extension is unavailable");
         }
 
         extension.setTimesDownloaded(extension.getTimesDownloaded() + 1);
 
-        return new ExtensionDTO(extensionRepository.update(extension));
+        return new ExtensionDTO(extensionRepository.save(extension));
     }
 
     private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
@@ -294,11 +277,15 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new ExtensionUnavailableException("Extension is unavailable.");
         }
 
-        if (extension.getIsPending() &&
+        if (extension.isPending() &&
                 ((loggedUser == null) ||
                         (extension.getOwner().getId() != loggedUser.getId()) && !admin)) {
             throw new ExtensionUnavailableException("Extension is unavailable.");
         }
     }
 
+    @Override
+    public void getFeatured(ApplicationReadyEvent event) {
+
+    }
 }

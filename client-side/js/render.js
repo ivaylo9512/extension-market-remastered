@@ -1,10 +1,12 @@
 let render = (() => {
 
     let searchResults = (res, query, orderBy) => {
-        res['prev'] = +res['currentPage'] > 1;
-        res['next'] = +res['currentPage'] < res['totalPages'];
-        res['prevNum'] = +res['currentPage'] - 1;
-        res['nextNum'] = +res['currentPage'] + 1;
+        console.log(+res['currentPage'])
+        console.log(res['totalPages'])
+        res['prev'] = res['currentPage'] > 0;
+        res['next'] = res['currentPage'] < res['totalPages'] - 1;
+        res['prevNum'] = res['currentPage'] - 1;
+        res['nextNum'] = res['currentPage'] + 1;
         res['query'] = query;
         res['orderBy'] = orderBy;
         res['extensions'].forEach(extension => {

@@ -1,6 +1,6 @@
 remote = (() => {
 
-    const base = "http://localhost:8080";
+    const base = "http://localhost:8090";
 
     let isAuth = () => {
         return localStorage.getItem('Authorization') !== null;
@@ -64,7 +64,7 @@ remote = (() => {
     let submitExtension = (extension) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions',
+            url: base + '/api/auth/extensions/create',
             data: JSON.stringify(extension),
             contentType: 'application/json',
             headers: {
@@ -72,7 +72,18 @@ remote = (() => {
             },
         })
     }
-
+    let submitExtensionFiles = (extensionId, formData) => {
+        return $.ajax({
+            type: 'POST',
+            url: base + '/api/auth/upload/extensionFiles/' + extensionId,
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'Authorization': localStorage.getItem('Authorization')
+            },
+        })
+    }
     let submitFile = (id, file) => {
         return $.ajax({
             type: 'POST',
@@ -86,18 +97,6 @@ remote = (() => {
         })
     }
 
-    let upload = (id, image) => {
-        return $.ajax({
-            type: 'POST',
-            url: base + '/api/auth/upload/' + id,
-            data: image,
-            contentType: false,
-            processData: false,
-            headers: {
-                'Authorization': localStorage.getItem('Authorization')
-            },
-        })
-    }
     let submitImage = (id, image) => {
         return $.ajax({
             type: 'POST',
@@ -316,6 +315,6 @@ remote = (() => {
         rateExtension,
         changePassword,
         getCurrentGitHubSettings,
-        upload
+        submitExtensionFiles
     }
 })()

@@ -38,7 +38,7 @@ public class UserModel {
 
     @Column(name = "enabled", nullable = false)
     @Type(type = "org.hibernate.type.NumericBooleanType")
-    private boolean isActive = true;
+    private boolean active = true;
 
     private String role;
 
@@ -97,11 +97,11 @@ public class UserModel {
     }
 
     public boolean getIsActive() {
-        return isActive;
+        return active;
     }
 
     public void setIsActive(boolean active) {
-        isActive = active;
+        this.active = active;
     }
 
     public String getRole() {

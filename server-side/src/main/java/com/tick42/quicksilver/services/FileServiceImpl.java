@@ -4,9 +4,10 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
-import com.tick42.quicksilver.repositories.FileRepositoryImpl;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
+import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
+import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,13 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
 
     private final Path fileLocation;
-    private final FileRepositoryImpl fileRepository;
-    private final ExtensionServiceImpl extensionsService;
+    private final FileRepository fileRepository;
+    private final ExtensionService extensionsService;
     private final ExtensionRepository extensionRepository;
     private final UserRepository userRepository;
 
     @Autowired
-    public FileServiceImpl(FileRepositoryImpl fileRepository, ExtensionServiceImpl extensionsService, ExtensionRepository extensionRepository, UserRepository userRepository) {
+    public FileServiceImpl(FileRepository fileRepository, ExtensionService extensionsService, ExtensionRepository extensionRepository, UserRepository userRepository) {
         this.fileRepository = fileRepository;
         this.extensionsService = extensionsService;
         this.extensionRepository = extensionRepository;
@@ -51,17 +52,13 @@ public class FileServiceImpl implements FileService {
     @Override
     public File storeFile(MultipartFile receivedFile, int extensionId, int userId) {
 
-        Extension extension = extensionRepository.findById(extensionId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        UserModel userModel = userRepository.findById(userId);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
+        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add files to this extension.");
         }
 
@@ -71,7 +68,7 @@ public class FileServiceImpl implements FileService {
             saveFile(file, receivedFile);
 
             extension.setFile(file);
-            extensionRepository.update(extension);
+            extensionRepository.save(extension);
             return file;
 
         } catch (IOException e) {
@@ -83,17 +80,15 @@ public class FileServiceImpl implements FileService {
     @Override
     public File storeImage(MultipartFile receivedFile, int extensionId, int userId) {
 
-        Extension extension = extensionRepository.findById(extensionId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found.");
-        }
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
-        UserModel userModel = userRepository.findById(userId);
-        if (userModel == null) {
-            throw new UserNotFoundException("UserModel not found.");
-        }
 
-        if (userModel.getId() != extension.getOwner().getId() && !userModel.getRole().equals("ROLE_ADMIN")) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+
+        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add images to this extension.");
         }
 
@@ -107,7 +102,7 @@ public class FileServiceImpl implements FileService {
             saveFile(image, receivedFile);
 
             extension.setImage(image);
-            extensionRepository.update(extension);
+            extensionRepository.save(extension);
             return image;
 
         } catch (IOException e) {

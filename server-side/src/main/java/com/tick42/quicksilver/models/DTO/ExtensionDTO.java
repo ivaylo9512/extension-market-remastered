@@ -40,7 +40,7 @@ public class ExtensionDTO {
         this.setId(extension.getId());
         this.setName(extension.getName());
         this.setDescription(extension.getDescription());
-        this.setFeatured(extension.getIsFeatured());
+        this.setFeatured(extension.isFeatured());
         if (extension.getGithub() != null) {
             this.setGitHubLink(extension.getGithub().getLink());
             if (extension.getGithub().getLastCommit() != null) {
@@ -66,7 +66,7 @@ public class ExtensionDTO {
             this.setOwnerId(extension.getOwner().getId());
             this.setOwnerName(extension.getOwner().getUsername());
         }
-        this.setPending(extension.getIsPending());
+        this.setPending(extension.isPending());
         extension.getTags().forEach(tag -> this.tags.add(tag.getName()));
         this.setTimesDownloaded(extension.getTimesDownloaded());
         if (extension.getUploadDate() != null) {

@@ -1,19 +1,12 @@
 package com.tick42.quicksilver.repositories.base;
 
 import com.tick42.quicksilver.models.UserModel;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface UserRepository {
-    UserModel create(UserModel userModel);
-
-    UserModel update(UserModel userModel);
-
-    UserModel findById(int id);
-
+public interface UserRepository extends JpaRepository<UserModel, Integer> {
     UserModel findByUsername(String username);
 
-    List<UserModel> findAll();
-
-    List<UserModel> findUsersByState(boolean state);
+    List<UserModel> findByActive(boolean state);
 }

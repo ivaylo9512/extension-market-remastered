@@ -30,14 +30,12 @@ public class RatingServiceImpl implements RatingService {
             throw new InvalidRatingException("Rating must be between 1 and 5");
         }
 
-        Extension extension = extensionRepository.findById(extensionId);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension not found");
-        }
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
         Rating newRating = new Rating(rating, extensionId, userId);
         double currentExtensionRating = extension.getRating();
-        double userRatingForExtension = ratingRepository.findExtensionRatingByUser(extensionId, userId);
+        double userRatingForExtension = ratingRepository.findRatingByUser(extensionId, userId);
 
         newExtensionRating(userRatingForExtension, newRating, extension);
         newUserRating(currentExtensionRating, extension, rating);
@@ -47,7 +45,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public int userRatingForExtension(int extensionId, int userId) {
-        return ratingRepository.findExtensionRatingByUser(extensionId, userId);
+        return ratingRepository.findRatingByUser(extensionId, userId);
     }
 
     private void newUserRating(double currentExtensionRating, Extension extension, int rating) {
@@ -58,10 +56,10 @@ public class RatingServiceImpl implements RatingService {
         if (currentExtensionRating == 0) {
             userModel.setRating((userRating * extensionsRated + rating) / (extensionsRated + 1));
             userModel.setExtensionsRated(userModel.getExtensionsRated() + 1);
-            userRepository.update(userModel);
+            userRepository.save(userModel);
         } else {
             userModel.setRating(((userRating * extensionsRated - currentExtensionRating) + extension.getRating()) / extensionsRated);
-            userRepository.update(userModel);
+            userRepository.save(userModel);
         }
     }
 
@@ -69,25 +67,24 @@ public class RatingServiceImpl implements RatingService {
     public Extension newExtensionRating(double userRatingForExtension, Rating newRating, Extension extension) {
 
         if (userRatingForExtension == 0) {
-            ratingRepository.rate(newRating);
+            ratingRepository.save(newRating);
             extension.setRating((extension.getRating() * extension.getTimesRated() + newRating.getRating()) / (extension.getTimesRated() + 1));
             extension.setTimesRated(extension.getTimesRated() + 1);
-            extensionRepository.update(extension);
+            extensionRepository.save(extension);
         } else {
             extension.setRating(((extension.getRating() * extension.getTimesRated() - userRatingForExtension) + newRating.getRating()) / (extension.getTimesRated()));
-            extensionRepository.update(extension);
-            ratingRepository.updateRating(newRating);
+            extensionRepository.save(extension);
+            ratingRepository.save(newRating);
         }
 
         return extension;
     }
 
     @Override
-    public UserModel userRatingOnExtensionDelete(int userExtension) {
-        Extension extension = extensionRepository.findById(userExtension);
-        if (extension == null) {
-            throw new ExtensionNotFoundException("Extension Not Found");
-        }
+    public UserModel userRatingOnExtensionDelete(int extensionId) {
+        Extension extension = extensionRepository.findById(extensionId)
+                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+
 
         double extensionRating = extension.getRating();
         UserModel userModel = extension.getOwner();
@@ -99,12 +96,12 @@ public class RatingServiceImpl implements RatingService {
             if (extensionRating > 0) {
                 userModel.setRating((userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1));
                 userModel.setExtensionsRated(userRatedExtensions - 1);
-                userRepository.update(userModel);
+                userRepository.save(userModel);
             }
         }else{
             userModel.setRating(0);
             userModel.setExtensionsRated(0);
-            userRepository.update(userModel);
+            userRepository.save(userModel);
         }
         return userModel;
     }

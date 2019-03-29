@@ -1,9 +1,7 @@
 package com.tick42.quicksilver.repositories.base;
 
 import com.tick42.quicksilver.models.Settings;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SettingsRepository {
-    Settings get();
-
-    Settings set(Settings settings);
+public interface SettingsRepository extends JpaRepository<Settings, Integer> {
 }

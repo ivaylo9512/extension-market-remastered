@@ -1,7 +1,8 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.models.Tag;
-import com.tick42.quicksilver.repositories.TagRepositoryImpl;
+import com.tick42.quicksilver.repositories.base.TagRepository;
+import com.tick42.quicksilver.services.base.TagService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,9 +17,9 @@ import static org.mockito.Mockito.when;
 public class TagServiceImplTests {
 
     @Mock
-    private TagRepositoryImpl tagRepository;
+    private TagRepository tagRepository;
     @InjectMocks
-    private TagServiceImpl tagService;
+    private TagService tagService;
 
 
     @Test

@@ -7,6 +7,8 @@ import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import java.util.List;
 
@@ -35,5 +37,8 @@ public interface ExtensionService {
     ExtensionDTO fetchGitHub(int extensionId, int userId);
 
     ExtensionDTO increaseDownloadCount(int id);
+
+    @EventListener
+    void getFeatured(ApplicationReadyEvent event);
 
 }
