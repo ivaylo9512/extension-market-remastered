@@ -1,10 +1,12 @@
 package com.tick42.quicksilver.models.DTO;
 
 import com.tick42.quicksilver.models.Extension;
+import com.tick42.quicksilver.models.Tag;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExtensionDTO {
     private int id;
@@ -67,7 +69,7 @@ public class ExtensionDTO {
             this.setOwnerName(extension.getOwner().getUsername());
         }
         this.setPending(extension.isPending());
-        extension.getTags().forEach(tag -> this.tags.add(tag.getName()));
+        this.tags = extension.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         this.setTimesDownloaded(extension.getTimesDownloaded());
         if (extension.getUploadDate() != null) {
             this.setUploadDate(extension.getUploadDate());

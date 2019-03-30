@@ -147,7 +147,6 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer pageSize) {
-
         if (page == null || page < 0) {
             page = 0;
         }

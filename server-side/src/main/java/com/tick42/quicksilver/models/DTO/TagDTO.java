@@ -16,14 +16,14 @@ public class TagDTO {
     }
 
     public TagDTO(Tag tag) {
-        setTag(tag.getName());
-        setTotalExtensions(tag.getExtensions().size());
-        setExtensions(tag.getExtensions()
+        this.tag = tag.getName();
+        this.totalExtensions = tag.getExtensions().size();
+        this.extensions = tag.getExtensions()
                 .stream()
                 .filter(x -> !x.isPending())
                 .filter(x -> x.getOwner().getIsActive())
                 .map(ExtensionDTO::new)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
     public String getTag() {

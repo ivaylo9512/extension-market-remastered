@@ -15,10 +15,10 @@ public class PageDTO<T> {
     }
 
     public PageDTO(List<T> extensions, int currentPage, int totalPages, Long totalResults) {
-        this.setCurrentPage(currentPage);
-        this.setTotalResults(totalResults);
-        this.setExtensions(extensions);
-        this.setTotalPages(totalPages);
+        this.currentPage = currentPage;
+        this.totalResults = totalResults;
+        this.extensions = extensions;
+        this.totalPages = totalPages;
     }
 
     public int getCurrentPage() {

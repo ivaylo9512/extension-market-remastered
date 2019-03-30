@@ -47,9 +47,9 @@ public class GitHubModel {
     }
 
     public GitHubModel(String link, String user, String repo) {
-        this.setLink(link);
-        this.setUser(user);
-        this.setRepo(repo);
+        this.link = link;
+        this.user = user;
+        this.repo = repo;
     }
 
     public int getId() {
