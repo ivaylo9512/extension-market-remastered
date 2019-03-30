@@ -33,7 +33,7 @@ public class UserModelServiceImplTests {
     @InjectMocks
     private UserServiceImpl userService;
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void findById_withNonExistingUser_shouldThrow() {
         //Arrange
         UserDetails user = new UserDetails("Test", "Test", new ArrayList<>(), 1);
@@ -54,7 +54,7 @@ public class UserModelServiceImplTests {
         blockedUser.setIsActive(false);
         blockedUser.setUsername("test");
         blockedUser.setRole("ROLE_USER");
-        when(userRepository.findById(1)).thenReturn(blockedUser);
+        when(userRepository.findById(1)).thenReturn(Optional.of(blockedUser));
 
         //Act
         userService.findById(1, loggedUser);
@@ -70,7 +70,7 @@ public class UserModelServiceImplTests {
         blockedUser.setIsActive(false);
         blockedUser.setUsername("test");
         blockedUser.setRole("ROLE_USER");
-        when(userRepository.findById(1)).thenReturn(blockedUser);
+        when(userRepository.findById(1)).thenReturn(Optional.of(blockedUser));
 
         //Act
         userService.findById(1, loggedUser);
@@ -85,7 +85,7 @@ public class UserModelServiceImplTests {
         userModel1.setIsActive(false);
         List<UserModel> userModels = Arrays.asList(userModel, userModel1);
 
-        when(userRepository.findUsersByState(false)).thenReturn(userModels);
+        when(userRepository.findByActive(false)).thenReturn(userModels);
 
         //Act
         List<UserDTO> usersDTO = userService.findAll("blocked");
@@ -105,7 +105,7 @@ public class UserModelServiceImplTests {
         userModel1.setIsActive(true);
         List<UserModel> userModels = Arrays.asList(userModel, userModel1);
 
-        when(userRepository.findUsersByState(true)).thenReturn(userModels);
+        when(userRepository.findByActive(true)).thenReturn(userModels);
 
         //Act
         List<UserDTO> usersDTO = userService.findAll("active");
@@ -157,8 +157,8 @@ public class UserModelServiceImplTests {
 
         UserDTO userDTO = new UserDTO(userModel);
 
-        when(userRepository.findById(1)).thenReturn(userModel);
-        when(userRepository.update(any(UserModel.class))).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         //act
         userDTO = userService.setState(1,"enable");
 
@@ -175,8 +175,8 @@ public class UserModelServiceImplTests {
 
         UserDTO userDTO = new UserDTO(userModel);
 
-        when(userRepository.findById(1)).thenReturn(userModel);
-        when(userRepository.update(any(UserModel.class))).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         //act
         userDTO = userService.setState(1,"block");
 
@@ -190,13 +190,13 @@ public class UserModelServiceImplTests {
         //Arrange
         UserModel userModel = new UserModel();
 
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         UserDTO usersDTO = userService.setState(1,"InvalidState");
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void setUserState_WithNonExistingUser_ShouldThrow(){
 
         when(userRepository.findById(1)).thenReturn(null);
@@ -319,7 +319,7 @@ public class UserModelServiceImplTests {
         newUserModel.setRole("USER_ROLE");
 
         when(userRepository.findByUsername("Test")).thenReturn(null);
-        when(userRepository.create(any(UserModel.class))).thenReturn(newUserModel);
+        when(userRepository.save(any(UserModel.class))).thenReturn(newUserModel);
         //Act
         UserModel userModel = userService.register(newRegistration, "ROLE_USER");
 
@@ -341,7 +341,7 @@ public class UserModelServiceImplTests {
         newUserModel.setRole("ADMIN_ROLE");
 
         when(userRepository.findByUsername("Test")).thenReturn(null);
-        when(userRepository.create(any(UserModel.class))).thenReturn(newUserModel);
+        when(userRepository.save(any(UserModel.class))).thenReturn(newUserModel);
         //Act
         UserModel userModel = userService.register(newRegistration, "ADMIN_ROLE");
 
@@ -360,7 +360,7 @@ public class UserModelServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
 
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         userService.changePassword(1,passwordSpec);
 
@@ -381,7 +381,7 @@ public class UserModelServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
 
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         userService.changePassword(1,passwordSpec);
     }
@@ -397,7 +397,7 @@ public class UserModelServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setPassword("current");
 
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         userService.changePassword(1,passwordSpec);
     }

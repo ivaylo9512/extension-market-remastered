@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Optional;
+
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -42,7 +44,7 @@ public class RatingServiceImplTests {
         ratingService.rate(extensionId, rating, userId);
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void rateExtension_WhitNonExistingExtension_ShouldThrow() {
         //Arrange
         int extensionId = 1;
@@ -87,7 +89,7 @@ public class RatingServiceImplTests {
         Assert.assertEquals(3, extension.getRating(), 0);
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void userRatingOnExtensionDelete_whitNonexistentExtension_ShouldThrow(){
 
         //Arrange
@@ -112,7 +114,7 @@ public class RatingServiceImplTests {
         extension.setTimesRated(2);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert
@@ -135,7 +137,7 @@ public class RatingServiceImplTests {
         extension.setTimesRated(2);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert
@@ -158,7 +160,7 @@ public class RatingServiceImplTests {
         extension.setTimesRated(0);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
         ratingService.userRatingOnExtensionDelete(extension.getId());
         //Assert

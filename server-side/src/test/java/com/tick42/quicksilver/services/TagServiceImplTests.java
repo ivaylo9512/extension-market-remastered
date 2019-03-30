@@ -19,7 +19,7 @@ public class TagServiceImplTests {
     @Mock
     private TagRepository tagRepository;
     @InjectMocks
-    private TagService tagService;
+    private TagServiceImpl tagService;
 
 
     @Test

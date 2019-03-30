@@ -78,6 +78,6 @@ public class GitHubServiceImplTests {
         gitHubService.updateExtensionDetails();
 
         //Assert
-        verify(gitHubRepository, times(2)).update(isA(GitHubModel.class));
+        verify(gitHubRepository, times(2)).save(isA(GitHubModel.class));
     }
 }

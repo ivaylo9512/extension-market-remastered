@@ -33,7 +33,7 @@ public class FileServiceImplTests {
     @InjectMocks
     private FileServiceImpl fileService;
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void storeFile_whenExtensionNotExisitng_ShouldThrow() {
         //Arrange
         when(extensionRepository.findById(1)).thenReturn(null);
@@ -42,7 +42,7 @@ public class FileServiceImplTests {
         fileService.storeFile(multipartFile, 1, 1);
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void storeImage_whenExtensionNotExisitng_ShouldThrow() {
         //Arrange
         when(extensionRepository.findById(1)).thenReturn(null);
@@ -51,7 +51,7 @@ public class FileServiceImplTests {
         fileService.storeImage(multipartFile, 1, 1);
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void storeFile_whenUserNotExisitng_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
@@ -62,7 +62,7 @@ public class FileServiceImplTests {
         fileService.storeFile(multipartFile, 1, 1);
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void storeImage_whenUserNotExisitng_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();

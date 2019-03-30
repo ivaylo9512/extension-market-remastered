@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import javax.validation.constraints.Null;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -44,16 +45,6 @@ public class ExtensionServiceImplTests {
 
     @InjectMocks
     private ExtensionServiceImpl extensionService;
-
-    @Test(expected = UserNotFoundException.class)
-    public void create_whenUserIsNull_shouldThrow() {
-        //Arrange
-        UserModel userModel = null;
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
-
-        //Act
-        extensionService.create(new ExtensionSpec(), 1);
-    }
 
     @Test
     public void create_whenUserExists_returnExtensionDTO() {
@@ -250,7 +241,7 @@ public class ExtensionServiceImplTests {
         Assert.assertTrue(featuredExtensionDTOs.get(1).isFeatured());
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void findById_whenExtensionDoesntExist_shouldThrow() {
         //Arrange
         UserDetails user = new UserDetails("text", "test", new ArrayList<>(), 1);
@@ -406,7 +397,7 @@ public class ExtensionServiceImplTests {
         Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void update_whenExtensionDoesntExist_ShouldThrow() {
         //Assert
         when(extensionRepository.findById(1)).thenReturn(null);
@@ -415,7 +406,7 @@ public class ExtensionServiceImplTests {
         extensionService.update(1, new ExtensionSpec(), 1);
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void update_whenUserDoesntExist_ShouldThrow() {
         //Assert
         Extension extension = new Extension();
@@ -541,7 +532,7 @@ public class ExtensionServiceImplTests {
         Assert.assertEquals(actualExtensionDTO.getName(), "newName");
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void delete_whenExtensionDoesntExist_ShouldThrow() {
         //Assert
         when(extensionRepository.findById(1)).thenReturn(null);
@@ -550,7 +541,7 @@ public class ExtensionServiceImplTests {
         extensionService.delete(1, 1);
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void delete_whenUserDoesntExist_ShouldThrow() {
         //Assert
         Extension extension = new Extension();
@@ -613,24 +604,6 @@ public class ExtensionServiceImplTests {
     }
 
     @Test(expected = InvalidParameterException.class)
-    public void findAll_whenPageLessThan1_shouldThrow() {
-        //Arrange
-        int page = -1;
-
-        //Act
-        extensionService.findAll("name", "date", page, 5);
-    }
-
-    @Test(expected = InvalidParameterException.class)
-    public void findAll_whenPerPageLessThan1_shouldThrow() {
-        //Arrange
-        int perPage = -1;
-
-        //Act
-        extensionService.findAll("name", "date", 1, perPage);
-    }
-
-    @Test(expected = InvalidParameterException.class)
     public void findAll_whenPageMoreThanTotalPages_shouldThrow() {
         //Arrange
         String name = "name";
@@ -678,178 +651,6 @@ public class ExtensionServiceImplTests {
         extensionService.findAll(name, orderBy, page, perPage);
     }
 
-    @Test
-    public void findAll_whenNameIsNotNull_returnAll() {
-        //Arrange
-        String name = "SearchedName";
-
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        extension1.setName("Contains SearchedName");
-        extension2.setName("Contains SearchedName As Well");
-        List<Extension> extensionResults = Arrays.asList(extension1, extension2);
-
-        when(extensionRepository.findAllOrderedBy(name,PageRequest.of(0,1))).thenReturn(extensionResults);
-
-        //Act
-        PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll(name, null, 1, 1);
-
-        //Assert
-        actualPageDTO.getExtensions().forEach(extension -> {
-            Assert.assertTrue(extension.getName().contains(name));
-        });
-    }
-
-    @Test
-    public void findAll_whenOrderedByName_returnAllOrderedByName() {
-        //Arrange
-        String orderBy = "name";
-
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        Extension extension3 = new Extension();
-        extension1.setName("aa");
-        extension2.setName("bb");
-        extension3.setName("cc");
-        List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0,1))).thenReturn(extensionResults);
-
-        ExtensionDTO extensionDTO1 = new ExtensionDTO();
-        ExtensionDTO extensionDTO2 = new ExtensionDTO();
-        ExtensionDTO extensionDTO3 = new ExtensionDTO();
-        extensionDTO1.setName("cc");
-        extensionDTO2.setName("aa");
-        extensionDTO3.setName("bb");
-        List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
-        expectedDTOs.sort(Comparator.comparing(ExtensionDTO::getName));
-
-        PageDTO<ExtensionDTO> expectedPageDTO = new PageDTO<>();
-        expectedPageDTO.setExtensions(expectedDTOs);
-
-        //Act
-        PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
-
-        //Assert
-        Assert.assertEquals(expectedPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectedPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectedPageDTO.getExtensions().get(i).getName(),
-                    actualPageDTO.getExtensions().get(i).getName());
-        }
-    }
-
-    @Test
-    public void findAll_whenOrderedByDate_returnAllOrderedByName() throws ParseException {
-        //Arrange
-        String orderBy = "date";
-
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        Extension extension3 = new Extension();
-        extension1.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2015-05-10"));
-        extension2.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
-        extension3.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
-        List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0,1))).thenReturn(extensionResults);
-
-        ExtensionDTO extensionDTO1 = new ExtensionDTO();
-        ExtensionDTO extensionDTO2 = new ExtensionDTO();
-        ExtensionDTO extensionDTO3 = new ExtensionDTO();
-        extensionDTO1.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
-        extensionDTO2.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2015-05-10"));
-        extensionDTO3.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
-        List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
-        expectedDTOs.sort((a, b) -> b.getUploadDate().compareTo(a.getUploadDate()));
-
-        PageDTO<ExtensionDTO> expectedPageDTO = new PageDTO<>();
-        expectedPageDTO.setExtensions(expectedDTOs);
-
-        //Act
-        PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
-
-        //Assert
-        Assert.assertEquals(expectedPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectedPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectedPageDTO.getExtensions().get(i).getUploadDate(),
-                    actualPageDTO.getExtensions().get(i).getUploadDate());
-        }
-    }
-
-    @Test
-    public void findAll_whenOrderedByDate_returnAllOrderedByLastCommit() throws ParseException {
-        //Arrange
-        String orderBy = "commits";
-
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        Extension extension3 = new Extension();
-        extension1.setGithub(new GitHubModel());
-        extension2.setGithub(new GitHubModel());
-        extension3.setGithub(new GitHubModel());
-        extension1.getGithub().setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2015-05-10"));
-        extension2.getGithub().setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
-        extension3.getGithub().setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
-        List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 1))).thenReturn(extensionResults);
-
-        ExtensionDTO extensionDTO1 = new ExtensionDTO();
-        ExtensionDTO extensionDTO2 = new ExtensionDTO();
-        ExtensionDTO extensionDTO3 = new ExtensionDTO();
-        extensionDTO1.setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
-        extensionDTO2.setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2015-05-10"));
-        extensionDTO3.setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
-        List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
-        expectedDTOs.sort((a, b) -> b.getLastCommit().compareTo(a.getLastCommit()));
-
-        PageDTO<ExtensionDTO> expectededPageDTO = new PageDTO<>();
-        expectededPageDTO.setExtensions(expectedDTOs);
-
-        //Act
-        PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
-
-        //Assert
-        Assert.assertEquals(expectededPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectededPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectededPageDTO.getExtensions().get(i).getLastCommit(),
-                    actualPageDTO.getExtensions().get(i).getLastCommit());
-        }
-    }
-
-    @Test
-    public void findAll_whenOrderedByDate_returnAllOrderedByDownloads() {
-        //Arrange
-        String orderBy = "downloads";
-
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        Extension extension3 = new Extension();
-        extension1.setTimesDownloaded(5);
-        extension2.setTimesDownloaded(3);
-        extension3.setTimesDownloaded(1);
-        List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 1))).thenReturn(extensionResults);
-
-        ExtensionDTO extensionDTO1 = new ExtensionDTO();
-        ExtensionDTO extensionDTO2 = new ExtensionDTO();
-        ExtensionDTO extensionDTO3 = new ExtensionDTO();
-        extensionDTO1.setTimesDownloaded(5);
-        extensionDTO2.setTimesDownloaded(3);
-        extensionDTO3.setTimesDownloaded(1);
-        List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
-        expectedDTOs.sort((a, b) -> b.getTimesDownloaded() - a.getTimesDownloaded());
-
-        PageDTO<ExtensionDTO> expectededPageDTO = new PageDTO<>();
-        expectededPageDTO.setExtensions(expectedDTOs);
-
-        //Act
-        PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
-
-        //Assert
-        Assert.assertEquals(expectededPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectededPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectededPageDTO.getExtensions().get(i).getTimesDownloaded(),
-                    actualPageDTO.getExtensions().get(i).getTimesDownloaded());
-        }
-    }
 
     @Test
     public void delete_whenExtensionsFound_shouldInvokeDeleteInRepository() {
@@ -866,7 +667,7 @@ public class ExtensionServiceImplTests {
         verify(extensionRepository, times(1)).delete(extension);
     }
 
-    @Test(expected = ExtensionUnavailableException.class)
+    @Test(expected = NullPointerException.class)
     public void increaseDownloadCount_whenExtensionDoesntExist_shouldThrow() {
         when(extensionRepository.findById(1)).thenReturn(null);
 
@@ -920,7 +721,7 @@ public class ExtensionServiceImplTests {
         Assert.assertEquals(result.getTimesDownloaded(), times + 1);
     }
 
-    @Test(expected = ExtensionNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void fetchGitHub_whenExtensionDoesntExist_ShouldThrow() {
         //Arrange
         when(extensionRepository.findById(1)).thenReturn(null);
@@ -930,7 +731,7 @@ public class ExtensionServiceImplTests {
 
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test(expected = NullPointerException.class)
     public void fetchGitHub_whenUserDoesntExist_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
@@ -946,6 +747,7 @@ public class ExtensionServiceImplTests {
     public void fetchGitHub_whenUserIsNotAdmin_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
+        extension.setId(1);
         UserModel userModel = new UserModel();
         userModel.setRole("USER");
 
