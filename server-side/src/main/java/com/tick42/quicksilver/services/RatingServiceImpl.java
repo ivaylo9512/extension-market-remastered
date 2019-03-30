@@ -4,6 +4,7 @@ import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.InvalidRatingException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
+import com.tick42.quicksilver.models.RatingPK;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.RatingRepository;
@@ -35,7 +36,7 @@ public class RatingServiceImpl implements RatingService {
 
         Rating newRating = new Rating(rating, extensionId, userId);
         double currentExtensionRating = extension.getRating();
-        double userRatingForExtension = ratingRepository.findRatingByUser(extensionId, userId);
+        double userRatingForExtension = userRatingForExtension(extensionId, userId);
 
         newExtensionRating(userRatingForExtension, newRating, extension);
         newUserRating(currentExtensionRating, extension, rating);
@@ -45,7 +46,9 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public int userRatingForExtension(int extensionId, int userId) {
-        return ratingRepository.findRatingByUser(extensionId, userId);
+        int rating = ratingRepository.findById(
+                new RatingPK(extensionId,userId)).orElse(new Rating(0)).getRating();
+        return rating;
     }
 
     private void newUserRating(double currentExtensionRating, Extension extension, int rating) {

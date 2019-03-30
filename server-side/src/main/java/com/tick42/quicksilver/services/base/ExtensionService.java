@@ -39,6 +39,8 @@ public interface ExtensionService {
     ExtensionDTO increaseDownloadCount(int id);
 
     @EventListener
-    void getFeatured(ApplicationReadyEvent event);
+    void loadFeatured(ApplicationReadyEvent event);
 
+    @EventListener
+    void loadMostRecent(ApplicationReadyEvent event);
 }

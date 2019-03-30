@@ -285,7 +285,11 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public void getFeatured(ApplicationReadyEvent event) {
+    public void loadFeatured(ApplicationReadyEvent event) {
 
     }
+    @Override
+    public void loadMostRecent(ApplicationReadyEvent event) {
+    }
+
 }

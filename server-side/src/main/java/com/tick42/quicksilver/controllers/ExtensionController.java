@@ -40,17 +40,17 @@ public class ExtensionController {
     }
 
     @GetMapping("/extensions/{id}")
-    public ExtensionDTO get(@PathVariable(name = "id") int id, HttpServletRequest request) {
+    public ExtensionDTO get(@PathVariable(name = "id") int extensionId, HttpServletRequest request) {
         UserDetails loggedUser;
         int rating;
         try {
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
-            rating = ratingService.userRatingForExtension(id, loggedUser.getId());
+            rating = ratingService.userRatingForExtension(extensionId, loggedUser.getId());
         } catch (Exception e) {
             loggedUser = null;
             rating = 0;
         }
-        ExtensionDTO extensionDTO = extensionService.findById(id, loggedUser);
+        ExtensionDTO extensionDTO = extensionService.findById(extensionId, loggedUser);
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
     }
