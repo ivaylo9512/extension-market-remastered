@@ -34,7 +34,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     private Map<Integer, ExtensionDTO> featured = new LinkedHashMap<>();
     private Queue<ExtensionDTO> mostRecent = new LinkedList<>();
     private int mostRecentQueueLimit = 5;
-    private int featuredLimit = 10;
+    private int featuredLimit = 4;
 
     @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
@@ -59,13 +59,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         extensionRepository.save(extension);
 
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if(mostRecent.size() == mostRecentQueueLimit){
-            mostRecent.remove();
-            mostRecent.add(extensionDTO);
-        }
-
-        return extensionDTO;
+        return new ExtensionDTO(extension);
     }
 
     @Override
@@ -249,7 +243,15 @@ public class ExtensionServiceImpl implements ExtensionService {
 
 
         extensionRepository.save(extension);
-        return new ExtensionDTO(extension);
+
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if(extensionDTO.isFeatured()){
+            featured.put(extensionDTO.getId(), extensionDTO);
+        }else{
+            featured.remove(extensionId);
+        }
+
+        return extensionDTO;
     }
 
     @Override

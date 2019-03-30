@@ -14,10 +14,13 @@ import javax.validation.Valid;
 
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.RatingService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -65,6 +68,10 @@ public class ExtensionController {
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
             rating = ratingService.userRatingForExtension(extensionId, loggedUser.getId());
         } catch (Exception e) {
+            if(e.getMessage().equals("Jwt token has expired.")){
+                throw new JwtException("Jwt token has expired.");
+            }
+
             loggedUser = null;
             rating = 0;
         }
@@ -204,4 +211,11 @@ public class ExtensionController {
                 .body(e.getMessage());
     }
 
+    @ExceptionHandler
+    ResponseEntity handleJwtException(JwtException e){
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(e.getMessage());
+
+    }
 }

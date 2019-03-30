@@ -238,7 +238,7 @@ let app = (() => {
         remote.getUserProfile(id).then(
             res => {
                 res = render.profile(res);
-                res = render.shortenTitle(res);
+                res['extensions'] = render.shortenTitle(res['extensions']);
                 show.user(res);
             }
         ).catch(e => {
@@ -254,7 +254,7 @@ let app = (() => {
         remote.getUserProfile(id).then(
             res => {
                 res = render.profile(res);
-                res = render.shortenTitle(res);
+                res['extensions'] = render.shortenTitle(res['extensions']);
                 show.user(res);
             }
         )
@@ -348,10 +348,14 @@ let app = (() => {
         remote.login(user).then(
             res => {
                 let userDetails = JSON.parse(res);
+                let authority = "ROLE_ADMIN";
+                let object = {
+                    authority,
+                }
                 localStorage.setItem('Authorization', userDetails['token']);
                 localStorage.setItem('id', userDetails['id']);
                 localStorage.setItem('username', userDetails['username']);
-                localStorage.setItem('role', userDetails['role']);
+                localStorage.setItem('role', userDetails['authorities'][0]['authority'])
                 getHomeView();
             }
         ).catch(e => {
@@ -362,6 +366,7 @@ let app = (() => {
         preventDefault(e);
         localStorage.clear();
         getHomeView();
+
     }
 
     let setPublishedState = function (e) {
@@ -559,7 +564,6 @@ let app = (() => {
     }
 
     function handle(e) {
-    console.log(e['responseText'])
         if(e['responseJSON'] != null){
             e['responseJSON'].forEach(error => $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + error + '</p>'));
             console.log(e['responseJSON'])
@@ -567,8 +571,6 @@ let app = (() => {
             $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + e['responseText'] + '</p>');
             if (e['responseText'] == "Jwt token has expired.") {
                 logout();
-                getLoginView();
-                $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + "Session expired." + '</p>');
             }
         }
     }

@@ -17,8 +17,7 @@ public class AuthorizationProvider extends AbstractUserDetailsAuthenticationProv
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
         String token = usernamePasswordAuthenticationToken.getPrincipal().toString();
-        UserDetails userDetails;
-        userDetails = Jwt.validate(token);
+        UserDetails userDetails = Jwt.validate(token);
         usernamePasswordAuthenticationToken.setDetails(userDetails);
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 

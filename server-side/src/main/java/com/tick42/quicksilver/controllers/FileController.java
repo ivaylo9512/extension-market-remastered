@@ -41,7 +41,7 @@ public class FileController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/upload/extensionFiles/{extensionId}")
-    public void createExtension(@PathVariable(name = "extensionId") int extensionId,
+    public void updateExtensionFiles(@PathVariable(name = "extensionId") int extensionId,
                                 @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
                                 @RequestParam(name = "file", required = false) MultipartFile extensionFile) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder

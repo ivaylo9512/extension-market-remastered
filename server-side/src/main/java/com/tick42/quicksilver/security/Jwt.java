@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 
 @Component
 public class Jwt {
+    private static String jwtSecret = "MyJwtSecret";
     private static int jwtExpirationInMs = 10000000;
-    static String jwtSecret = "MyJwtSecret";
     private static byte[] encodedJwtSecret = Base64.getEncoder().encode(jwtSecret.getBytes());
 
-    public static String generate(UserDetails user) {
+    static String generate(UserDetails user) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
@@ -41,7 +41,7 @@ public class Jwt {
     }
 
     public static UserDetails validate(String token) {
-        UserDetails user = null;
+        UserDetails user;
         try {
             Claims body = Jwts.parser()
                     .setSigningKey(new String(encodedJwtSecret))

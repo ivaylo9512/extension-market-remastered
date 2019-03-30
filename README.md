@@ -5,7 +5,7 @@
 
 Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every userModel can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessability:
 
-##How to run
+## How to run
 
 ### From the Jar file
 
