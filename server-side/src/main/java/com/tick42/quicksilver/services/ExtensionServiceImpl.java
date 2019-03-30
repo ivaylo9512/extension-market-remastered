@@ -217,6 +217,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         }
 
         extensionRepository.save(extension);
+        updateMostRecent();
         return new ExtensionDTO(extension);
     }
 
@@ -337,4 +338,11 @@ public class ExtensionServiceImpl implements ExtensionService {
                 .collect(Collectors.toList()));
     }
 
+    private void updateMostRecent(){
+        mostRecent.clear();
+        mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))
+                .stream()
+                .map(ExtensionDTO::new)
+                .collect(Collectors.toList()));
+    }
 }
