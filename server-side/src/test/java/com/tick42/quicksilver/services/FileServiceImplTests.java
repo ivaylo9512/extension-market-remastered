@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,7 +56,7 @@ public class FileServiceImplTests {
         //Arrange
         Extension extension = new Extension();
         when(userRepository.findById(1)).thenReturn(null);
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         fileService.storeFile(multipartFile, 1, 1);
@@ -65,7 +67,7 @@ public class FileServiceImplTests {
         //Arrange
         Extension extension = new Extension();
         when(userRepository.findById(1)).thenReturn(null);
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         fileService.storeImage(multipartFile, 1, 1);
@@ -82,8 +84,8 @@ public class FileServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(userModel);
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         fileService.storeFile(multipartFile, 1, 1);
@@ -100,8 +102,8 @@ public class FileServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(userModel);
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         fileService.storeImage(multipartFile, 1, 1);

@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -47,7 +49,7 @@ public class ExtensionServiceImplTests {
     public void create_whenUserIsNull_shouldThrow() {
         //Arrange
         UserModel userModel = null;
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         extensionService.create(new ExtensionSpec(), 1);
@@ -70,7 +72,7 @@ public class ExtensionServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setUsername("username");
         userModel.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(userModel);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel));
 
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
@@ -86,7 +88,7 @@ public class ExtensionServiceImplTests {
         extension.setName("name");
         extension.setVersion("1.0");
         extension.setDescription("description");
-        extension.setIsPending(true);
+        extension.isPending(true);
         extension.setOwner(userModel);
         extension.setUploadDate(uploadTime);
         extension.setTags(tags);
@@ -110,7 +112,7 @@ public class ExtensionServiceImplTests {
         expectedExtensionDTO.setTimesDownloaded(0);
         expectedExtensionDTO.setVersion("1.0");
 
-        when(extensionRepository.create(any(Extension.class))).thenReturn(extension);
+        when(extensionRepository.save(any(Extension.class))).thenReturn(extension);
 
         //Act
         ExtensionDTO createdExtensionDTO = extensionService.create(extensionSpec, userId);
@@ -124,9 +126,9 @@ public class ExtensionServiceImplTests {
     public void setFeaturedState_whenSetToFeatured_returnFeaturedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsFeatured(false);
+        extension.isFeatured(false);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
@@ -139,9 +141,9 @@ public class ExtensionServiceImplTests {
     public void setFeaturedState_whenSetToUnfeatured_returnUnfeaturedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsFeatured(true);
+        extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
@@ -154,9 +156,9 @@ public class ExtensionServiceImplTests {
     public void setFeaturedState_whenGivenInvalidParameter_shouldThrow() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsFeatured(true);
+        extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldThrow = extensionService.setFeaturedState(1, "wrongString");
@@ -168,9 +170,9 @@ public class ExtensionServiceImplTests {
     public void setPublishedState_whenSetToPublished_returnPublishedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.isPending(true);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldBePending = extensionService.setPublishedState(1, "publish");
@@ -183,9 +185,9 @@ public class ExtensionServiceImplTests {
     public void setPublishedState_whenSetToUnpublished_returnUnpublishedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsPending(false);
+        extension.isPending(false);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
@@ -198,9 +200,9 @@ public class ExtensionServiceImplTests {
     public void setPublishedState_whenGivenInvalidParameter_shouldThrow() {
         // Arrange
         Extension extension = new Extension();
-        extension.setIsFeatured(true);
+        extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO extensionShouldThrow = extensionService.setPublishedState(1, "wrongString");
@@ -213,11 +215,11 @@ public class ExtensionServiceImplTests {
         //Arrange
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
-        extension1.setIsPending(true);
-        extension2.setIsPending(true);
+        extension1.isPending(true);
+        extension2.isPending(true);
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
-        when(extensionRepository.findPending()).thenReturn(extensions);
+        when(extensionRepository.findByPending(true)).thenReturn(extensions);
 
         //Act
         List<ExtensionDTO> pendingExtensionDTOs = extensionService.findPending();
@@ -233,11 +235,11 @@ public class ExtensionServiceImplTests {
         //Arrange
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
-        extension1.setIsFeatured(true);
-        extension2.setIsFeatured(true);
+        extension1.isFeatured(true);
+        extension2.isFeatured(true);
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
-        when(extensionRepository.findFeatured()).thenReturn(extensions);
+        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
 
         //Act
         List<ExtensionDTO> featuredExtensionDTOs = extensionService.findFeatured();
@@ -268,7 +270,7 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, null);
@@ -287,7 +289,7 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, user);
@@ -300,10 +302,10 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(true);
 
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.isPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, null);
@@ -321,10 +323,10 @@ public class ExtensionServiceImplTests {
         owner.setId(2);
 
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.isPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, user);
@@ -342,10 +344,10 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(true);
+        extension.isPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
@@ -367,10 +369,10 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(true);
+        extension.isPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
@@ -392,10 +394,10 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(false);
+        extension.isPending(false);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
@@ -418,7 +420,7 @@ public class ExtensionServiceImplTests {
         //Assert
         Extension extension = new Extension();
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         when(userRepository.findById(1)).thenReturn(null);
 
         //Act
@@ -438,8 +440,8 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         extensionService.update(1, new ExtensionSpec(), 1);
@@ -482,8 +484,8 @@ public class ExtensionServiceImplTests {
         extension.setGithub(github);
         extension.setTags(tags);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
@@ -529,8 +531,8 @@ public class ExtensionServiceImplTests {
         extension.setGithub(github);
         extension.setTags(tags);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
@@ -553,7 +555,7 @@ public class ExtensionServiceImplTests {
         //Assert
         Extension extension = new Extension();
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         when(userRepository.findById(1)).thenReturn(null);
 
         //Act
@@ -573,8 +575,8 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         try {
@@ -598,8 +600,8 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         try {
@@ -687,7 +689,7 @@ public class ExtensionServiceImplTests {
         extension2.setName("Contains SearchedName As Well");
         List<Extension> extensionResults = Arrays.asList(extension1, extension2);
 
-        when(extensionRepository.findAllByDate(name, 1, 1)).thenReturn(extensionResults);
+        when(extensionRepository.findAllOrderedBy(name,PageRequest.of(0,1))).thenReturn(extensionResults);
 
         //Act
         PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll(name, null, 1, 1);
@@ -710,7 +712,7 @@ public class ExtensionServiceImplTests {
         extension2.setName("bb");
         extension3.setName("cc");
         List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllByName("", 1, 1)).thenReturn(extensionResults);
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0,1))).thenReturn(extensionResults);
 
         ExtensionDTO extensionDTO1 = new ExtensionDTO();
         ExtensionDTO extensionDTO2 = new ExtensionDTO();
@@ -721,16 +723,16 @@ public class ExtensionServiceImplTests {
         List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
         expectedDTOs.sort(Comparator.comparing(ExtensionDTO::getName));
 
-        PageDTO<ExtensionDTO> expectededPageDTO = new PageDTO<>();
-        expectededPageDTO.setExtensions(expectedDTOs);
+        PageDTO<ExtensionDTO> expectedPageDTO = new PageDTO<>();
+        expectedPageDTO.setExtensions(expectedDTOs);
 
         //Act
         PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
 
         //Assert
-        Assert.assertEquals(expectededPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectededPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectededPageDTO.getExtensions().get(i).getName(),
+        Assert.assertEquals(expectedPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
+        for (int i = 0; i < expectedPageDTO.getExtensions().size(); i++) {
+            Assert.assertEquals(expectedPageDTO.getExtensions().get(i).getName(),
                     actualPageDTO.getExtensions().get(i).getName());
         }
     }
@@ -747,7 +749,7 @@ public class ExtensionServiceImplTests {
         extension2.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
         extension3.setUploadDate(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
         List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllByDate("", 1, 1)).thenReturn(extensionResults);
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0,1))).thenReturn(extensionResults);
 
         ExtensionDTO extensionDTO1 = new ExtensionDTO();
         ExtensionDTO extensionDTO2 = new ExtensionDTO();
@@ -758,16 +760,16 @@ public class ExtensionServiceImplTests {
         List<ExtensionDTO> expectedDTOs = Arrays.asList(extensionDTO1, extensionDTO2, extensionDTO3);
         expectedDTOs.sort((a, b) -> b.getUploadDate().compareTo(a.getUploadDate()));
 
-        PageDTO<ExtensionDTO> expectededPageDTO = new PageDTO<>();
-        expectededPageDTO.setExtensions(expectedDTOs);
+        PageDTO<ExtensionDTO> expectedPageDTO = new PageDTO<>();
+        expectedPageDTO.setExtensions(expectedDTOs);
 
         //Act
         PageDTO<ExtensionDTO> actualPageDTO = extensionService.findAll("", orderBy, 1, 1);
 
         //Assert
-        Assert.assertEquals(expectededPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
-        for (int i = 0; i < expectededPageDTO.getExtensions().size(); i++) {
-            Assert.assertEquals(expectededPageDTO.getExtensions().get(i).getUploadDate(),
+        Assert.assertEquals(expectedPageDTO.getExtensions().size(), actualPageDTO.getExtensions().size());
+        for (int i = 0; i < expectedPageDTO.getExtensions().size(); i++) {
+            Assert.assertEquals(expectedPageDTO.getExtensions().get(i).getUploadDate(),
                     actualPageDTO.getExtensions().get(i).getUploadDate());
         }
     }
@@ -787,7 +789,7 @@ public class ExtensionServiceImplTests {
         extension2.getGithub().setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2013-03-10"));
         extension3.getGithub().setLastCommit(new SimpleDateFormat("yyyy-MM-dd").parse("2011-01-10"));
         List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllByCommit("", 1, 1)).thenReturn(extensionResults);
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 1))).thenReturn(extensionResults);
 
         ExtensionDTO extensionDTO1 = new ExtensionDTO();
         ExtensionDTO extensionDTO2 = new ExtensionDTO();
@@ -824,7 +826,7 @@ public class ExtensionServiceImplTests {
         extension2.setTimesDownloaded(3);
         extension3.setTimesDownloaded(1);
         List<Extension> extensionResults = Arrays.asList(extension1, extension2, extension3);
-        when(extensionRepository.findAllByDownloads("", 1, 1)).thenReturn(extensionResults);
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 1))).thenReturn(extensionResults);
 
         ExtensionDTO extensionDTO1 = new ExtensionDTO();
         ExtensionDTO extensionDTO2 = new ExtensionDTO();
@@ -856,8 +858,8 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
         doNothing().when(extensionRepository).delete(isA(Extension.class));
 
         extensionService.delete(1, 1);
@@ -875,9 +877,9 @@ public class ExtensionServiceImplTests {
     @Test(expected = ExtensionUnavailableException.class)
     public void increaseDownloadCount_whenExtensionIsPending_shouldThrow() {
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.isPending(true);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.increaseDownloadCount(1);
@@ -889,9 +891,9 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(false);
         Extension extension = new Extension();
         extension.setOwner(owner);
-        extension.setIsPending(false);
+        extension.isPending(false);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.increaseDownloadCount(1);
@@ -904,12 +906,12 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(true);
         Extension extension = new Extension();
         extension.setOwner(owner);
-        extension.setIsPending(false);
+        extension.isPending(false);
         extension.setTimesDownloaded(times);
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
-        when(extensionRepository.update(extension)).thenReturn(extension);
+        when(extensionRepository.save(extension)).thenReturn(extension);
 
         //Act
         ExtensionDTO result = extensionService.increaseDownloadCount(1);
@@ -932,7 +934,7 @@ public class ExtensionServiceImplTests {
     public void fetchGitHub_whenUserDoesntExist_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
-        when(extensionRepository.findById(1)).thenReturn(extension);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         when(userRepository.findById(1)).thenReturn(null);
 
         //Act
@@ -947,8 +949,8 @@ public class ExtensionServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setRole("USER");
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
         extensionService.fetchGitHub(1, 1);
@@ -962,8 +964,8 @@ public class ExtensionServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setRole("ROLE_ADMIN");
 
-        when(extensionRepository.findById(1)).thenReturn(extension);
-        when(userRepository.findById(1)).thenReturn(userModel);
+        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         try {
             extensionService.fetchGitHub(1, 1);
@@ -985,6 +987,6 @@ public class ExtensionServiceImplTests {
 
         //Assert
         Assert.assertEquals(extensions.size(), extensionDTOs.size());
-        Assert.assertTrue(extensionDTOs.get(1) instanceof ExtensionDTO);
+        Assert.assertNotNull(extensionDTOs.get(1));
     }
 }
