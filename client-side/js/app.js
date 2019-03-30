@@ -3,8 +3,8 @@ let app = (() => {
     let $body = $('body');
 
     const PAGE_SIZE = 10;
-    const POPULAR_HOME_PAGE_COUNT = 5;
-    const NEW_HOME_PAGE_COUNT = 5;
+    const mostDownloaded  = 10;
+    const mostRecentCount = 10;
 
     let getHomeView = (e) => {
         preventDefault(e);
@@ -14,24 +14,17 @@ let app = (() => {
     }
 
     let getHome = () => {
-        remote.loadFeatured().then(
+        remote.getHomeExtension(mostDownloaded, mostRecentCount).then(
             res => {
-                res = render.shortenTitleWhenAllLoaded(res);
-                show.homeFeatured(res);
+                let mostRecent = render.shortenTitle(res['mostRecent']);
+                let featured = render.shortenTitle(res['featured']);
+                let mostDownloaded = render.shortenTitle(res['mostDownloaded']);
+
+                show.homeFeatured(featured);
+                show.homeMostDownloaded(mostDownloaded)
+                show.homeMostRecent(mostRecent)
             }
-        );
-        remote.loadByUploadDate('',NEW_HOME_PAGE_COUNT).then(
-            res => {
-                res = render.shortenTitle(res);
-                show.homeNew(res)
-            }
-        );
-        remote.loadByTimesDownloaded('', 1, POPULAR_HOME_PAGE_COUNT).then(
-            res => {
-                res = render.shortenTitle(res);
-                show.homePopular(res)
-            }
-        );
+        )
     }
 
     let getUsers = function (e) {

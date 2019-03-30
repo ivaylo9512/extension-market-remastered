@@ -2,6 +2,7 @@ package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
+import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
@@ -32,6 +33,23 @@ public class ExtensionController {
     private final FileService fileService;
     private RatingService ratingService;
 
+    @GetMapping("/extensions/getHomeExtensions")
+    public HomePageDTO getHomeExtensions(
+            @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
+            @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
+        return extensionService.getHomeExtensions(mostRecentCount, mostDownloadedCount);
+    }
+
+    @GetMapping("/extensions/filter")
+    public PageDTO<ExtensionDTO> findAll(
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "orderBy", required = false) String orderBy,
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "perPage", required = false) Integer perPage) {
+
+        return extensionService.findAll(name, orderBy, page, perPage);
+    }
+
     @Autowired
     public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService) {
         this.extensionService = extensionService;
@@ -53,16 +71,6 @@ public class ExtensionController {
         ExtensionDTO extensionDTO = extensionService.findById(extensionId, loggedUser);
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
-    }
-
-    @GetMapping("/extensions/filter")
-    public PageDTO<ExtensionDTO> findAll(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "orderBy", required = false) String orderBy,
-            @RequestParam(name = "page", required = false) Integer page,
-            @RequestParam(name = "perPage", required = false) Integer perPage) {
-
-        return extensionService.findAll(name, orderBy, page, perPage);
     }
 
 

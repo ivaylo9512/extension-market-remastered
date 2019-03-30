@@ -20,6 +20,13 @@ remote = (() => {
         })
     }
 
+    let getHomeExtension = (mostDownloadedCount, mostRecentCount) => {
+        return $.ajax({
+            type: 'GET',
+            url: base + '/api/extensions/getHomeExtensions' + '?mostDownloadedCount=' + mostDownloadedCount + '&mostRecentCount=' + mostRecentCount
+        })
+    }
+
     let changePassword = (changePassword) => {
     console.log(changePassword)
         return $.ajax({
@@ -315,6 +322,7 @@ remote = (() => {
         rateExtension,
         changePassword,
         getCurrentGitHubSettings,
-        submitExtensionFiles
+        submitExtensionFiles,
+        getHomeExtension
     }
 })()

@@ -2,6 +2,7 @@ package com.tick42.quicksilver.services.base;
 
 
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
+import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
@@ -21,6 +22,8 @@ public interface ExtensionService {
     ExtensionDTO update(int extensionId, ExtensionSpec extension, int userId);
 
     void delete(int id, int userId);
+
+    HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount);
 
     PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage);
 

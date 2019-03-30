@@ -36,15 +36,7 @@ let render = (() => {
         return extension;
     }
 
-    let shortenTitle = (page) => {
-        page['extensions'].forEach(extension => {
-            extension['name'] = extension['name'].length >= 17 ? extension['name'].substr(0, 14) + "..." : extension['name']
-            extension['rating'] = +extension['rating'].toFixed(2);
-        })
-        return page;
-    }
-
-    let shortenTitleWhenAllLoaded = (extensions) => {
+    let shortenTitle = (extensions) => {
         extensions.forEach(extension => {
             extension['name'] = extension['name'].length >= 17 ? extension['name'].substr(0, 14) + "..." : extension['name']
             extension['rating'] = +extension['rating'].toFixed(2);
@@ -63,7 +55,6 @@ let render = (() => {
         profile,
         edit,
         shortenTitle,
-        shortenTitleWhenAllLoaded,
         extensionRating
     }
 })();

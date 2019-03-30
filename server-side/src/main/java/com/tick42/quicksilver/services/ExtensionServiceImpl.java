@@ -2,6 +2,7 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
+import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
@@ -31,7 +32,9 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final GitHubService gitHubService;
     private UserRepository userRepository;
     private Map<Integer, ExtensionDTO> featured = new LinkedHashMap<>();
-    private Queue<ExtensionDTO> mostRecentUploads = new LinkedList<>();
+    private Queue<ExtensionDTO> mostRecent = new LinkedList<>();
+    private int mostRecentQueueLimit = 5;
+    private int featuredLimit = 10;
 
     @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
@@ -57,9 +60,9 @@ public class ExtensionServiceImpl implements ExtensionService {
         extensionRepository.save(extension);
 
         ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if(mostRecentUploads.size() == 10){
-            mostRecentUploads.remove();
-            mostRecentUploads.add(extensionDTO);
+        if(mostRecent.size() == mostRecentQueueLimit){
+            mostRecent.remove();
+            mostRecent.add(extensionDTO);
         }
 
         return extensionDTO;
@@ -123,6 +126,30 @@ public class ExtensionServiceImpl implements ExtensionService {
         extensionRepository.delete(extension);
     }
 
+    @Override
+    public HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount){
+        List<ExtensionDTO> featuredExtensions = new ArrayList<>(featured.values());
+        List<ExtensionDTO> mostDownloaded = extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded"))
+                .stream()
+                .map(ExtensionDTO::new)
+                .collect(Collectors.toList());
+
+        List<ExtensionDTO> mostRecentExtensions;
+        if(mostRecentCount == null){
+            mostRecentExtensions = new ArrayList<>(mostRecent);
+        }else if(mostRecentCount > mostRecentQueueLimit){
+            mostRecentExtensions = extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate"))
+                    .stream()
+                    .map(ExtensionDTO::new)
+                    .collect(Collectors.toList());
+        }else{
+            mostRecentExtensions = new ArrayList<>(mostRecent).subList(0, mostRecentCount);
+        }
+
+        return new HomePageDTO(mostRecentExtensions, featuredExtensions, mostDownloaded);
+
+
+    }
 
     @Override
     public PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer pageSize) {
@@ -208,6 +235,9 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         switch (state) {
             case "feature":
+                if(!extension.isFeatured() && featured.size() == featuredLimit){
+                    throw new RuntimeException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
+                }
                 extension.isFeatured(true);
                 break;
             case "unfeature":
@@ -216,6 +246,8 @@ public class ExtensionServiceImpl implements ExtensionService {
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
+
+
         extensionRepository.save(extension);
         return new ExtensionDTO(extension);
     }
@@ -297,7 +329,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public void loadMostRecent(ApplicationReadyEvent event) {
-        mostRecentUploads.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, 10, Sort.Direction.DESC, "uploadDate"))
+        mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))
                 .stream()
                 .map(ExtensionDTO::new)
                 .collect(Collectors.toList()));

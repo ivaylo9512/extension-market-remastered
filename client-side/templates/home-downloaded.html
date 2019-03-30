@@ -1,6 +1,6 @@
 <h1><i class="fas fa-fire"></i> Popular</h1>
 <div>
-    {{#extensions}}
+    {{#.}}
     <div class="one" extensionId="{{id}}">
         {{#imageLocation}}
         <div class="image" style="background-image: url({{imageLocation}})"></div>
@@ -12,5 +12,5 @@
         <span><i class="fas fa-download"></i> {{timesDownloaded}}</span>
         <span><i class="fas fa-star"></i> {{rating}}</span>
     </div>
-    {{/extensions}}
+    {{/.}}
 </div>

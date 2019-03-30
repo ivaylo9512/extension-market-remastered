@@ -114,9 +114,9 @@ let show = (() => {
         })
     }
 
-    let homePopular = (extensions) => {
+    let homeMostDownloaded = (extensions) => {
         $.ajax({
-            url: './templates/home-popular.html',
+            url: './templates/home-downloaded.html',
             success: (tmpl) => {
                 let $html = Mustache.render(tmpl, extensions);
                 $("#popular").html($html);
@@ -124,7 +124,7 @@ let show = (() => {
         })
     }
 
-    let homeNew = (extensions) => {
+    let homeMostRecent = (extensions) => {
         $.ajax({
             url: './templates/home-new.html',
             success: (tmpl) => {
@@ -297,8 +297,8 @@ let show = (() => {
         adminNav,
         results,
         homeFeatured,
-        homePopular,
-        homeNew,
+        homeMostDownloaded,
+        homeMostRecent,
         submit,
         user,
         users,
