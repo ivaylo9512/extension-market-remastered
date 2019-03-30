@@ -32,7 +32,7 @@ public class Extension {
     private GitHubModel github;
 
     @Column(name = "times_downloaded")
-    private int timesDownloaded;
+    private int timesDownloaded = 0;
 
     @Column(name = "version")
     private String version;
@@ -49,10 +49,10 @@ public class Extension {
     private UserModel owner;
 
     @Column(name = "pending")
-    private boolean pending;
+    private boolean pending = true;
 
     @Column(name = "upload_date")
-    private Date uploadDate;
+    private Date uploadDate = new Date();
 
     @Column(name = "featured")
     private boolean featured;
@@ -68,9 +68,9 @@ public class Extension {
     }
 
     public Extension(ExtensionSpec extensionSpec) {
-        this.setName(extensionSpec.getName());
-        this.setVersion(extensionSpec.getVersion());
-        this.setDescription(extensionSpec.getDescription());
+        this.name = extensionSpec.getName();
+        this.version = extensionSpec.getVersion();
+        this.description = extensionSpec.getDescription();
     }
 
     public int getId() {

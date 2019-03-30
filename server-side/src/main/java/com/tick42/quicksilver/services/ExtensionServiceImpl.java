@@ -30,8 +30,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final TagService tagService;
     private final GitHubService gitHubService;
     private UserRepository userRepository;
-    private HashMap<Integer, Extension> featured;
-    private Queue<ExtensionDTO> lastUpload = new LinkedList<>();
+    private Map<Integer, ExtensionDTO> featured = new LinkedHashMap<>();
+    private Queue<ExtensionDTO> mostRecentUploads = new LinkedList<>();
 
     @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
@@ -50,14 +50,19 @@ public class ExtensionServiceImpl implements ExtensionService {
 
 
         Extension extension = new Extension(extensionSpec);
-        extension.isPending(true);
         extension.setOwner(user);
-        extension.setTimesDownloaded(0);
-        extension.setUploadDate(new Date());
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
-        return new ExtensionDTO(extensionRepository.save(extension));
+        extensionRepository.save(extension);
+
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if(mostRecentUploads.size() == 10){
+            mostRecentUploads.remove();
+            mostRecentUploads.add(extensionDTO);
+        }
+
+        return extensionDTO;
     }
 
     @Override
@@ -286,10 +291,16 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public void loadFeatured(ApplicationReadyEvent event) {
-
+        extensionRepository.findByFeatured(true).forEach(extension ->
+                featured.put(extension.getId(), new ExtensionDTO(extension)));
     }
+
     @Override
     public void loadMostRecent(ApplicationReadyEvent event) {
+        mostRecentUploads.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, 10, Sort.Direction.DESC, "uploadDate"))
+                .stream()
+                .map(ExtensionDTO::new)
+                .collect(Collectors.toList()));
     }
 
 }

@@ -20,7 +20,7 @@ let app = (() => {
                 show.homeFeatured(res);
             }
         );
-        remote.loadByUploadDate('', 1, NEW_HOME_PAGE_COUNT).then(
+        remote.loadByUploadDate('',NEW_HOME_PAGE_COUNT).then(
             res => {
                 res = render.shortenTitle(res);
                 show.homeNew(res)
