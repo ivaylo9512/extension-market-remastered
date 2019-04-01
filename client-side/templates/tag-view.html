@@ -3,7 +3,7 @@
         <h1><i class="fas fa-tag"></i> {{totalExtensions}} extension tagged with {{tag}}</h1>
 
         <div>
-            {{#extensions}}
+            {{#.}}
             <div class="one" extensionId="{{id}}">
                 {{#imageLocation}}
                 <div class="image" style="background-image: url({{imageLocation}})"></div>
@@ -15,7 +15,7 @@
                 <span><i class="fas fa-download"></i> {{timesDownloaded}}</span>
                 <span><i class="fas fa-star"></i> {{rating}}</span>
             </div>
-            {{/extensions}}
+            {{/.}}
         </div>
     </div>
 </div>

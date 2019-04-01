@@ -3,8 +3,8 @@ let app = (() => {
     let $body = $('body');
 
     const PAGE_SIZE = 10;
-    const mostDownloaded  = 10;
-    const mostRecentCount = 10;
+    const mostDownloaded  = 5;
+    const mostRecentCount = 5;
 
     let getHomeView = (e) => {
         preventDefault(e);
@@ -172,39 +172,31 @@ let app = (() => {
             let timesRated = $('.info .rating').attr('timesRated');
             let extensionId = $(this).attr('extensionId');
             let currentRatedStatus = $('.info .rating').attr('id');
-            if (userRating == currentRatedStatus) {
-                console.log('same rating')
-            } else {
+            if (userRating != currentRatedStatus) {
                 remote.rateExtension(extensionId, userRating).then(
                     rating => {
                         rating = render.extensionRating(rating);
+                        if(currentRatedStatus == 0){
+                            timesRated = parseInt(timesRated) + 1;
+                        }
                         let displayRating = {
                             rating,
                             timesRated
                         }
-                        if (currentRatedStatus == 0) {
-                            timesRated = parseInt(timesRated) + 1;
-                            displayRating = {
-                                rating,
-                                timesRated
-                            }
-                            $('.info .rating').attr('id', rating);
-                            $('.info .rating').attr('timesRated', timesRated);
-                            show.extensionRating(displayRating)
-                            show.extensionRatingStar(displayRating)
-                        } else {
-                            show.extensionRating(displayRating)
-                            show.extensionRatingStar(displayRating)
-                            $('.info .rating').attr('id', userRating);
-                        }
+
+                        show.extensionRating(displayRating);
+                        show.extensionRatingStar(displayRating);
+                        $('.info .rating').attr('id', userRating);
+                        $('.info .rating').attr('timesRated', timesRated);
+
                     }
                 ).catch(e => {
                     handle(e);
                 })
             }
         } else {
-            $('.not-logged').empty();
-            $('.not-logged').append('You must be logged in to rate this extension')
+            $('.errors').empty();
+            $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + 'You must be logged in to rate this extension' + '</p>')
         }
     }
 
@@ -215,7 +207,7 @@ let app = (() => {
 
         remote.getTag(tagName).then(
             res => {
-                res = render.shortenTitle(res);
+                res = render.shortenTitle(res['extensions']);
                 show.tag(res)
             }
         ).catch(e => {
@@ -348,10 +340,6 @@ let app = (() => {
         remote.login(user).then(
             res => {
                 let userDetails = JSON.parse(res);
-                let authority = "ROLE_ADMIN";
-                let object = {
-                    authority,
-                }
                 localStorage.setItem('Authorization', userDetails['token']);
                 localStorage.setItem('id', userDetails['id']);
                 localStorage.setItem('username', userDetails['username']);
@@ -390,7 +378,7 @@ let app = (() => {
 
         remote.setFeaturedState(id, state).then(
             show.featuredState
-        ).catch(e => console.log(e['responseText']));
+        ).catch(e => handle(e));
     }
 
     let deleteExtension = function (e) {
@@ -511,7 +499,7 @@ let app = (() => {
 
         remote.loadPending().then(
             res => {
-                res = render.shortenTitleWhenAllLoaded(res);
+                res = render.shortenTitle(res);
                 show.pending(res)
             }
         ).catch(e => {
@@ -546,8 +534,7 @@ let app = (() => {
 
     let downloadFile = function (e) {
         let extensionId = $(this).attr('extensionId');
-        $('#downloadTimes').html(+$('#downloadTimes').html() + 1);
-        remote.downloadFile(extensionId);
+        remote.downloadFile(extensionId).then($('#downloadTimes').html(+$('#downloadTimes').html() + 1));
     }
 
     let selectFile = function () {

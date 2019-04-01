@@ -266,7 +266,7 @@ remote = (() => {
     let downloadFile = (id) => {
         return $.ajax({
             type: 'GET',
-            url: base + '/api/auth/extensions/download/' + id,
+            url: base + '/api/extensions/download/' + id,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }

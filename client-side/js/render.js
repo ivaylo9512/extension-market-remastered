@@ -7,7 +7,7 @@ let render = (() => {
         res['next'] = res['currentPage'] < res['totalPages'] - 1;
         res['prevNum'] = res['currentPage'] - 1;
         res['nextNum'] = res['currentPage'] + 1;
-        res['query'] = query;
+        res['query'] = query.toLowerCase();
         res['orderBy'] = orderBy;
         res['extensions'].forEach(extension => {
             extension['rating'] = extension['rating'].toFixed(2)

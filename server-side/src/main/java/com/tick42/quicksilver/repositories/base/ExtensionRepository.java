@@ -10,10 +10,10 @@ import java.util.List;
 
 public interface ExtensionRepository extends JpaRepository<Extension, Integer> {
 
-    @Query(value = "from Extension where pending = false and owner.active = true and name like :name%")
+    @Query(value = "from Extension where pending = false and owner.active = true and lower(name) like lower(concat(:name,'%'))")
     List<Extension> findAllOrderedBy(@Param("name") String name, Pageable pageRequest);
 
-    @Query(value = "select count(*) from Extension where pending = false and owner.active = true and name like :name%")
+    @Query(value = "select count(*) from Extension where pending = false and owner.active = true and lower(name) like lower(concat(:name,'%'))")
     Long getTotalResults(@Param("name") String name);
 
     List<Extension> findByFeatured(boolean state);

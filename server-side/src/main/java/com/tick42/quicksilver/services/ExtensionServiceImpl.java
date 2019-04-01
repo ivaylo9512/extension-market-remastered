@@ -32,7 +32,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final GitHubService gitHubService;
     private UserRepository userRepository;
     private Map<Integer, ExtensionDTO> featured = new LinkedHashMap<>();
-    private Queue<ExtensionDTO> mostRecent = new LinkedList<>();
+    private List<ExtensionDTO> mostRecent = new LinkedList<>();
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
@@ -51,12 +51,10 @@ public class ExtensionServiceImpl implements ExtensionService {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-
         Extension extension = new Extension(extensionSpec);
         extension.setOwner(user);
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-
         extensionRepository.save(extension);
 
         return new ExtensionDTO(extension);
@@ -297,8 +295,17 @@ public class ExtensionServiceImpl implements ExtensionService {
         }
 
         extension.setTimesDownloaded(extension.getTimesDownloaded() + 1);
+        ExtensionDTO extensionDTO = new ExtensionDTO(extensionRepository.save(extension));
 
-        return new ExtensionDTO(extensionRepository.save(extension));
+        if(mostRecent.contains(extensionDTO)){
+            int index = mostRecent.indexOf(extensionDTO);
+            mostRecent.set(index, extensionDTO);
+        }
+
+        if(featured.containsKey(extensionDTO.getId())){
+            featured.replace(extensionDTO.getId(), extensionDTO);
+        }
+        return new ExtensionDTO();
     }
 
     private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
@@ -318,7 +325,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         if (extension.isPending() &&
                 ((loggedUser == null) ||
-                        (extension.getOwner().getId() != loggedUser.getId()) && !admin)) {
+                        (extension.getOwner().getId() != loggedUser.getId() && !admin))) {
             throw new ExtensionUnavailableException("Extension is unavailable.");
         }
     }

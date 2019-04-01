@@ -96,7 +96,7 @@ public class ExtensionController {
         return extensionService.findFeatured();
     }
 
-    @GetMapping("/auth/extensions/download/{id}")
+    @GetMapping("/extensions/download/{id}")
     public ExtensionDTO download(@PathVariable(name = "id") int id) {
         return extensionService.increaseDownloadCount(id);
     }

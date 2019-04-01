@@ -3,6 +3,7 @@ package com.tick42.quicksilver.models.Spec;
 import com.tick42.quicksilver.models.Extension;
 
 import javax.persistence.Entity;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;

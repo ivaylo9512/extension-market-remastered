@@ -27,6 +27,8 @@ public class GitHubServiceImpl implements GitHubService {
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private SettingsRepository settingsRepository;
     private Settings settings;
+    private GitHub gitHub;
+
 
 
     @Autowired
@@ -35,15 +37,14 @@ public class GitHubServiceImpl implements GitHubService {
         this.scheduler = scheduler;
         this.threadPoolTaskScheduler = threadPoolTaskScheduler;
         this.settingsRepository = settingsRepository;
+        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
+        gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
     }
 
     @Override
     public void setRemoteDetails(GitHubModel gitHubModel) {
         try {
-            settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
-            GitHub gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
-
-            GHRepository repo = null;
+            GHRepository repo;
             try {
                 repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
             } catch (Exception e) {
@@ -68,7 +69,6 @@ public class GitHubServiceImpl implements GitHubService {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(e.getMessage());
             gitHubModel.setFailMessage(e.getMessage());
             gitHubModel.setLastFail(new Date());
         }
@@ -118,12 +118,7 @@ public class GitHubServiceImpl implements GitHubService {
             scheduler.getTask().cancel();
         }
 
-        FixedRateTask updateGitHubData = new FixedRateTask(new Runnable() {
-            @Override
-            public void run() {
-                updateExtensionDetails();
-            }
-        }, settings.getRate(), settings.getWait());
+        FixedRateTask updateGitHubData = new FixedRateTask(this::updateExtensionDetails, settings.getRate(), settings.getWait());
 
         taskRegistrar.setTaskScheduler(threadPoolTaskScheduler);
         scheduler.setTask(taskRegistrar.scheduleFixedRateTask(updateGitHubData));
