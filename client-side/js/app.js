@@ -89,9 +89,9 @@ let app = (() => {
         m.find('div').html('fetching github...');
         m.fadeIn()
         remote.refreshGitHub(extensionId).then(
-            res => {
+            extension => {
                 m.fadeOut();
-                getExtensionView(null, extensionId)
+                getExtensionView(null, extension)
             }
         ).catch(e => {
             m.fadeOut();
@@ -140,26 +140,27 @@ let app = (() => {
 
         request.then(
             res => {
-                    console.log(res['extensions'].length)
-
                 res = render.searchResults(res, query, orderBy)
                 show.results(res);
             }
         )
     }
 
-    let getExtensionView = function (e, id) {
+    let getExtensionView = function (e, extension) {
         preventDefault(e);
 
         if (e) {
             id = $(this).attr('extensionId');
+            remote.getExtension(id).then(res => {
+                res = render.extension(res);
+                    show.extension(res)
+                }).catch(e => {
+                    handle(e);
+            })
+        }else{
+            res = render.extension(extension);
+            show.extension(res);
         }
-        remote.getExtension(id).then(res => {
-            res = render.extension(res);
-            show.extension(res)
-        }).catch(e => {
-            handle(e);
-        })
     }
 
     let rateExtension = function (e) {
@@ -425,7 +426,7 @@ let app = (() => {
 
     }
 
-    let submit = function (e) {
+   let submit = function (e) {
         preventDefault(e);
         if (!hitEnter(e)) {
             return;
@@ -440,13 +441,6 @@ let app = (() => {
         let github = $('#github').val();
         let tags = $('#tags').val();
 
-        let file = $('#file').prop('files')[0];
-        let image = $('#image').prop('files')[0];
-
-        let formData = new FormData();
-        formData.append('file', file);
-        formData.append('image', image);
-
         let extension = {
             name,
             version,
@@ -455,35 +449,38 @@ let app = (() => {
             tags
         }
 
+        let file = $('#file').prop('files')[0];
+        let image = $('#image').prop('files')[0];
+
+        let formData = new FormData();
+        formData.append('file', file);
+        formData.append('image', image);
+        formData.append('extension', JSON.stringify(extension));
+
         let m = $('.loading-block')
-        //new submit
         if ($(this).attr('id') === 'submit-btn') {
             m.find('div').html('linking github...');
             m.fadeIn();
-            remote.submitExtension(extension).then(
-                res => {
-                    let extensionId = res['id'];
-                    remote.submitExtensionFiles(extensionId, formData).then(
-                        res => {
-                            getExtensionView(null, extensionId)
-                        }
-                    );
+            remote.createExtension(formData).then(
+                extension => {
+                    getExtensionView(null, extension)
                 }
             ).catch(e => {
                 m.fadeOut()
-                handle(e);
-            })
+                console.log(e)
+                handle(e)
+            });
+
         }
-        // edit existing
+        //edit
         else {
             m.find('div').html('linking github...');
             m.fadeIn();
             remote.editExtension(extensionId, extension).then(
-                res => {
-                    let extensionId = res['id'];
-                    remote.submitExtensionFiles(extensionId, formData).then(
-                        res => {
-                            getExtensionView(null, extensionId)
+                extension => {
+                    remote.submitExtensionFiles(formData).then(
+                        extension => {
+                            getExtensionView(null, extension)
                         }
                     );
                 }

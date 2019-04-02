@@ -67,8 +67,6 @@ public class FileServiceImpl implements FileService {
         try {
             saveFile(file, receivedFile);
 
-            extension.setFile(file);
-            extensionRepository.save(extension);
             return file;
 
         } catch (IOException e) {
@@ -101,8 +99,6 @@ public class FileServiceImpl implements FileService {
 
             saveFile(image, receivedFile);
 
-            extension.setImage(image);
-            extensionRepository.save(extension);
             return image;
 
         } catch (IOException e) {

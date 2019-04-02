@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface TagRepository extends JpaRepository<Tag, Integer> {
-    Tag findByName(String name);
+public interface TagRepository extends JpaRepository<Tag, String> {
 }

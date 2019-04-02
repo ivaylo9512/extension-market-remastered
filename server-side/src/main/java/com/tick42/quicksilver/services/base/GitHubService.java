@@ -17,4 +17,6 @@ public interface GitHubService {
     void createScheduledTask(ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec);
 
     GitHubSettingSpec getSettings();
+
+    void delete(GitHubModel gitHub);
 }

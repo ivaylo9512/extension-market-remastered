@@ -46,9 +46,8 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public int userRatingForExtension(int extensionId, int userId) {
-        int rating = ratingRepository.findById(
+        return ratingRepository.findById(
                 new RatingPK(extensionId,userId)).orElse(new Rating(0)).getRating();
-        return rating;
     }
 
     private void newUserRating(double currentExtensionRating, Extension extension, int rating) {

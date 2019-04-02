@@ -15,11 +15,13 @@ import java.util.List;
 
 public interface ExtensionService {
 
-    ExtensionDTO create(ExtensionSpec model, int id);
+    Extension create(ExtensionSpec model, int id);
 
-    ExtensionDTO findById(int id, UserDetails loggedUser);
+    Extension findById(int id, UserDetails loggedUser);
 
-    ExtensionDTO update(int extensionId, ExtensionSpec extension, int userId);
+    Extension update(int extensionId, ExtensionSpec extension, int userId);
+
+    Extension save(Extension extension);
 
     void delete(int id, int userId);
 

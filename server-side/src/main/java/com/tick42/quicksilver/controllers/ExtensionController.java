@@ -1,31 +1,42 @@
 package com.tick42.quicksilver.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
+import com.tick42.quicksilver.models.Extension;
+import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.ExtensionService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.RatingService;
+import com.tick42.quicksilver.validators.ExtensionValidator;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -75,7 +86,7 @@ public class ExtensionController {
             loggedUser = null;
             rating = 0;
         }
-        ExtensionDTO extensionDTO = extensionService.findById(extensionId, loggedUser);
+        ExtensionDTO extensionDTO = new ExtensionDTO(extensionService.findById(extensionId, loggedUser));
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
     }
@@ -88,7 +99,100 @@ public class ExtensionController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return extensionService.create(extension, userId);
+        return new ExtensionDTO(extensionService.create(extension, userId));
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
+    @PostMapping("/auth/upload/extensionFiles/{extensionId}")
+    public ExtensionDTO saveExtensionFiles(
+            @PathVariable(name = "extensionId") int extensionId,
+            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
+            @RequestParam(name = "file", required = false) MultipartFile extensionFile) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        Extension extension = extensionService.findById(extensionId, loggedUser);
+
+        if(extensionImage != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            extension.setImage(image);
+        }
+        if(extensionFile != null){
+            File file = fileService.storeFile(extensionFile, extensionId, userId);
+            extension.setImage(file);
+        }
+
+        return new ExtensionDTO(extensionService.save(extension));
+    }
+    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
+    @PostMapping("/auth/extensions/createWithFiles")
+    @Transactional
+    public ExtensionDTO createExtensionInSingleRequest(
+            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
+            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
+            @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        ObjectMapper mapper = new ObjectMapper();
+        ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
+
+        Validator validator = new ExtensionValidator();
+        BindingResult bindingResult = new DataBinder(extensionSpec).getBindingResult();
+        validator.validate(extensionSpec, bindingResult);
+        if(bindingResult.hasErrors()){
+            throw new BindException(bindingResult);
+        }
+
+        Extension extension = extensionService.create(extensionSpec, userId);
+        int extensionId = extension.getId();
+
+        if(extensionImage != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            extension.setImage(image);
+        }
+        if(extensionFile != null){
+            File file = fileService.storeFile(extensionFile, extensionId, userId);
+            extension.setFile(file);
+        }
+        return new ExtensionDTO(extensionService.save(extension));
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
+    @PostMapping("/auth/extensions/createWithFiles/{extensionId}")
+    @Transactional
+    public ExtensionDTO editExtensionInSingleRequest(
+            @PathVariable(name = "extensionId") int extensionId,
+            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
+            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
+            @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        ObjectMapper mapper = new ObjectMapper();
+        ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
+
+        Validator validator = new ExtensionValidator();
+        BindingResult bindingResult = new DataBinder(extensionSpec).getBindingResult();
+        validator.validate(extensionSpec, bindingResult);
+        if(bindingResult.hasErrors()){
+            throw new BindException(bindingResult);
+        }
+
+        Extension extension = extensionService.update(extensionId,extensionSpec, userId);
+
+        if(extensionImage != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            extension.setImage(image);
+        }
+        if(extensionFile != null){
+            File file = fileService.storeFile(extensionFile, extensionId, userId);
+            extension.setFile(file);
+        }
+        return new ExtensionDTO(extensionService.save(extension));
     }
 
     @GetMapping("/extensions/featured")
@@ -108,7 +212,7 @@ public class ExtensionController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return extensionService.update(id, extension, userId);
+        return new ExtensionDTO(extensionService.update(id, extension, userId));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -159,7 +263,7 @@ public class ExtensionController {
                 .body(e.getBindingResult()
                         .getFieldErrors()
                         .stream()
-                        .map(x -> x.getDefaultMessage())
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toArray());
     }
 
@@ -216,6 +320,22 @@ public class ExtensionController {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(e.getMessage());
-
     }
+
+    @ExceptionHandler
+    ResponseEntity handleBindException(BindException e){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getBindingResult().getAllErrors()
+                        .stream()
+                        .map(DefaultMessageSourceResolvable::getCode)
+                        .toArray());
+    }
+    @ExceptionHandler
+    ResponseEntity handleFileFormatException(FileFormatException e){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
 }

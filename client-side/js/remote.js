@@ -68,10 +68,46 @@ remote = (() => {
         })
     }
 
-    let submitExtension = (extension) => {
+    let createExtensionOnly = (extension) => {
         return $.ajax({
             type: 'POST',
             url: base + '/api/auth/extensions/create',
+            data: JSON.stringify(extension),
+            contentType: 'application/json',
+            headers: {
+                'Authorization': localStorage.getItem('Authorization')
+            },
+        })
+    }
+
+    let createExtension = (formData) => {
+        return $.ajax({
+            type: 'POST',
+            url: base + '/api/auth/extensions/createWithFiles',
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'Authorization': localStorage.getItem('Authorization')
+            },
+        })
+    }
+    let editExtension = (id, formData) => {
+        return $.ajax({
+            type: 'POST',
+            url: base + '/api/auth/extensions/editWithFiles',
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'Authorization': localStorage.getItem('Authorization')
+            },
+        })
+    }
+    let editExtensionOnly = (id, extension) => {
+        return $.ajax({
+            type: 'PATCH',
+            url: base + '/api/auth/extensions/' + id,
             data: JSON.stringify(extension),
             contentType: 'application/json',
             headers: {
@@ -111,18 +147,6 @@ remote = (() => {
             data: image,
             contentType: false,
             processData: false,
-            headers: {
-                'Authorization': localStorage.getItem('Authorization')
-            },
-        })
-    }
-
-    let editExtension = (id, extension) => {
-        return $.ajax({
-            type: 'PATCH',
-            url: base + '/api/auth/extensions/' + id,
-            data: JSON.stringify(extension),
-            contentType: 'application/json',
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             },
@@ -300,9 +324,10 @@ remote = (() => {
         loadByName,
         loadByTimesDownloaded,
         loadByLatestCommit,
-        submitExtension,
         submitFile,
         submitImage,
+        createExtension,
+        createExtensionOnly,
         editExtension,
         getUserProfile,
         setGitHubSettings,

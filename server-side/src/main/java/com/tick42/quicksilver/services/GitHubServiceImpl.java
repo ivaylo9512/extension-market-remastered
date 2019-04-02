@@ -134,4 +134,9 @@ public class GitHubServiceImpl implements GitHubService {
         currentSettings.setWait(settings.getWait());
         return currentSettings;
     }
+
+    @Override
+    public void delete(GitHubModel gitHub){
+        gitHubRepository.delete(gitHub);
+    }
 }

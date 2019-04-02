@@ -41,7 +41,7 @@ public class Extension {
     @JoinTable(
             name = "extension_tags",
             joinColumns = @JoinColumn(name = "extension_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+            inverseJoinColumns = @JoinColumn(name = "tag"))
     private Set<Tag> tags = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.EAGER)

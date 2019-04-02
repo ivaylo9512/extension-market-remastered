@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -10,10 +9,9 @@ import javax.validation.constraints.Size;
 
 import com.tick42.quicksilver.models.Spec.UserSpec;
 import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,6 +32,7 @@ public class UserModel {
     private String password;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OrderBy(value = "upload_date DESC")
     private Set<Extension> extensions = new HashSet<>();
 
     @Column(name = "enabled", nullable = false)

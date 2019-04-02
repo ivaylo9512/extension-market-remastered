@@ -46,7 +46,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO create(ExtensionSpec extensionSpec, int userId) {
+    public Extension create(ExtensionSpec extensionSpec, int userId) {
 
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -54,24 +54,25 @@ public class ExtensionServiceImpl implements ExtensionService {
         Extension extension = new Extension(extensionSpec);
         extension.setOwner(user);
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
-        extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        extensionRepository.save(extension);
+        if(extensionSpec.getGithub() != null) {
+            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+        }
 
-        return new ExtensionDTO(extension);
+        return extensionRepository.save(extension);
     }
 
     @Override
-    public ExtensionDTO findById(int extensionId, UserDetails loggedUser) {
+    public Extension findById(int extensionId, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
         checkUserAndExtension(extension, loggedUser);
 
-        return new ExtensionDTO(extension);
+        return extension;
     }
 
     @Override
-    public ExtensionDTO update(int extensionId, ExtensionSpec extensionSpec, int userId) {
+    public Extension update(int extensionId, ExtensionSpec extensionSpec, int userId) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
@@ -88,17 +89,22 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setVersion(extensionSpec.getVersion());
         extension.setDescription(extensionSpec.getDescription());
 
-        GitHubModel oldGitHub = extension.getGithub();
-        GitHubModel newGitHub = gitHubService.generateGitHub(extensionSpec.getGithub());
-        oldGitHub.setLink(newGitHub.getLink());
-        oldGitHub.setUser(newGitHub.getUser());
-        oldGitHub.setRepo(newGitHub.getRepo());
-        gitHubService.setRemoteDetails(oldGitHub);
+        if(extensionSpec.getGithub() != null) {
+            GitHubModel oldGitHub = extension.getGithub();
+            GitHubModel newGitHub = gitHubService.generateGitHub(extensionSpec.getGithub());
+            extension.setGithub(newGitHub);
+            gitHubService.delete(oldGitHub);
+        }
+
 
         extension.setTags(tagService.generateTags(extensionSpec.getTags()));
 
-        extensionRepository.save(extension);
-        return new ExtensionDTO(extension);
+        return extensionRepository.save(extension);
+    }
+
+    @Override
+    public Extension save(Extension extension){
+        return extensionRepository.save(extension);
     }
 
     @Override
@@ -275,7 +281,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
 
         if (!user.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to trgigger a github refresh.");
+            throw new UnauthorizedExtensionModificationException("You are not authorized to trigger a github refresh.");
         }
 
         gitHubService.setRemoteDetails(extension.getGithub());
