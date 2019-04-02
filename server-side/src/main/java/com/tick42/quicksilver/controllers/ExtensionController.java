@@ -161,7 +161,7 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/createWithFiles/{extensionId}")
+    @PostMapping("/auth/extensions/editWithFiles/{extensionId}")
     @Transactional
     public ExtensionDTO editExtensionInSingleRequest(
             @PathVariable(name = "extensionId") int extensionId,

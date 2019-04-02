@@ -95,7 +95,7 @@ remote = (() => {
     let editExtension = (id, formData) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions/editWithFiles',
+            url: base + '/api/auth/extensions/editWithFiles/' + id,
             data: formData,
             contentType: false,
             processData: false,

@@ -419,7 +419,7 @@ INSERT INTO extension_tags (tag, extension_id) values
 
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
 INSERT INTO `settings` (`id`, `rate`, `wait`, `token`, `username`) VALUES
-	(1, 5000, 5000, '8f939b230895484718fbc5b77b144b78e7f11475', 'ivaylo9512');
+	(1, 5000, 5000, '9a9a50292dd735b6dd09fe9247dd78a3c266929e', 'ivayloaleksandrov@yahoo.com');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 
 

@@ -476,13 +476,9 @@ let app = (() => {
         else {
             m.find('div').html('linking github...');
             m.fadeIn();
-            remote.editExtension(extensionId, extension).then(
+            remote.editExtension(extensionId, formData).then(
                 extension => {
-                    remote.submitExtensionFiles(formData).then(
-                        extension => {
-                            getExtensionView(null, extension)
-                        }
-                    );
+                    getExtensionView(null, extension)
                 }
             ).catch(e => {
                 m.fadeOut()
