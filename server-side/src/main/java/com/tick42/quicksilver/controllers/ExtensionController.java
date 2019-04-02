@@ -72,7 +72,7 @@ public class ExtensionController {
     }
 
     @GetMapping("/extensions/{id}")
-    public ExtensionDTO get(@PathVariable(name = "id") int extensionId, HttpServletRequest request) {
+    public ExtensionDTO findById(@PathVariable(name = "id") int extensionId, HttpServletRequest request) {
         UserDetails loggedUser;
         int rating;
         try {
@@ -86,7 +86,7 @@ public class ExtensionController {
             loggedUser = null;
             rating = 0;
         }
-        ExtensionDTO extensionDTO = new ExtensionDTO(extensionService.findById(extensionId, loggedUser));
+        ExtensionDTO extensionDTO = extensionService.generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
     }
@@ -123,7 +123,7 @@ public class ExtensionController {
             extension.setImage(file);
         }
 
-        return new ExtensionDTO(extensionService.save(extension));
+        return extensionService.save(extension);
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/extensions/createWithFiles")
@@ -157,7 +157,7 @@ public class ExtensionController {
             File file = fileService.storeFile(extensionFile, extensionId, userId);
             extension.setFile(file);
         }
-        return new ExtensionDTO(extensionService.save(extension));
+        return extensionService.save(extension);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -192,7 +192,7 @@ public class ExtensionController {
             File file = fileService.storeFile(extensionFile, extensionId, userId);
             extension.setFile(file);
         }
-        return new ExtensionDTO(extensionService.save(extension));
+        return extensionService.save(extension);
     }
 
     @GetMapping("/extensions/featured")
@@ -333,6 +333,13 @@ public class ExtensionController {
     }
     @ExceptionHandler
     ResponseEntity handleFileFormatException(FileFormatException e){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity handleFeaturedLimitException(FeaturedLimitException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());

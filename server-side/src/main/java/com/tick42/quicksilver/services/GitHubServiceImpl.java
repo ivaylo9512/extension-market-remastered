@@ -28,7 +28,6 @@ public class GitHubServiceImpl implements GitHubService {
     private SettingsRepository settingsRepository;
     private Settings settings;
     private GitHub gitHub;
-    private volatile int count;
 
 
 
@@ -47,9 +46,7 @@ public class GitHubServiceImpl implements GitHubService {
         try {
             GHRepository repo;
             try {
-                count++;
                 repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
-                System.out.println(count);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");

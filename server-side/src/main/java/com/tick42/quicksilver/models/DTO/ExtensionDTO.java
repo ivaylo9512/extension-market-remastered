@@ -39,44 +39,20 @@ public class ExtensionDTO {
     }
 
     public ExtensionDTO(Extension extension) {
-        this.setId(extension.getId());
-        this.setName(extension.getName());
-        this.setDescription(extension.getDescription());
-        this.setFeatured(extension.isFeatured());
-        if (extension.getGithub() != null) {
-            this.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                this.setLastCommit(extension.getGithub().getLastCommit());
-            }
-            this.setOpenIssues(extension.getGithub().getOpenIssues());
-            this.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
-                this.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
-            if (extension.getGithub().getLastFail() != null) {
-                this.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                this.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-        if (extension.getImage() != null) {
-            this.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
-            this.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getOwner() != null) {
-            this.setOwnerId(extension.getOwner().getId());
-            this.setOwnerName(extension.getOwner().getUsername());
-        }
-        this.setPending(extension.isPending());
+        this.id = extension.getId();
+        this.name = extension.getName();
+        this.description = extension.getDescription();
+        this.isFeatured = extension.isFeatured();
+        this.ownerId = extension.getOwner().getId();
+        this.ownerName = extension.getOwner().getUsername();
+        this.isPending = extension.isPending();
         this.tags = extension.getTags().stream().map(Tag::getName).collect(Collectors.toList());
-        this.setTimesDownloaded(extension.getTimesDownloaded());
-        if (extension.getUploadDate() != null) {
-            this.setUploadDate(extension.getUploadDate());
-        }
-        this.setVersion(extension.getVersion());
-        this.setRating(extension.getRating());
-        this.setTimesRated(extension.getTimesRated());
+        this.timesDownloaded = extension.getTimesDownloaded();
+        this.version = extension.getVersion();
+        this.rating = extension.getRating();
+        this.timesRated = extension.getTimesRated();
+
+        setUploadDate(extension.getUploadDate());
     }
 
     public int getId() {

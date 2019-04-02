@@ -21,7 +21,7 @@ public interface ExtensionService {
 
     Extension update(int extensionId, ExtensionSpec extension, int userId);
 
-    Extension save(Extension extension);
+    ExtensionDTO save(Extension extension);
 
     void delete(int id, int userId);
 
@@ -38,6 +38,8 @@ public interface ExtensionService {
     List<ExtensionDTO> findPending();
 
     List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions);
+
+    ExtensionDTO generateExtensionDTO(Extension extension);
 
     ExtensionDTO fetchGitHub(int extensionId, int userId);
 

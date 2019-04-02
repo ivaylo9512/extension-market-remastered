@@ -296,8 +296,6 @@ let app = (() => {
     let register = function (e) {
         preventDefault(e);
 
-        $('.errors').empty();
-
         let username = $('#username').val();
         let password = $('#password').val();
         let repeatPassword = $('#repeatPassword').val();
@@ -327,8 +325,6 @@ let app = (() => {
     }
     let login = function (e) {
         preventDefault(e);
-
-        $('.errors').empty();
 
         let username = $('#username').val();
         let password = $('#password').val();
@@ -431,7 +427,6 @@ let app = (() => {
         if (!hitEnter(e)) {
             return;
         }
-        $('.errors').empty();
 
         let extensionId = $(this).attr('extensionId');
 
@@ -544,6 +539,7 @@ let app = (() => {
     }
 
     function handle(e) {
+        $('.errors').empty();
         if(e['responseJSON'] != null){
             e['responseJSON'].forEach(error => $('.errors').append('<p><i class="fas fa-exclamation-triangle"></i>' + error + '</p>'));
             console.log(e['responseJSON'])
