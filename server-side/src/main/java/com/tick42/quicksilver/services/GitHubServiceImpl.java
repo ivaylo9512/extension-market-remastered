@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.*;
 
 @Service
 public class GitHubServiceImpl implements GitHubService {
@@ -43,34 +44,44 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public void setRemoteDetails(GitHubModel gitHubModel) {
-        try {
-            GHRepository repo;
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+
+        Future<Boolean> future = executor.submit(() -> {
             try {
-                repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
-            }
-            try {
+                GHRepository repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
+
                 int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
                 int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
+
                 Date lastCommit = null;
                 List<GHCommit> commits = repo.listCommits().asList();
                 if (commits.size() > 0) {
                     lastCommit = commits.get(0).getCommitDate();
                 }
+
                 gitHubModel.setPullRequests(pulls);
                 gitHubModel.setOpenIssues(issues);
                 gitHubModel.setLastCommit(lastCommit);
                 gitHubModel.setLastSuccess(new Date());
-            } catch (Exception e) {
-                e.printStackTrace();
+                return true;
+            } catch (GHException e) {
                 throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
+            } catch (IOException e) {
+                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+
+        try {
+            future.get(50, TimeUnit.SECONDS);
+
+        }catch (ExecutionException | InterruptedException e){
             gitHubModel.setFailMessage(e.getMessage());
             gitHubModel.setLastFail(new Date());
+
+        } catch (TimeoutException e) {
+            settings = settingsRepository.findById(settings.getId() + 1)
+                    .orElse(settingsRepository.findById(1)
+                            .orElseThrow(() -> new RuntimeException("No settings found.")));
         }
     }
 

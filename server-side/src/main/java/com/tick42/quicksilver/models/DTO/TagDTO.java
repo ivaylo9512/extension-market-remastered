@@ -18,12 +18,6 @@ public class TagDTO {
     public TagDTO(Tag tag) {
         this.tag = tag.getName();
         this.totalExtensions = tag.getExtensions().size();
-        this.extensions = tag.getExtensions()
-                .stream()
-                .filter(x -> !x.isPending())
-                .filter(x -> x.getOwner().getIsActive())
-                .map(ExtensionDTO::new)
-                .collect(Collectors.toList());
     }
 
     public String getTag() {

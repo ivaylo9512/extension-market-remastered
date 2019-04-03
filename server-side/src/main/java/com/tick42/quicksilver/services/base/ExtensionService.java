@@ -7,9 +7,6 @@ import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
-import com.tick42.quicksilver.models.UserModel;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 
 import java.util.List;
 
@@ -45,9 +42,7 @@ public interface ExtensionService {
 
     ExtensionDTO increaseDownloadCount(int id);
 
-    @EventListener
-    void loadFeatured(ApplicationReadyEvent event);
+    void loadFeatured();
 
-    @EventListener
-    void loadMostRecent(ApplicationReadyEvent event);
+    void updateMostRecent();
 }

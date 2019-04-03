@@ -1,6 +1,8 @@
 package com.tick42.quicksilver.services;
 
+import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.TagDTO;
+import com.tick42.quicksilver.models.DTO.UserDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
@@ -25,7 +27,13 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagDTO findByName(String name) {
-        return new TagDTO(tagRepository.findById(name).orElseThrow(() -> new RuntimeException("No tag found with that name.")));
+        Tag tag = tagRepository.findById(name).orElseThrow(() -> new RuntimeException("Tag not found."));
+        TagDTO tagDTO = new TagDTO(tag);
+        tagDTO.setExtensions(tag.getExtensions()
+                .stream()
+                .map(this::generateExtensionDTO)
+                .collect(Collectors.toList()));
+        return new TagDTO();
     }
 
     @Override
@@ -64,6 +72,32 @@ public class TagServiceImpl implements TagService {
                         .collect(Collectors.toList());
         tagNames.forEach(tagName -> tags.add(tagRepository.save(new Tag(tagName))));
         return tags;
+    }
+
+    private ExtensionDTO generateExtensionDTO(Extension extension) {
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if (extension.getGithub() != null) {
+            extensionDTO.setGitHubLink(extension.getGithub().getLink());
+            if (extension.getGithub().getLastCommit() != null) {
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+            }
+            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
+            if (extension.getGithub().getLastSuccess() != null) {
+                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+            }
+            if (extension.getGithub().getLastFail() != null) {
+                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+            }
+        }
+        if (extension.getImage() != null) {
+            extensionDTO.setImageLocation(extension.getImage().getLocation());
+        }
+        if (extension.getFile() != null) {
+            extensionDTO.setFileLocation(extension.getFile().getLocation());
+        }
+        return extensionDTO;
     }
 
 }

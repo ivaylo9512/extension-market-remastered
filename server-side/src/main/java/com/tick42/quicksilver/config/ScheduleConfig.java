@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.config;
 
+import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,6 +24,9 @@ public class ScheduleConfig implements SchedulingConfigurer {
     @Autowired
     private GitHubService gitHubService;
 
+    @Autowired
+    private ExtensionService extensionService;
+
     @Bean
     public ThreadPoolTaskScheduler createThreadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
@@ -35,6 +39,8 @@ public class ScheduleConfig implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         gitHubService.createScheduledTask(taskRegistrar, null);
+        extensionService.updateMostRecent();
+        extensionService.loadFeatured();
     }
 
     public String getThreadPrefix() {

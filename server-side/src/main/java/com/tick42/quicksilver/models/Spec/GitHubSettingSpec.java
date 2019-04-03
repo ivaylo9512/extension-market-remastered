@@ -15,7 +15,7 @@ public class GitHubSettingSpec {
     private String token;
 
     @NotNull(message = "Enter github data refresh rate in milliseconds.")
-    @Min(value = 1000, message = "The rate should be 1000 millisecond or more.")
+    @Min(value = 500000, message = "The rate should be 500000 millisecond or more.")
     private int rate;
 
     @NotNull(message = "Enter waiting period in milliseconds before initial data fetch.")

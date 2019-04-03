@@ -1,12 +1,15 @@
 package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.InvalidCredentialsException;
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
+import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -96,7 +99,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new UserProfileUnavailableException("UserModel profile is disabled.");
         }
 
-        return new UserDTO(user);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setExtensions(user.getExtensions()
+                .stream()
+                .map(this::generateExtensionDTO)
+                .collect(Collectors.toList()));
+        return userDTO;
     }
 
     @Override
@@ -149,5 +157,31 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.save(user);
         return new UserDTO(user);
 
+    }
+
+    private ExtensionDTO generateExtensionDTO(Extension extension) {
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if (extension.getGithub() != null) {
+            extensionDTO.setGitHubLink(extension.getGithub().getLink());
+            if (extension.getGithub().getLastCommit() != null) {
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+            }
+            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
+            if (extension.getGithub().getLastSuccess() != null) {
+                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+            }
+            if (extension.getGithub().getLastFail() != null) {
+                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+            }
+        }
+        if (extension.getImage() != null) {
+            extensionDTO.setImageLocation(extension.getImage().getLocation());
+        }
+        if (extension.getFile() != null) {
+            extensionDTO.setFileLocation(extension.getFile().getLocation());
+        }
+        return extensionDTO;
     }
 }

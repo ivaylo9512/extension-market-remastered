@@ -360,18 +360,13 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public void loadFeatured(ApplicationReadyEvent event) {
+    public void loadFeatured() {
         extensionRepository.findByFeatured(true).forEach(extension ->
                 featured.put(extension.getId(), generateExtensionDTO(extension)));
     }
 
     @Override
-    public void loadMostRecent(ApplicationReadyEvent event) {
-        mostRecent.addAll(generateExtensionDTOList(
-                extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))));
-    }
-
-    private void updateMostRecent(){
+    public void updateMostRecent(){
         mostRecent.clear();
         mostRecent.addAll(generateExtensionDTOList(
                 extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))));
