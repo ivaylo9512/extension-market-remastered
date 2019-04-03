@@ -75,6 +75,7 @@ public class GitHubServiceImpl implements GitHubService {
             future.get(50, TimeUnit.SECONDS);
 
         }catch (ExecutionException | InterruptedException e){
+            e.printStackTrace();
             gitHubModel.setFailMessage(e.getMessage());
             gitHubModel.setLastFail(new Date());
 

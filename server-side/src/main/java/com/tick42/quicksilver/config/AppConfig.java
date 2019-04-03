@@ -38,18 +38,14 @@ public class AppConfig {
     }
     @Bean
     public DataSource dataSource() {
-        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-        EmbeddedDatabase db = builder
-                .setType(EmbeddedDatabaseType.H2)
-                .setName("testdb;MODE=MySQL;DB_CLOSE_ON_EXIT=false")
-                .addScript(getClass().getResource("/DatabaseH2.sql").toString())
-                .build();
-        return db;
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/tick42-quicksilver4");
+        dataSource.setUsername("root");
+        dataSource.setPassword("1234");
+        return dataSource;
     }
-    @Bean
-    public JdbcTemplate getJdbcTemplate() {
-        return new JdbcTemplate(dataSource());
-    }
+
     @Bean
     public PlatformTransactionManager transactionManager(
             EntityManagerFactory emf){
