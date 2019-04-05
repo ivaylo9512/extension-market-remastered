@@ -3,6 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.tick42.quicksilver.exceptions.ExtensionUnavailableException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.exceptions.UserNotFoundException;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.RatingService;
@@ -31,8 +32,9 @@ public class RatingController {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
-
-        return ratingService.rate(id, rating, userId);
+        Extension extension = ratingService.rate(id, rating, userId);
+        extensionService.reloadExtension(extension);
+        return extension.getRating();
     }
 
     @GetMapping(value = "/auth/userRating/{id}")

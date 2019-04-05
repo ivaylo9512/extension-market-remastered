@@ -26,7 +26,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public double rate(int extensionId, int rating, int userId) {
+    public Extension rate(int extensionId, int rating, int userId) {
         if (rating > 5) {
             throw new InvalidRatingException("Rating must be between 1 and 5");
         }
@@ -41,7 +41,7 @@ public class RatingServiceImpl implements RatingService {
         newExtensionRating(userRatingForExtension, newRating, extension);
         newUserRating(currentExtensionRating, extension, rating);
 
-        return extension.getRating();
+        return extension;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public UserModel userRatingOnExtensionDelete(int extensionId) {
+    public void updateRatingOnExtensionDelete(int extensionId) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
@@ -105,6 +105,5 @@ public class RatingServiceImpl implements RatingService {
             userModel.setExtensionsRated(0);
             userRepository.save(userModel);
         }
-        return userModel;
     }
 }

@@ -45,4 +45,6 @@ public interface ExtensionService {
     void loadFeatured();
 
     void updateMostRecent();
+
+    ExtensionDTO reloadExtension(Extension extension);
 }

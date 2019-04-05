@@ -20,6 +20,8 @@ let app = (() => {
                 let featured = render.shortenTitle(res['featured']);
                 let mostDownloaded = render.shortenTitle(res['mostDownloaded']);
 
+                console.log(featured)
+                                console.log(mostRecent)
                 show.homeFeatured(featured);
                 show.homeMostDownloaded(mostDownloaded)
                 show.homeMostRecent(mostRecent)

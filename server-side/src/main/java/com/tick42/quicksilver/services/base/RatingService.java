@@ -6,11 +6,11 @@ import com.tick42.quicksilver.models.UserModel;
 
 public interface RatingService {
 
-    double rate(int extensionId, int rating, int userId);
+    Extension rate(int extensionId, int rating, int userId);
 
     int userRatingForExtension(int extensionId, int userId);
 
     Extension newExtensionRating(double userRatingForExtension, Rating newRating, Extension extension);
 
-    UserModel userRatingOnExtensionDelete(int userExtension);
+    void updateRatingOnExtensionDelete(int userExtension);
 }

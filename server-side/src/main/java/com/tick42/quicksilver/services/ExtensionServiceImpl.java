@@ -31,8 +31,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final TagService tagService;
     private final GitHubService gitHubService;
     private UserRepository userRepository;
-    private Map<Integer, ExtensionDTO> featured = new LinkedHashMap<>();
-    private List<ExtensionDTO> mostRecent = new LinkedList<>();
+    private Map<Integer, ExtensionDTO> featured = Collections.synchronizedMap(new LinkedHashMap<>());
+    private List<ExtensionDTO> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
@@ -324,17 +324,8 @@ public class ExtensionServiceImpl implements ExtensionService {
         }
 
         extension.setTimesDownloaded(extension.getTimesDownloaded() + 1);
-        ExtensionDTO extensionDTO = generateExtensionDTO(extensionRepository.save(extension));
 
-        if(mostRecent.contains(extensionDTO)){
-            int index = mostRecent.indexOf(extensionDTO);
-            mostRecent.set(index, extensionDTO);
-        }
-
-        if(featured.containsKey(extensionDTO.getId())){
-            featured.replace(extensionDTO.getId(), extensionDTO);
-        }
-        return extensionDTO;
+        return reloadExtension(extensionRepository.save(extension));
     }
 
     private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
@@ -370,5 +361,19 @@ public class ExtensionServiceImpl implements ExtensionService {
         mostRecent.clear();
         mostRecent.addAll(generateExtensionDTOList(
                 extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))));
+    }
+
+    @Override
+    public ExtensionDTO reloadExtension(Extension extension){
+        ExtensionDTO extensionDTO = generateExtensionDTO(extension);
+        if(mostRecent.contains(extensionDTO)){
+            int index = mostRecent.indexOf(extensionDTO);
+            mostRecent.set(index, extensionDTO);
+        }
+
+        if(featured.containsKey(extensionDTO.getId())){
+            featured.replace(extensionDTO.getId(), extensionDTO);
+        }
+        return extensionDTO;
     }
 }

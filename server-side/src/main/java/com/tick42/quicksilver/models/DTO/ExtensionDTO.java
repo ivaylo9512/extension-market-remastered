@@ -54,6 +54,19 @@ public class ExtensionDTO {
 
         setUploadDate(extension.getUploadDate());
     }
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof ExtensionDTO){
+            ExtensionDTO compare = (ExtensionDTO) o;
+            return this.id == compare.getId();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 
     public int getId() {
         return id;

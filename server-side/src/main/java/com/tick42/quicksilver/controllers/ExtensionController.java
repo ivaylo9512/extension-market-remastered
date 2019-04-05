@@ -222,8 +222,8 @@ public class ExtensionController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        ratingService.userRatingOnExtensionDelete(id);
         extensionService.delete(id, userId);
+        ratingService.updateRatingOnExtensionDelete(id);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
