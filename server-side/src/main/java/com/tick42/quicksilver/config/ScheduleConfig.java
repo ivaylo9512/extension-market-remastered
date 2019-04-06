@@ -38,7 +38,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        gitHubService.createScheduledTask(taskRegistrar, null);
+        gitHubService.createScheduledTask(1, taskRegistrar, null);
         extensionService.updateMostRecent();
         extensionService.loadFeatured();
     }

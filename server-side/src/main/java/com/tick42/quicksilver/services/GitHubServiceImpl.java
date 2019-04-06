@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
+import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
 import org.kohsuke.github.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,18 +28,20 @@ public class GitHubServiceImpl implements GitHubService {
     private final Scheduler scheduler;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private SettingsRepository settingsRepository;
+    private UserRepository userRepository;
     private Settings settings;
     private GitHub gitHub;
 
 
 
     @Autowired
-    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepository settingsRepository) throws IOException {
+    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepository settingsRepository, UserRepository userRepository) throws IOException {
+        this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
         this.gitHubRepository = gitHubRepository;
         this.scheduler = scheduler;
         this.threadPoolTaskScheduler = threadPoolTaskScheduler;
-        this.settingsRepository = settingsRepository;
-        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
+        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found."));
         gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
     }
 
@@ -107,21 +110,19 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void createScheduledTask(ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
+    public void createScheduledTask(int userId, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
 
-        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
+        settings = settingsRepository.findById(userId).orElse(new Settings());
+
 
         if (gitHubSettingSpec != null) {
-            Integer rate = gitHubSettingSpec.getRate();
-            Integer wait = gitHubSettingSpec.getWait();
-            String token = gitHubSettingSpec.getToken();
-            String username = gitHubSettingSpec.getUsername();
+            Settings newSettings = new Settings(gitHubSettingSpec);
 
-            settings.setRate(rate);
-            settings.setWait(wait);
-            settings.setToken(token);
-            settings.setUsername(username);
-            settingsRepository.save(settings);
+            if(settings.getId() != null){
+                newSettings.setId(settings.getId());
+             }
+            newSettings.setUser(userRepository.getOne(userId));
+            settings = settingsRepository.save(newSettings);
         }
 
         if (settings.getToken() == null || settings.getUsername() == null) return;
@@ -137,11 +138,11 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public GitHubSettingSpec getSettings() {
-        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found"));
+    public GitHubSettingSpec getSettings(int userId) {
+        Settings userSettings = settingsRepository.findById(userId).orElse(new Settings());
         GitHubSettingSpec currentSettings = new GitHubSettingSpec();
-        currentSettings.setToken(settings.getToken());
-        currentSettings.setUsername(settings.getUsername());
+        currentSettings.setToken(userSettings.getToken());
+        currentSettings.setUsername(userSettings.getUsername());
         currentSettings.setRate(settings.getRate());
         currentSettings.setWait(settings.getWait());
         return currentSettings;

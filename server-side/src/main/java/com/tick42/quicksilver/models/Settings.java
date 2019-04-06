@@ -1,14 +1,15 @@
 package com.tick42.quicksilver.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
+
+import javax.persistence.*;
 
 @Entity
 public class Settings {
 
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(name = "rate")
     private int rate;
@@ -16,21 +17,30 @@ public class Settings {
     @Column(name = "wait")
     private int wait;
 
-    @Column(name = "token")
+    @Column(name = "git_token")
     private String token;
 
-    @Column(name = "username")
+    @Column(name = "git_username")
     private String username;
+
+    @OneToOne
+    @JoinColumn(name = "user")
+    private UserModel user;
 
     public Settings() {
 
     }
-
-    public int getId() {
+    public Settings(GitHubSettingSpec settingsSpec) {
+        this.rate = settingsSpec.getRate();
+        this.wait = settingsSpec.getWait();
+        this.token = settingsSpec.getToken();
+        this.username = settingsSpec.getUsername();
+    }
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -64,5 +74,9 @@ public class Settings {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setUser(UserModel user) {
+        this.user = user;
     }
 }
