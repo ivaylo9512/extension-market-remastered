@@ -41,8 +41,6 @@ public class GitHubServiceImpl implements GitHubService {
         this.gitHubRepository = gitHubRepository;
         this.scheduler = scheduler;
         this.threadPoolTaskScheduler = threadPoolTaskScheduler;
-        settings = settingsRepository.findById(1).orElseThrow(() -> new RuntimeException("No settings found."));
-        gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
     }
 
     @Override
@@ -51,6 +49,7 @@ public class GitHubServiceImpl implements GitHubService {
 
         Future<Boolean> future = executor.submit(() -> {
             try {
+
                 GHRepository repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
 
                 int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
@@ -77,7 +76,10 @@ public class GitHubServiceImpl implements GitHubService {
         try {
             future.get(50, TimeUnit.SECONDS);
 
-        }catch (ExecutionException | InterruptedException e){
+        } catch (InterruptedException e) {
+            throw new RuntimeException("New Settings are set. Current task canceled.");
+
+        } catch (ExecutionException e){
             e.printStackTrace();
             gitHubModel.setFailMessage(e.getMessage());
             gitHubModel.setLastFail(new Date());
@@ -103,7 +105,6 @@ public class GitHubServiceImpl implements GitHubService {
     public void updateExtensionDetails() {
         List<GitHubModel> gitHubModels = gitHubRepository.findAll();
         gitHubModels.forEach(gitHub -> {
-            System.out.println("updating... " + gitHub.getRepo());
             setRemoteDetails(gitHub);
             gitHubRepository.save(gitHub);
         });
@@ -113,7 +114,6 @@ public class GitHubServiceImpl implements GitHubService {
     public void createScheduledTask(int userId, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
 
         settings = settingsRepository.findById(userId).orElse(new Settings());
-
 
         if (gitHubSettingSpec != null) {
             Settings newSettings = new Settings(gitHubSettingSpec);
@@ -127,6 +127,13 @@ public class GitHubServiceImpl implements GitHubService {
 
         if (settings.getToken() == null || settings.getUsername() == null) return;
 
+        try {
+            gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't connect to github.");
+        }
+
+
         if (scheduler.getTask() != null) {
             scheduler.getTask().cancel();
         }
@@ -139,10 +146,12 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public GitHubSettingSpec getSettings(int userId) {
-        Settings userSettings = settingsRepository.findById(userId).orElse(new Settings());
+        Settings userSettings = settingsRepository.findByUser(userRepository.getOne(userId));
         GitHubSettingSpec currentSettings = new GitHubSettingSpec();
-        currentSettings.setToken(userSettings.getToken());
-        currentSettings.setUsername(userSettings.getUsername());
+        if(userSettings != null){
+            currentSettings.setToken(userSettings.getToken());
+            currentSettings.setUsername(userSettings.getUsername());
+        }
         currentSettings.setRate(settings.getRate());
         currentSettings.setWait(settings.getWait());
         return currentSettings;

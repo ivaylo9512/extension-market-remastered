@@ -96,7 +96,7 @@ public class RatingServiceImplTests {
 
         when(extensionRepository.findById(2)).thenReturn(null);
         //Act
-        ratingService.userRatingOnExtensionDelete(2);
+        ratingService.updateRatingOnExtensionDelete(2);
 
     }
 
@@ -116,7 +116,7 @@ public class RatingServiceImplTests {
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.userRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension.getId());
         //Assert
 
         Assert.assertEquals(4, userModel.getRating(),0);
@@ -139,7 +139,7 @@ public class RatingServiceImplTests {
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.userRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension.getId());
         //Assert
 
         Assert.assertEquals(0, userModel.getRating(),0);
@@ -162,7 +162,7 @@ public class RatingServiceImplTests {
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.userRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension.getId());
         //Assert
 
         Assert.assertEquals(4, userModel.getRating(),0);

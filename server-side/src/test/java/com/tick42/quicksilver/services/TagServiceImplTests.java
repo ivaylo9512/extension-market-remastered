@@ -35,26 +35,7 @@ public class TagServiceImplTests {
 
     }
 
-    @Test
-    public void generateTags_WhenTagsExist_ShouldReturnTags(){
 
-        //Arrange
-        Tag test = new Tag("test");
-        Tag string = new Tag("string");
-        Tag tag = new Tag("tags");
-        String tagsString = "test,string,tags";
-
-        when(tagRepository.findByName("test")).thenReturn(test);
-        when(tagRepository.findByName("string")).thenReturn(string);
-        when(tagRepository.findByName("tags")).thenReturn(tag);
-
-
-        //Act
-        Set<Tag> tags = new HashSet<>(tagService.generateTags(tagsString));
-
-        //Assert
-        Assert.assertEquals(tags.size(), 3);
-    }
 
     @Test
     public void generateTags_WhenTagsAreNonexistent_ShouldReturnTags(){

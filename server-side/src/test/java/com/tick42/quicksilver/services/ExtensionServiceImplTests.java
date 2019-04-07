@@ -46,72 +46,6 @@ public class ExtensionServiceImplTests {
     @InjectMocks
     private ExtensionServiceImpl extensionService;
 
-    @Test
-    public void create_whenUserExists_returnExtensionDTO() {
-        //Arrange
-        int userId = 1;
-        Date uploadTime = new Date();
-        Date commitTime = new Date();
-
-        ExtensionSpec extensionSpec = new ExtensionSpec();
-        extensionSpec.setName("name");
-        extensionSpec.setVersion("1.0");
-        extensionSpec.setDescription("description");
-        extensionSpec.setGithub("gitHubLink");
-        extensionSpec.setTags("tag1, tag2");
-
-        UserModel userModel = new UserModel();
-        userModel.setUsername("username");
-        userModel.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel));
-
-        Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
-        when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
-
-        GitHubModel github = new GitHubModel();
-        github.setLastCommit(commitTime);
-        github.setPullRequests(10);
-        github.setOpenIssues(20);
-        github.setLink("gitHubLink");
-        when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(github);
-
-        Extension extension = new Extension();
-        extension.setName("name");
-        extension.setVersion("1.0");
-        extension.setDescription("description");
-        extension.isPending(true);
-        extension.setOwner(userModel);
-        extension.setUploadDate(uploadTime);
-        extension.setTags(tags);
-        extension.setGithub(github);
-
-        ExtensionDTO expectedExtensionDTO = new ExtensionDTO();
-        expectedExtensionDTO.setName("name");
-        expectedExtensionDTO.setVersion("1.0");
-        expectedExtensionDTO.setDescription("description");
-        expectedExtensionDTO.setPending(true);
-        expectedExtensionDTO.setUploadDate(uploadTime);
-        expectedExtensionDTO.setOwnerName("username");
-        expectedExtensionDTO.setOwnerId(1);
-        expectedExtensionDTO.setUploadDate(uploadTime);
-        expectedExtensionDTO.setTags(Arrays.asList("tag1", "tag2"));
-        expectedExtensionDTO.setGitHubLink("gitHubLink");
-        expectedExtensionDTO.setLastCommit(commitTime);
-        expectedExtensionDTO.setPullRequests(10);
-        expectedExtensionDTO.setOpenIssues(20);
-        expectedExtensionDTO.setFeatured(false);
-        expectedExtensionDTO.setTimesDownloaded(0);
-        expectedExtensionDTO.setVersion("1.0");
-
-        when(extensionRepository.save(any(Extension.class))).thenReturn(extension);
-
-        //Act
-        ExtensionDTO createdExtensionDTO = extensionService.create(extensionSpec, userId);
-        createdExtensionDTO.getTags().sort(String::compareTo);
-
-        //Assert
-        Assert.assertThat(expectedExtensionDTO, samePropertyValuesAs(createdExtensionDTO));
-    }
 
     @Test
     public void setFeaturedState_whenSetToFeatured_returnFeaturedExtensionDTO() {
@@ -341,10 +275,10 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        Extension expectedExtension = extensionService.findById(1, user);
 
         //Assert
-        Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
+        Assert.assertEquals(extension.getId(), expectedExtension.getId());
     }
 
     @Test
@@ -366,10 +300,10 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        Extension expectedExtension = extensionService.findById(1, user);
 
         //Assert
-        Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
+        Assert.assertEquals(extension.getId(), expectedExtension.getId());
     }
 
     @Test
@@ -391,10 +325,10 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO expectedExtensionDTO = extensionService.findById(1, user);
+        Extension expectedExtension = extensionService.findById(1, user);
 
         //Assert
-        Assert.assertEquals(extension.getId(), expectedExtensionDTO.getId());
+        Assert.assertEquals(extension.getId(), expectedExtension.getId());
     }
 
     @Test(expected = NullPointerException.class)
@@ -479,10 +413,10 @@ public class ExtensionServiceImplTests {
         when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
-        ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
+        Extension actualExtension = extensionService.update(1, extensionSpec, 1);
 
         //Assert
-        Assert.assertEquals(actualExtensionDTO.getName(), "newName");
+        Assert.assertEquals(actualExtension.getName(), "newName");
     }
 
     @Test
@@ -526,10 +460,10 @@ public class ExtensionServiceImplTests {
         when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
-        ExtensionDTO actualExtensionDTO = extensionService.update(1, extensionSpec, 1);
+        Extension actualExtension = extensionService.update(1, extensionSpec, 1);
 
         //Assert
-        Assert.assertEquals(actualExtensionDTO.getName(), "newName");
+        Assert.assertEquals(actualExtension.getName(), "newName");
     }
 
     @Test(expected = NullPointerException.class)
