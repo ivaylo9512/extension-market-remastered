@@ -3,6 +3,8 @@
 [![codecov](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository/branch/master/graph/badge.svg)](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository)
 [![Build Status](https://travis-ci.org/Smytt/Tick42-ExtensionRepository.svg?branch=master)](https://travis-ci.org/Smytt/Tick42-ExtensionRepository)
 
+IMPORTANT: If you want to test the github api you must generate your own github token from https://github.com/settings/tokens and set it from the admin section or directly in your database in the settings table.
+
 Tick42-ExtensionRepository a.k.a Ext42 is a web platform which provides extension developers with the ability to share their work along with a github repository link. Every userModel can receive ratings for his extensions and also keep count on how many times they were downloaded. The app provides 3 different levels of accessibility.
 
 The extensions with linked GitHubs are refreshed on interval set by the admins or every github can be manually refreshed also by the admins.
@@ -19,7 +21,7 @@ You should download the server-side-Jar folder, because it uses the upload folde
 
 If Upload folder is not present it will be created, but all the images and the files for the pre-created extensions in the database won't be present.
 
-It runs the application on 8080, you should check your ports first and kill any tasks on the port.
+It runs the application on 8090, you should check your ports first and kill any tasks on the port.
 
 The EXE uses inner database so you don't need to execute the sql. It has pre-added data in it you can log with username: admin password: password.
 
@@ -27,18 +29,16 @@ You can also register, but the created user won't be admin. You can create new a
 
 ### Without the EXE file
 
-IMPORTANT: If you want to test the github api you must generate your own github token from https://github.com/settings/tokens and set it from the admin section or directly in your database in the settings table.
-
 You need jre 1.8.0 editor and a database server:
 
 Execute the sql:
 `$ mysql -u root -p < database.sql`
-the sql is set to user: root password: 1234. You can change that from the Application.properties
+the sql is set to user: root password: 1234. You can change that from the application.properties
 
 Run the app:
 `$ ./gradlew bootRun`
 
-Again runs on :8080 port you can change that from Application.properties
+Again runs on :8090 port you can change that from application.properties
 
 ## Guest
 
