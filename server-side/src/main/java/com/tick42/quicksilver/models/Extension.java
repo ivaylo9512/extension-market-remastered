@@ -28,6 +28,10 @@ public class Extension {
     private File image;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "cover_id")
+    private File cover;
+
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "github_id")
     private GitHubModel github;
 
@@ -191,5 +195,13 @@ public class Extension {
 
     public void setTimesRated(int timesRated) {
         this.timesRated = timesRated;
+    }
+
+    public File getCover() {
+        return cover;
+    }
+
+    public void setCover(File cover) {
+        this.cover = cover;
     }
 }

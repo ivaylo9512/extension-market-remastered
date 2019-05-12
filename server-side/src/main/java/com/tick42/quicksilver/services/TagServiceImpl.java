@@ -97,6 +97,9 @@ public class TagServiceImpl implements TagService {
         if (extension.getFile() != null) {
             extensionDTO.setFileLocation(extension.getFile().getLocation());
         }
+        if (extension.getCover() != null) {
+            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+        }
         return extensionDTO;
     }
 

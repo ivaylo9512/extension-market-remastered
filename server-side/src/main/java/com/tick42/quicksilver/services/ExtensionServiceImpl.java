@@ -290,7 +290,10 @@ public class ExtensionServiceImpl implements ExtensionService {
         if (extension.getFile() != null) {
             extensionDTO.setFileLocation(extension.getFile().getLocation());
         }
-    return extensionDTO;
+        if (extension.getCover() != null) {
+            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+        }
+        return extensionDTO;
     }
 
     @Override

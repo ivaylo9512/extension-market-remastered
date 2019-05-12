@@ -107,7 +107,8 @@ public class ExtensionController {
     public ExtensionDTO saveExtensionFiles(
             @PathVariable(name = "extensionId") int extensionId,
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
-            @RequestParam(name = "file", required = false) MultipartFile extensionFile) {
+            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
+            @RequestParam(name = "cover", required = false) MultipartFile extensionCover) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
@@ -115,14 +116,17 @@ public class ExtensionController {
         Extension extension = extensionService.findById(extensionId, loggedUser);
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
             File file = fileService.storeFile(extensionFile, extensionId, userId);
             extension.setImage(file);
         }
-
+        if(extensionCover != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
+            extension.setCover(image);
+        }
         return extensionService.save(extension);
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -131,6 +135,7 @@ public class ExtensionController {
     public ExtensionDTO createExtensionInSingleRequest(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
+            @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
             @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -150,12 +155,16 @@ public class ExtensionController {
         int extensionId = extension.getId();
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
             File file = fileService.storeFile(extensionFile, extensionId, userId);
             extension.setFile(file);
+        }
+        if(extensionCover != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
+            extension.setCover(image);
         }
         return extensionService.save(extension);
     }
@@ -167,6 +176,7 @@ public class ExtensionController {
             @PathVariable(name = "extensionId") int extensionId,
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
+            @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
             @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -185,12 +195,16 @@ public class ExtensionController {
         Extension extension = extensionService.update(extensionId,extensionSpec, userId);
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId);
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
             File file = fileService.storeFile(extensionFile, extensionId, userId);
             extension.setFile(file);
+        }
+        if(extensionCover != null){
+            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
+            extension.setCover(image);
         }
         return extensionService.save(extension);
     }

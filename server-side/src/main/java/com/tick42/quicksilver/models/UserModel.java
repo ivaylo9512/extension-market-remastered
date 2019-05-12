@@ -47,6 +47,9 @@ public class UserModel {
     @Column(name = "extensions_rated")
     private int extensionsRated;
 
+    @Column(name = "image_id")
+    private String profileImage;
+
     public UserModel(){
 
     }
@@ -125,5 +128,13 @@ public class UserModel {
 
     public void setExtensionsRated(int extensionsRated) {
         this.extensionsRated = extensionsRated;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }

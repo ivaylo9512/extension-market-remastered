@@ -76,7 +76,7 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public File storeImage(MultipartFile receivedFile, int extensionId, int userId) {
+    public File storeImage(MultipartFile receivedFile, int extensionId, int userId, String type) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
@@ -90,7 +90,7 @@ public class FileServiceImpl implements FileService {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add images to this extension.");
         }
 
-        File image = generateFile(receivedFile, "image", extensionId);
+        File image = generateFile(receivedFile, type, extensionId);
 
         try {
             if (!image.getType().startsWith("image/")) {

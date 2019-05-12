@@ -9,5 +9,5 @@ public interface FileService {
 
     public Resource loadFileAsResource(String fileName);
 
-    public File storeImage(MultipartFile receivedFile, int extensionId, int userId);
+    public File storeImage(MultipartFile receivedFile, int extensionId, int userId, String type);
 }

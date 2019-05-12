@@ -28,6 +28,7 @@ public class ExtensionDTO {
     private String lastErrorMessage;
     private String fileLocation;
     private String imageLocation;
+    private String coverLocation;
     private List<String> tags = new ArrayList<>();
     private double rating;
     private int timesRated;
@@ -250,5 +251,13 @@ public class ExtensionDTO {
 
     public void setCurrentUserRatingValue(int currentUserRatingValue) {
         this.currentUserRatingValue = currentUserRatingValue;
+    }
+
+    public String getCoverLocation() {
+        return coverLocation;
+    }
+
+    public void setCoverLocation(String coverLocation) {
+        this.coverLocation = coverLocation;
     }
 }

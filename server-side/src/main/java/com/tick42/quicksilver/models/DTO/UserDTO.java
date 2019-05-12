@@ -13,24 +13,25 @@ public class UserDTO {
     private List<ExtensionDTO> extensions = new ArrayList<>();
     private boolean isActive;
     private double rating;
-    private int extensions_rated;
+    private int extensionsRated;
+    private String profileImage;
 
     public UserDTO() {
 
     }
 
     public UserDTO(UserModel userModel) {
-        this.setId(userModel.getId());
-        this.setUsername(userModel.getUsername());
-        this.setExtensions(
-                userModel.getExtensions()
-                        .stream()
-                        .map(ExtensionDTO::new)
-                        .collect(Collectors.toList()));
-        this.setTotalExtensions(this.extensions.size());
-        this.setIsActive(userModel.getIsActive());
-        this.setExtensions_rated(userModel.getExtensionsRated());
-        this.setRating(userModel.getRating());
+        this.id = userModel.getId();
+        this.username = userModel.getUsername();
+        this.extensions = userModel.getExtensions()
+                .stream()
+                .map(ExtensionDTO::new)
+                .collect(Collectors.toList());
+        this.totalExtensions = this.extensions.size();
+        this.isActive = userModel.getIsActive();
+        this.extensionsRated = userModel.getExtensionsRated();
+        this.rating = userModel.getRating();
+        this.profileImage = userModel.getProfileImage();
     }
 
     public int getId() {
@@ -81,11 +82,19 @@ public class UserDTO {
         this.rating = rating;
     }
 
-    public int getExtensions_rated() {
-        return extensions_rated;
+    public int getExtensionsRated() {
+        return extensionsRated;
     }
 
-    public void setExtensions_rated(int extensions_rated) {
-        this.extensions_rated = extensions_rated;
+    public void setExtensionsRated(int extensionsRated) {
+        this.extensionsRated = extensionsRated;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }
