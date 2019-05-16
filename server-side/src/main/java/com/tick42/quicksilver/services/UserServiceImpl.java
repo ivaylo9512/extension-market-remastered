@@ -96,10 +96,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         if (!user.getIsActive() && !admin) {
-            throw new UserProfileUnavailableException("UserModel profile is disabled.");
+            throw new UserProfileUnavailableException("UserModel profile is unavailable.");
         }
 
-        UserDTO userDTO = new UserDTO();
+        UserDTO userDTO = new UserDTO(user);
         userDTO.setExtensions(user.getExtensions()
                 .stream()
                 .map(this::generateExtensionDTO)
