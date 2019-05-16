@@ -15,6 +15,9 @@ public class UserDTO {
     private double rating;
     private int extensionsRated;
     private String profileImage;
+    private String country;
+    private String info;
+
 
     public UserDTO() {
 
@@ -32,6 +35,8 @@ public class UserDTO {
         this.extensionsRated = userModel.getExtensionsRated();
         this.rating = userModel.getRating();
         this.profileImage = userModel.getProfileImage();
+        this.country = userModel.getCountry();
+        this.info = userModel.getInfo();
     }
 
     public int getId() {
@@ -96,5 +101,21 @@ public class UserDTO {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

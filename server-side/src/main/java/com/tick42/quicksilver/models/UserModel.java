@@ -50,6 +50,12 @@ public class UserModel {
     @Column(name = "image_id")
     private String profileImage;
 
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "info")
+    private String info;
+
     public UserModel(){
 
     }
@@ -136,5 +142,21 @@ public class UserModel {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }
