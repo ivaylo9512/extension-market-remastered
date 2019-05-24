@@ -267,6 +267,11 @@ public class ExtensionController {
 
         return extensionService.fetchGitHub(id, userId);
     }
+    @GetMapping(value = "/extensions/checkName")
+    public boolean available(@RequestParam(name = "name") String name){
+
+        return extensionService.checkName(name);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody

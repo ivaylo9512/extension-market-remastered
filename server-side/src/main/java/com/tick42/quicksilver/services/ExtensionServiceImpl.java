@@ -379,4 +379,11 @@ public class ExtensionServiceImpl implements ExtensionService {
         }
         return extensionDTO;
     }
+    @Override
+    public boolean checkName(String name){
+        if(extensionRepository.findByName(name) == null){
+            return true;
+        }
+        return false;
+    }
 }

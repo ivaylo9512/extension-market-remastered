@@ -47,4 +47,6 @@ public interface ExtensionService {
     void updateMostRecent();
 
     ExtensionDTO reloadExtension(Extension extension);
+
+    boolean checkName(String name);
 }
