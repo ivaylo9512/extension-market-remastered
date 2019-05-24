@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
+import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.GitHubService;
@@ -45,6 +46,12 @@ public class GitHubController {
 
         return gitHubService.getSettings(userId);
     }
+
+    @PatchMapping("/github/getRepoDetails")
+    public GitHubModel getRepoDetails(@RequestParam(name = "link") String link){
+        return gitHubService.generateGitHub(link);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody

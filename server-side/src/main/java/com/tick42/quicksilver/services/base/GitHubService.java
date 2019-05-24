@@ -10,6 +10,8 @@ import java.io.IOException;
 public interface GitHubService {
     void setRemoteDetails(GitHubModel gitHubModel);
 
+    void getRepoDetails(GitHubModel gitHubModel) throws Exception;
+
     GitHubModel generateGitHub(String link);
 
     void updateExtensionDetails();

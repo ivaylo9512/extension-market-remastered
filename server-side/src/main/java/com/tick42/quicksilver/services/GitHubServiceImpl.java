@@ -92,6 +92,24 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
+    public void getRepoDetails(GitHubModel gitHubModel) throws IOException{
+        GHRepository repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
+
+        int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
+        int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
+
+        Date lastCommit = null;
+        List<GHCommit> commits = repo.listCommits().asList();
+        if (commits.size() > 0) {
+            lastCommit = commits.get(0).getCommitDate();
+        }
+
+        gitHubModel.setPullRequests(pulls);
+        gitHubModel.setOpenIssues(issues);
+        gitHubModel.setLastCommit(lastCommit);
+        gitHubModel.setLastSuccess(new Date());
+    }
+    @Override
     public GitHubModel generateGitHub(String link) {
         String[] githubCred = link.replaceAll("https://github.com/", "").split("/");
         String user = githubCred[0];
