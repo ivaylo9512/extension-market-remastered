@@ -19,4 +19,6 @@ public interface ExtensionRepository extends JpaRepository<Extension, Integer> {
     List<Extension> findByFeatured(boolean state);
 
     List<Extension> findByPending(boolean state);
+
+    Extension findByName(String name);
 }
