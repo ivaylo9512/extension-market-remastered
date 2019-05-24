@@ -47,8 +47,9 @@ public class GitHubController {
         return gitHubService.getSettings(userId);
     }
 
-    @PatchMapping("/github/getRepoDetails")
+    @GetMapping("/github/getRepoDetails")
     public GitHubModel getRepoDetails(@RequestParam(name = "link") String link){
+        System.out.println(link);
         return gitHubService.generateGitHub(link);
     }
 

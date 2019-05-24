@@ -93,16 +93,6 @@ public class ExtensionController {
 
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/create")
-    public ExtensionDTO createExtension(@Valid @RequestBody ExtensionSpec extension) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-
-        return new ExtensionDTO(extensionService.create(extension, userId));
-    }
-
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/upload/extensionFiles/{extensionId}")
     public ExtensionDTO saveExtensionFiles(
             @PathVariable(name = "extensionId") int extensionId,
@@ -132,7 +122,7 @@ public class ExtensionController {
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/extensions/createWithFiles")
     @Transactional
-    public ExtensionDTO createExtensionInSingleRequest(
+    public ExtensionDTO createExtension(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
             @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
@@ -170,9 +160,9 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/editWithFiles/{extensionId}")
+    @PostMapping("/auth/extensions/edit/{extensionId}")
     @Transactional
-    public ExtensionDTO editExtensionInSingleRequest(
+    public ExtensionDTO editExtension(
             @PathVariable(name = "extensionId") int extensionId,
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
@@ -268,7 +258,7 @@ public class ExtensionController {
         return extensionService.fetchGitHub(id, userId);
     }
     @GetMapping(value = "/extensions/checkName")
-    public boolean available(@RequestParam(name = "name") String name){
+    public boolean isNameAvailable(@RequestParam(name = "name") String name){
 
         return extensionService.checkName(name);
     }
