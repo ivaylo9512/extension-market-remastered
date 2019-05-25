@@ -120,7 +120,7 @@ public class ExtensionController {
         return extensionService.save(extension);
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/createWithFiles")
+    @PostMapping("/auth/extensions/create")
     @Transactional
     public ExtensionDTO createExtension(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
@@ -130,7 +130,6 @@ public class ExtensionController {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
-
         ObjectMapper mapper = new ObjectMapper();
         ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
 
@@ -259,7 +258,6 @@ public class ExtensionController {
     }
     @GetMapping(value = "/extensions/checkName")
     public boolean isNameAvailable(@RequestParam(name = "name") String name){
-
         return extensionService.checkName(name);
     }
 

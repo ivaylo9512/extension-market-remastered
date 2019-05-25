@@ -68,22 +68,10 @@ remote = (() => {
         })
     }
 
-    let createExtensionOnly = (extension) => {
-        return $.ajax({
-            type: 'POST',
-            url: base + '/api/auth/extensions/create',
-            data: JSON.stringify(extension),
-            contentType: 'application/json',
-            headers: {
-                'Authorization': localStorage.getItem('Authorization')
-            },
-        })
-    }
-
     let createExtension = (formData) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions/createWithFiles',
+            url: base + '/api/auth/extensions/create',
             data: formData,
             contentType: false,
             processData: false,
@@ -95,7 +83,7 @@ remote = (() => {
     let editExtension = (id, formData) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions/editWithFiles/' + id,
+            url: base + '/api/auth/extensions/edit/' + id,
             data: formData,
             contentType: false,
             processData: false,
@@ -104,17 +92,7 @@ remote = (() => {
             },
         })
     }
-    let editExtensionOnly = (id, extension) => {
-        return $.ajax({
-            type: 'PATCH',
-            url: base + '/api/auth/extensions/' + id,
-            data: JSON.stringify(extension),
-            contentType: 'application/json',
-            headers: {
-                'Authorization': localStorage.getItem('Authorization')
-            },
-        })
-    }
+
     let submitExtensionFiles = (extensionId, formData) => {
         return $.ajax({
             type: 'POST',
