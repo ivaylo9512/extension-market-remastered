@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
+import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserDetails;
@@ -49,7 +50,10 @@ public class GitHubController {
 
     @GetMapping("/github/getRepoDetails")
     public GitHubModel getRepoDetails(@RequestParam(name = "link") String link){
-        System.out.println(link);
+        GitHubModel gitHub = gitHubService.generateGitHub(link);
+        if(gitHub.getFailMessage() != null){
+            throw new GitHubRepositoryException("Couldn't connect to GitHub check the URL.");
+        }
         return gitHubService.generateGitHub(link);
     }
 
@@ -65,5 +69,11 @@ public class GitHubController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toArray());
+    }
+    @ExceptionHandler
+    ResponseEntity handleFeaturedLimitException(GitHubRepositoryException e){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
     }
 }

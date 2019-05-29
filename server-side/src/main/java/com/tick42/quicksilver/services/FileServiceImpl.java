@@ -28,15 +28,11 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
 
     private final Path fileLocation;
-    private final FileRepository fileRepository;
-    private final ExtensionService extensionsService;
     private final ExtensionRepository extensionRepository;
     private final UserRepository userRepository;
 
     @Autowired
-    public FileServiceImpl(FileRepository fileRepository, ExtensionService extensionsService, ExtensionRepository extensionRepository, UserRepository userRepository) {
-        this.fileRepository = fileRepository;
-        this.extensionsService = extensionsService;
+    public FileServiceImpl(ExtensionRepository extensionRepository, UserRepository userRepository) {
         this.extensionRepository = extensionRepository;
         this.userRepository = userRepository;
         this.fileLocation = Paths.get("./uploads")

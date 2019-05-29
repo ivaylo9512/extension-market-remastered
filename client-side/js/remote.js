@@ -305,7 +305,6 @@ remote = (() => {
         submitFile,
         submitImage,
         createExtension,
-        createExtensionOnly,
         editExtension,
         getUserProfile,
         setGitHubSettings,
