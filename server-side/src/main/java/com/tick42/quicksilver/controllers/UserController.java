@@ -1,9 +1,11 @@
 package com.tick42.quicksilver.controllers;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.UserDTO;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -14,12 +16,16 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -33,8 +39,16 @@ public class UserController {
     }
 
     @PostMapping(value = "/users/register")
-    public UserModel register(@Valid @RequestBody UserSpec user) {
-        return userService.register(user,"ROLE_USER");
+    public UserDetails register(@RequestParam(name = "image", required = false) MultipartFile image,
+                                @RequestParam(name = "user") String userJson) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        UserSpec user = mapper.readValue(userJson, UserSpec.class);
+        UserModel newUser = userService.register(user, "ROLE_USER");
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(newUser.getRole()));
+
+        return new UserDetails(newUser, authorities);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
