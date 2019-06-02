@@ -33,7 +33,7 @@ public class TagServiceImpl implements TagService {
                 .stream()
                 .map(this::generateExtensionDTO)
                 .collect(Collectors.toList()));
-        return new TagDTO();
+        return tagDTO;
     }
 
     @Override
