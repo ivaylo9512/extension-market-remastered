@@ -151,8 +151,8 @@ public class ExtensionController {
             extension.setFile(file);
         }
         if(extensionCover != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
-            extension.setCover(image);
+            File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
+            extension.setCover(cover);
         }
         return extensionService.save(extension);
     }
@@ -191,8 +191,8 @@ public class ExtensionController {
             extension.setFile(file);
         }
         if(extensionCover != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
-            extension.setCover(image);
+            File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
+            extension.setCover(cover);
         }
         return extensionService.save(extension);
     }
