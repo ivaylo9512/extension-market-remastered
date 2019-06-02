@@ -57,13 +57,13 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Set<Tag> generateTags(String tagString) {
-        tagString = tagString.trim();
         Set<Tag> tags = new HashSet<>();
 
-        if (tagString.equals("")) {
+        if (tagString == null) {
             return tags;
         }
 
+        tagString = tagString.trim();
         List<String> tagNames =
                 Arrays.stream(tagString.split(","))
                         .map(String::toLowerCase)
