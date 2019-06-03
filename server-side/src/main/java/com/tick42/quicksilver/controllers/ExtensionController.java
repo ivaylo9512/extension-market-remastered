@@ -19,7 +19,6 @@ import javax.validation.Valid;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.RatingService;
 import com.tick42.quicksilver.validators.ExtensionValidator;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;

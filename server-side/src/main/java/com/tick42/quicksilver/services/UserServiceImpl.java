@@ -54,7 +54,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
-        return new UserDTO(userRepository.save(user));
+        return generateUserDTO(userRepository.save(user));
+    }
+
+    @Override
+    public UserDTO save(UserModel user) {
+        return generateUserDTO(userRepository.save(user));
     }
 
     @Override
@@ -80,7 +85,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         return user.stream()
-                .map(UserDTO::new)
+                .map(this::generateUserDTO)
                 .collect(Collectors.toList());
     }
 
@@ -99,7 +104,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new UserProfileUnavailableException("UserModel profile is unavailable.");
         }
 
-        UserDTO userDTO = new UserDTO(user);
+        UserDTO userDTO = generateUserDTO(user);
         userDTO.setExtensions(user.getExtensions()
                 .stream()
                 .map(this::generateExtensionDTO)
@@ -155,8 +160,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
         user.setPassword(changePasswordSpec.getNewPassword());
         userRepository.save(user);
-        return new UserDTO(user);
+        return generateUserDTO(user);
 
+    }
+    private UserDTO generateUserDTO(UserModel user){
+        UserDTO userDTO = new UserDTO(user);
+        if(user.getProfileImage() != null){
+            userDTO.setProfileImage(user.getProfileImage().getLocation());
+        }
+        return userDTO;
     }
 
     private ExtensionDTO generateExtensionDTO(Extension extension) {

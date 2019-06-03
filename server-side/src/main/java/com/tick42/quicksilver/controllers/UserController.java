@@ -4,12 +4,13 @@ package com.tick42.quicksilver.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
+import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
 import com.tick42.quicksilver.validators.UserValidator;
 import org.apache.http.auth.InvalidCredentialsException;
@@ -38,9 +39,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final FileService fileService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FileService fileService) {
         this.userService = userService;
+        this.fileService = fileService;
     }
 
     @PostMapping(value = "/users/register")
@@ -49,7 +52,6 @@ public class UserController {
         ObjectMapper mapper = new ObjectMapper();
         UserSpec user = mapper.readValue(userJson, UserSpec.class);
 
-        System.out.println(userJson );
         Validator validator = new UserValidator();
         BindingResult bindingResult = new DataBinder(user).getBindingResult();
         validator.validate(user, bindingResult);
@@ -59,6 +61,11 @@ public class UserController {
 
         UserModel newUser = userService.register(user, "ROLE_USER");
 
+        if(image != null){
+            File logo = fileService.storeUserLogo(image, newUser.getId(), "logo");
+            newUser.setProfileImage(logo);
+            userService.save(newUser);
+        }
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(newUser.getRole()));
 

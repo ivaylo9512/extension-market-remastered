@@ -47,8 +47,9 @@ public class UserModel {
     @Column(name = "extensions_rated")
     private int extensionsRated;
 
-    @Column(name = "image_id")
-    private String profileImage;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id")
+    private File profileImage;
 
     @Column(name = "country")
     private String country;
@@ -136,14 +137,6 @@ public class UserModel {
         this.extensionsRated = extensionsRated;
     }
 
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-
     public String getCountry() {
         return country;
     }
@@ -158,5 +151,13 @@ public class UserModel {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public File getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(File profileImage) {
+        this.profileImage = profileImage;
     }
 }

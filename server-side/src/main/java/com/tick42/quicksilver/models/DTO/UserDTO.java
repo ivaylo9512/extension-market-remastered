@@ -34,7 +34,6 @@ public class UserDTO {
         this.isActive = userModel.getIsActive();
         this.extensionsRated = userModel.getExtensionsRated();
         this.rating = userModel.getRating();
-        this.profileImage = userModel.getProfileImage();
         this.country = userModel.getCountry();
         this.info = userModel.getInfo();
     }

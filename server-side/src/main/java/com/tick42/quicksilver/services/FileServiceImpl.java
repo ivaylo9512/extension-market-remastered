@@ -101,7 +101,28 @@ public class FileServiceImpl implements FileService {
             throw new FileStorageException("Couldn't store image.");
         }
     }
+    @Override
+    public File storeUserLogo(MultipartFile receivedFile, int userId, String type) {
 
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+
+        File image = generateFile(receivedFile, type, userId);
+
+        try {
+            if (!image.getType().startsWith("image/")) {
+                throw new FileFormatException("File should be of type IMAGE.");
+            }
+
+            saveFile(image, receivedFile);
+
+            return image;
+
+        } catch (IOException e) {
+            throw new FileStorageException("Couldn't store image.");
+        }
+    }
     private void saveFile(File image, MultipartFile receivedFile) throws IOException {
         Path targetLocation = this.fileLocation.resolve(image.getName());
         Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);

@@ -13,6 +13,7 @@ public interface UserService {
 
     UserDTO setState(int id, String state);
 
+    UserDTO save(UserModel user);
     List<UserDTO> findAll(String state);
 
     UserDTO findById(int id, UserDetails loggedUser);
