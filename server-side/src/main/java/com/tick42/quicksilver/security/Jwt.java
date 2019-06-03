@@ -54,7 +54,7 @@ public class Jwt {
 
             user = new UserDetails(body.getSubject(), token, authorities, Integer.parseInt(body.getId()));
         } catch (ExpiredJwtException e) {
-            throw new BadCredentialsException("Jwt token has expired.");
+                throw new BadCredentialsException("Jwt token has expired.");
         } catch (Exception e) {
             throw new BadCredentialsException("Jwt token is incorrect");
         }

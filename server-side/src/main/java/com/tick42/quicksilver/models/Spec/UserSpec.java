@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 public class UserSpec {
 
     @NotNull
-    @Size(min=7, max=22, message="Name should be be between 7 and 18 char.")
+    @Size(min=7, max=22, message="Name should be be between 7 and 22 char.")
     private String username;
 
     @NotNull
