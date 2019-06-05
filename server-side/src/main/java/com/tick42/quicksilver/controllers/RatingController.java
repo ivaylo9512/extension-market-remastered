@@ -27,7 +27,7 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-    @PatchMapping(value = "/auth/rating/{id}/{rating}")
+    @PatchMapping(value = "/auth/rate/{id}/{rating}")
     public double rating(@PathVariable("id") int id, @PathVariable("rating") int rating, HttpServletRequest request) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();

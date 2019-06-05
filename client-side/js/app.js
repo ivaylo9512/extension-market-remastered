@@ -171,6 +171,10 @@ let app = (() => {
         if (remote.isAuth()) {
             $(this).closest('div').find('a').removeClass('current')
             $(this).addClass('current');
+            const id = $(this).attr('id');
+            for(let i = 0; i <= id; i++){
+                $('.rating .star' + i).parent().addClass('current');
+            }
             let userRating = $(this).attr('id');
             let timesRated = $('.info .rating').attr('timesRated');
             let extensionId = $(this).attr('extensionId');

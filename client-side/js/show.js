@@ -33,9 +33,9 @@ let show = (() => {
             success: (tmpl) => {
                 let $html = Mustache.render(tmpl,rating)
                 $('.current-rating').fadeOut(300, () => {
-                $('.current-rating').empty();
-                $('.current-rating').html($html);
-                $('.current-rating').fadeIn($html);
+                    $('.current-rating').empty();
+                    $('.current-rating').html($html);
+                    $('.current-rating').fadeIn($html);
                 })
             }
         })
@@ -225,8 +225,9 @@ let show = (() => {
             success: (tmpl) => {
                 let $html = Mustache.render(tmpl, extension);
                 $content.html($html);
-                let userRating = extension['currentUserRatingValue']
-                $('.rating .star' + userRating).parent().addClass('current');
+                for(let i = 0; i <= extension['currentUserRatingValue']; i++){
+                    $('.rating .star' + i).parent().addClass('current');
+                }
             }
         })
     }

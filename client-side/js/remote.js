@@ -278,7 +278,7 @@ remote = (() => {
     let rateExtension = (id, rating) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/rating/' + id + "/" + rating,
+            url: base + '/api/auth/rate/' + id + "/" + rating,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
