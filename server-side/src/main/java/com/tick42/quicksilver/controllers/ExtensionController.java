@@ -77,10 +77,9 @@ public class ExtensionController {
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
             rating = ratingService.userRatingForExtension(extensionId, loggedUser.getId());
         } catch (Exception e) {
-            if(e.getMessage().equals("Jwt token has expired.")){
+            if(e.getMessage() != null && e.getMessage().equals("Jwt token has expired.")){
                 throw new JwtException("Jwt token has expired.");
             }
-
             loggedUser = null;
             rating = 0;
         }
