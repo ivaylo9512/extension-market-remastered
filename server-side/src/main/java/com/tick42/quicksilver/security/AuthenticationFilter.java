@@ -8,9 +8,11 @@ import com.tick42.quicksilver.models.UserModel;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -36,17 +38,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication auth) throws IOException {
+                                            FilterChain chain, Authentication auth) throws IOException, ServletException {
+
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String token = Jwt.generate(userDetails);
 
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getId()));
         response.addHeader("Authorization", "Token " + token);
-        ObjectMapper mapper = new ObjectMapper();
-
-        userDetails.setToken("Token " + token);
-        mapper.registerModule(new JavaTimeModule());
-        String userJson = mapper.writeValueAsString(userDetails);
-        response.getWriter().write(userJson);
+        chain.doFilter(request, response);
     }
 }
 

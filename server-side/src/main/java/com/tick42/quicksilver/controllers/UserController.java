@@ -72,6 +72,14 @@ public class UserController {
         return new UserDetails(newUser, authorities);
     }
 
+    @PostMapping("/users/login")
+    public UserDetails login(){
+        return (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
     public UserModel registerAdmin(@Valid @RequestBody UserSpec user){
