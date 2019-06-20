@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
@@ -46,7 +46,7 @@ public class UserController {
         this.fileService = fileService;
     }
 
-    @PostMapping(value = "/users/register")
+    @PostMapping(value = "/register")
     public UserDetails register(@RequestParam(name = "image", required = false) MultipartFile image,
                                 @RequestParam(name = "user") String userJson) throws IOException, BindException {
         ObjectMapper mapper = new ObjectMapper();
@@ -72,13 +72,13 @@ public class UserController {
         return new UserDetails(newUser, authorities);
     }
 
-    @PostMapping("/users/login")
-    public UserDetails login(){
-        return (UserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-    }
+        @PostMapping("/login")
+        public UserDetails login(){
+            return (UserDetails) SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getPrincipal();
+        }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
@@ -86,7 +86,7 @@ public class UserController {
         return userService.register(user, "ROLE_ADMIN");
     }
 
-    @GetMapping(value = "/users/{id}")
+    @GetMapping(value = "/{id}")
     public UserDTO profile(@PathVariable(name = "id") int id, HttpServletRequest request) {
         UserDetails loggedUser;
         try {
@@ -98,14 +98,14 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/users/setState/{id}/{newState}")
+    @PatchMapping(value = "/auth/setState/{id}/{newState}")
     public UserDTO setState(@PathVariable("newState") String state,
                             @PathVariable("id") int id) {
         return userService.setState(id, state);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "/auth/users/all")
+    @GetMapping(value = "/auth/all")
     public List<UserDTO> listAllUsers(@RequestParam(name = "state", required = false) String state) {
         return userService.findAll(state);
     }

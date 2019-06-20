@@ -38,21 +38,27 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/extensions")
 public class ExtensionController {
 
     private final ExtensionService extensionService;
     private final FileService fileService;
     private RatingService ratingService;
 
-    @GetMapping("/extensions/getHomeExtensions")
+    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService) {
+        this.extensionService = extensionService;
+        this.fileService = fileService;
+        this.ratingService = ratingService;
+    }
+
+    @GetMapping("/getHomeExtensions")
     public HomePageDTO getHomeExtensions(
             @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
             @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
         return extensionService.getHomeExtensions(mostRecentCount, mostDownloadedCount);
     }
 
-    @GetMapping("/extensions/filter")
+    @GetMapping("/filter")
     public PageDTO<ExtensionDTO> findAll(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "orderBy", required = false) String orderBy,
@@ -62,14 +68,7 @@ public class ExtensionController {
         return extensionService.findAll(name, orderBy, page, perPage);
     }
 
-    @Autowired
-    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService) {
-        this.extensionService = extensionService;
-        this.fileService = fileService;
-        this.ratingService = ratingService;
-    }
-
-    @GetMapping("/extensions/{id}")
+    @GetMapping("/{id}")
     public ExtensionDTO findById(@PathVariable(name = "id") int extensionId, HttpServletRequest request) {
         UserDetails loggedUser;
         int rating;
@@ -117,7 +116,7 @@ public class ExtensionController {
         return extensionService.save(extension);
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/create")
+    @PostMapping("/auth/create")
     @Transactional
     public ExtensionDTO createExtension(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
@@ -156,7 +155,7 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/extensions/edit/{extensionId}")
+    @PostMapping("/auth/edit/{extensionId}")
     @Transactional
     public ExtensionDTO editExtension(
             @PathVariable(name = "extensionId") int extensionId,
@@ -195,18 +194,18 @@ public class ExtensionController {
         return extensionService.save(extension);
     }
 
-    @GetMapping("/extensions/featured")
+    @GetMapping("/featured")
     public List<ExtensionDTO> featured() {
         return extensionService.findFeatured();
     }
 
-    @GetMapping("/extensions/download/{id}")
+    @GetMapping("/download/{id}")
     public ExtensionDTO download(@PathVariable(name = "id") int id) {
         return extensionService.increaseDownloadCount(id);
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PatchMapping("/auth/extensions/{id}")
+    @PatchMapping("/auth/{id}")
     public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extension) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -216,7 +215,7 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/auth/extensions/{id}")
+    @DeleteMapping("/auth/{id}")
     public void delete(@PathVariable(name = "id") int id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -227,25 +226,25 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "/auth/extensions/unpublished")
+    @GetMapping(value = "/auth/unpublished")
     public List<ExtensionDTO> pending() {
         return extensionService.findPending();
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/extensions/{id}/status/{state}")
+    @PatchMapping(value = "/auth/{id}/status/{state}")
     public ExtensionDTO setPublishedState(@PathVariable(name = "id") int id, @PathVariable("state") String state) {
         return extensionService.setPublishedState(id, state);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/extensions/{id}/featured/{state}")
+    @PatchMapping(value = "/auth/{id}/featured/{state}")
     public ExtensionDTO setFeaturedState(@PathVariable("id") int id, @PathVariable("state") String state) {
         return extensionService.setFeaturedState(id, state);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/extensions/{id}/github")
+    @PatchMapping(value = "/auth/{id}/github")
     public ExtensionDTO fetchGitHubData(@PathVariable("id") int id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -253,7 +252,7 @@ public class ExtensionController {
 
         return extensionService.fetchGitHub(id, userId);
     }
-    @GetMapping(value = "/extensions/checkName")
+    @GetMapping(value = "/checkName")
     public boolean isNameAvailable(@RequestParam(name = "name") String name){
         return extensionService.checkName(name);
     }

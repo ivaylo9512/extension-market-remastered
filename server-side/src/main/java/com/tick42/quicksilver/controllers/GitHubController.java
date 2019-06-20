@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/github")
 public class GitHubController {
 
     private final GitHubService gitHubService;
@@ -29,7 +29,7 @@ public class GitHubController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/github")
+    @PostMapping("/auth")
     public void gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -39,7 +39,7 @@ public class GitHubController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/auth/github")
+    @GetMapping("/auth")
     public GitHubSettingSpec getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -48,7 +48,7 @@ public class GitHubController {
         return gitHubService.getSettings(userId);
     }
 
-    @GetMapping("/github/getRepoDetails")
+    @GetMapping("/getRepoDetails")
     public GitHubModel getRepoDetails(@RequestParam(name = "link") String link){
         GitHubModel gitHub = gitHubService.generateGitHub(link);
         if(gitHub.getFailMessage() != null){

@@ -14,13 +14,13 @@ import java.io.IOException;
 
 public class AuthorizationFilter extends AbstractAuthenticationProcessingFilter {
     public AuthorizationFilter() {
-        super("/api/auth/**");
+        super("/api/**/auth/**");
         super.setAuthenticationSuccessHandler((request, response, authentication) -> {});
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse
-                                                response) throws AuthenticationException, IOException, ServletException {
+            response) throws AuthenticationException, IOException, ServletException {
         String token = request.getHeader("Authorization");
         if(token == null || !token.startsWith("Token")){
             throw new BadCredentialsException("Jwt token is missing");

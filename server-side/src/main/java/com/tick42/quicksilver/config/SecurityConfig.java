@@ -66,7 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf()
                 .disable().authorizeRequests()
-                .antMatchers("**/api/auth/**").authenticated()
+                .antMatchers("**/api/**/auth/**").authenticated()
                 .and()
                 .addFilterBefore(authenticationFilter(), ConcurrentSessionFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -77,6 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private AuthorizationFilter authorizationFilter() {
         AuthorizationFilter filter = new AuthorizationFilter();
+        filter.setFilterProcessesUrl("/api/**/auth/**");
         filter.setAuthenticationManager(authenticationManagerAuthorization());
         filter.setAuthenticationFailureHandler(new FailureHandler());
         filter.setAuthenticationSuccessHandler((request, response, authentication) -> {});

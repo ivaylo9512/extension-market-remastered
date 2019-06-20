@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/rating")
 public class RatingController {
     private final ExtensionService extensionService;
     private final RatingService ratingService;
