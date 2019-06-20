@@ -123,10 +123,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount){
-        List<Extension> featuredExtensions = new ArrayList<>(featured.values());
-        List<Extension> mostDownloaded = extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded"));
-
+    public List<Extension> findMostRecent(Integer mostRecentCount){
         List<Extension> mostRecentExtensions;
         if(mostRecentCount == null){
             mostRecentExtensions = new ArrayList<>(mostRecent);
@@ -135,10 +132,17 @@ public class ExtensionServiceImpl implements ExtensionService {
         }else{
             mostRecentExtensions = new ArrayList<>(mostRecent).subList(0, mostRecentCount);
         }
+        return mostRecentExtensions;
+    }
 
-        return new HomePageDTO(mostRecentExtensions, featuredExtensions, mostDownloaded);
+    @Override
+    public List<Extension> getFeatured(){
+        return new ArrayList<>(featured.values());
+    }
 
-
+    @Override
+    public List<Extension> findMostDownloaded(Integer mostDownloadedCount){
+        return extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded"));
     }
 
     @Override
@@ -185,11 +189,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         }
 
         return new PageDTO<>(extension, page, totalPages, totalResults);
-    }
-
-    @Override
-    public List<Extension> findFeatured() {
-        return extensionRepository.findByFeatured(true);
     }
 
     @Override

@@ -57,7 +57,11 @@ public class ExtensionController {
     public HomePageDTO getHomeExtensions(
             @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
             @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
-        return extensionService.getHomeExtensions(mostRecentCount, mostDownloadedCount);
+
+        List<ExtensionDTO> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
+        List<ExtensionDTO> featured = generateExtensionDTOList(extensionService.getFeatured());
+        List<ExtensionDTO> mostDownloaded = generateExtensionDTOList(extensionService.findMostDownloaded(mostDownloadedCount));
+        return new HomePageDTO(mostRecent, featured, mostDownloaded);
     }
 
     @GetMapping("/filter")
@@ -198,7 +202,7 @@ public class ExtensionController {
 
     @GetMapping("/featured")
     public List<ExtensionDTO> featured() {
-        return generateExtensionDTOList(extensionService.findFeatured());
+        return generateExtensionDTOList(extensionService.getFeatured());
     }
 
     @GetMapping("/download/{id}")

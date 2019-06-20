@@ -24,9 +24,13 @@ public interface ExtensionService {
 
     HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount);
 
-    PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage);
+    List<Extension> findMostRecent(Integer mostRecentCount);
 
-    List<Extension> findFeatured();
+    List<Extension> getFeatured();
+
+    List<Extension> findMostDownloaded(Integer mostDownloadedCount);
+
+    PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage);
 
     Extension setPublishedState(int id, String newState);
 
