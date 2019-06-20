@@ -71,7 +71,7 @@ remote = (() => {
     let createExtension = (formData) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions/create',
+            url: base + '/api/extensions/auth/create',
             data: formData,
             contentType: false,
             processData: false,
@@ -83,7 +83,7 @@ remote = (() => {
     let editExtension = (id, formData) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/extensions/edit/' + id,
+            url: base + '/api/extensions/auth/edit/' + id,
             data: formData,
             contentType: false,
             processData: false,
@@ -165,7 +165,7 @@ remote = (() => {
     let registerAdmin = (user) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/users/adminRegistration',
+            url: base + '/api/users/auth/adminRegistration',
             data: JSON.stringify(user),
             contentType: 'application/json',
             headers: {
@@ -177,7 +177,7 @@ remote = (() => {
     let setPublishedState = (id, state) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/extensions/' + id + '/status/' + state,
+            url: base + '/api/extensions/auth/' + id + '/status/' + state,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             },
@@ -187,7 +187,7 @@ remote = (() => {
     let setFeaturedState = (id, state) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/extensions/' + id + '/featured/' + state,
+            url: base + '/api/extensions/auth/' + id + '/featured/' + state,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             },
@@ -197,7 +197,7 @@ remote = (() => {
     let deleteExtension = (id) => {
         return $.ajax({
             type: 'DELETE',
-            url: base + '/api/auth/extensions/' + id,
+            url: base + '/api/extensions/auth/' + id,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             },
@@ -208,7 +208,7 @@ remote = (() => {
     let setUserState = (id, state) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/users/setState/' + id + '/' + state,
+            url: base + '/api/users/auth/setState/' + id + '/' + state,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
@@ -228,7 +228,7 @@ remote = (() => {
     let setGitHubSettings = (gitHubSettings) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/api/auth/github',
+            url: base + '/api/github/auth',
             data: JSON.stringify(gitHubSettings),
             contentType: 'application/json',
             headers: {
@@ -239,7 +239,7 @@ remote = (() => {
     let refreshGitHub = (id) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/extensions/' + id + '/github',
+            url: base + '/api/extensions/auth/' + id + '/github',
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
@@ -248,7 +248,7 @@ remote = (() => {
     let getUsers = (state) => {
         return $.ajax({
             type: 'GET',
-            url: base + '/api/auth/users/all' + '?state=' + state,
+            url: base + '/api/users/auth/all' + '?state=' + state,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
@@ -258,7 +258,7 @@ remote = (() => {
     let loadPending = () => {
         return $.ajax({
             type: 'GET',
-            url: base + '/api/auth/extensions/unpublished',
+            url: base + '/api/extensions/auth/unpublished',
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
@@ -278,7 +278,7 @@ remote = (() => {
     let rateExtension = (id, rating) => {
         return $.ajax({
             type: 'PATCH',
-            url: base + '/api/auth/rate/' + id + "/" + rating,
+            url: base + '/api/rating/auth/rate/' + id + "/" + rating,
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
@@ -288,7 +288,7 @@ remote = (() => {
     let getCurrentGitHubSettings = () => {
         return $.ajax({
             type: 'GET',
-            url: base + '/api/auth/github',
+            url: base + '/api/github/auth',
             headers: {
                 'Authorization': localStorage.getItem('Authorization')
             }
