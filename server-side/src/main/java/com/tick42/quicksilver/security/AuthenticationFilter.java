@@ -39,12 +39,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication auth) throws IOException, ServletException {
-
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String token = Jwt.generate(userDetails);
+        userDetails.setToken("Token " + token);
 
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getId()));
-        response.addHeader("Authorization", "Token " + token);
         chain.doFilter(request, response);
     }
 }
