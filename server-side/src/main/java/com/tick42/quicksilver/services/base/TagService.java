@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface TagService {
 
-    TagDTO findByName(String name);
+    Tag findByName(String name);
 
     String normalize(String name);
 

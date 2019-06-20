@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDTO setState(int userId, String state) {
+    public UserModel setState(int userId, String state) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -54,16 +54,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
-        return generateUserDTO(userRepository.save(user));
+        return userRepository.save(user);
     }
 
     @Override
-    public UserDTO save(UserModel user) {
-        return generateUserDTO(userRepository.save(user));
+    public UserModel save(UserModel user) {
+        return userRepository.save(user);
     }
 
     @Override
-    public List<UserDTO> findAll(String state) {
+    public List<UserModel> findAll(String state) {
         List<UserModel> user;
 
         if (state == null) {
@@ -84,13 +84,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 throw new InvalidStateException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
-        return user.stream()
-                .map(this::generateUserDTO)
-                .collect(Collectors.toList());
+        return user;
     }
 
     @Override
-    public UserDTO findById(int userId, UserDetails loggedUser) {
+    public UserModel findById(int userId, UserDetails loggedUser) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -103,13 +101,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (!user.getIsActive() && !admin) {
             throw new UserProfileUnavailableException("UserModel profile is unavailable.");
         }
-
-        UserDTO userDTO = generateUserDTO(user);
-        userDTO.setExtensions(user.getExtensions()
-                .stream()
-                .map(this::generateExtensionDTO)
-                .collect(Collectors.toList()));
-        return userDTO;
+        return user;
     }
 
     @Override
@@ -147,7 +139,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDTO changePassword(int userId, ChangeUserPasswordSpec changePasswordSpec){
+    public UserModel changePassword(int userId, ChangeUserPasswordSpec changePasswordSpec){
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -160,43 +152,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
         user.setPassword(changePasswordSpec.getNewPassword());
         userRepository.save(user);
-        return generateUserDTO(user);
+        return user;
 
-    }
-    private UserDTO generateUserDTO(UserModel user){
-        UserDTO userDTO = new UserDTO(user);
-        if(user.getProfileImage() != null){
-            userDTO.setProfileImage(user.getProfileImage().getLocation());
-        }
-        return userDTO;
-    }
-
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-            }
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-        if (extension.getImage() != null) {
-            extensionDTO.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
-            extensionDTO.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getCover() != null) {
-            extensionDTO.setCoverLocation(extension.getCover().getLocation());
-        }
-        return extensionDTO;
     }
 }

@@ -11,14 +11,15 @@ import java.util.List;
 
 public interface UserService {
 
-    UserDTO setState(int id, String state);
+    UserModel setState(int id, String state);
 
-    UserDTO save(UserModel user);
-    List<UserDTO> findAll(String state);
+    UserModel save(UserModel user);
 
-    UserDTO findById(int id, UserDetails loggedUser);
+    List<UserModel> findAll(String state);
+
+    UserModel findById(int id, UserDetails loggedUser);
 
     UserModel register(UserSpec userSpec, String role);
 
-    UserDTO changePassword(int id, ChangeUserPasswordSpec changePasswordSpec);
+    UserModel changePassword(int id, ChangeUserPasswordSpec changePasswordSpec);
 }

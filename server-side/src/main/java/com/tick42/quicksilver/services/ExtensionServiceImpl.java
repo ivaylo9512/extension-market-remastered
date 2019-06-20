@@ -15,14 +15,12 @@ import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ExtensionServiceImpl implements ExtensionService {
@@ -31,8 +29,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final TagService tagService;
     private final GitHubService gitHubService;
     private UserRepository userRepository;
-    private Map<Integer, ExtensionDTO> featured = Collections.synchronizedMap(new LinkedHashMap<>());
-    private List<ExtensionDTO> mostRecent = Collections.synchronizedList(new ArrayList<>());
+    private Map<Integer, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
+    private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
@@ -103,8 +101,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO save(Extension extension){
-        return generateExtensionDTO(extensionRepository.save(extension));
+    public Extension save(Extension extension){
+        return extensionRepository.save(extension);
     }
 
     @Override
@@ -126,16 +124,14 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount){
-        List<ExtensionDTO> featuredExtensions = new ArrayList<>(featured.values());
-        List<ExtensionDTO> mostDownloaded = generateExtensionDTOList(
-                extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded")));
+        List<Extension> featuredExtensions = new ArrayList<>(featured.values());
+        List<Extension> mostDownloaded = extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded"));
 
-        List<ExtensionDTO> mostRecentExtensions;
+        List<Extension> mostRecentExtensions;
         if(mostRecentCount == null){
             mostRecentExtensions = new ArrayList<>(mostRecent);
         }else if(mostRecentCount > mostRecentQueueLimit){
-            mostRecentExtensions = generateExtensionDTOList(
-                    extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate")));
+            mostRecentExtensions = extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate"));
         }else{
             mostRecentExtensions = new ArrayList<>(mostRecent).subList(0, mostRecentCount);
         }
@@ -188,18 +184,16 @@ public class ExtensionServiceImpl implements ExtensionService {
                 throw new InvalidParameterException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
         }
 
-        List<ExtensionDTO> extensionDTOS = generateExtensionDTOList(extensions);
-        return new PageDTO<>(extensionDTOS, page, totalPages, totalResults);
+        return new PageDTO<>(extension, page, totalPages, totalResults);
     }
 
     @Override
-    public List<ExtensionDTO> findFeatured() {
-        List<Extension> extensions = extensionRepository.findByFeatured(true);
-        return generateExtensionDTOList(extensions);
+    public List<Extension> findFeatured() {
+        return extensionRepository.findByFeatured(true);
     }
 
     @Override
-    public ExtensionDTO setPublishedState(int extensionId, String state) {
+    public Extension setPublishedState(int extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
@@ -217,11 +211,11 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         extensionRepository.save(extension);
         updateMostRecent();
-        return generateExtensionDTO(extension);
+        return extension;
     }
 
     @Override
-    public ExtensionDTO setFeaturedState(int extensionId, String state) {
+    public Extension setFeaturedState(int extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
@@ -241,63 +235,22 @@ public class ExtensionServiceImpl implements ExtensionService {
                 throw new InvalidStateException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
 
-
-        extensionRepository.save(extension);
-
-        ExtensionDTO extensionDTO = generateExtensionDTO(extension);
-        if(extensionDTO.isFeatured()){
-            featured.put(extensionDTO.getId(), extensionDTO);
+        if(extension.isFeatured()){
+            featured.put(extension.getId(), extension);
         }else{
             featured.remove(extensionId);
         }
 
-        return extensionDTO;
+        return extension;
     }
 
     @Override
-    public List<ExtensionDTO> findPending() {
-        return generateExtensionDTOList(extensionRepository.findByPending(true));
+    public List<Extension> findPending() {
+        return extensionRepository.findByPending(true);
     }
 
     @Override
-    public List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions) {
-        return extensions.stream()
-                .map(this::generateExtensionDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-            }
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-        if (extension.getImage() != null) {
-            extensionDTO.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
-            extensionDTO.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getCover() != null) {
-            extensionDTO.setCoverLocation(extension.getCover().getLocation());
-        }
-        return extensionDTO;
-    }
-
-    @Override
-    public ExtensionDTO increaseDownloadCount(int extensionId) {
+    public Extension increaseDownloadCount(int extensionId) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
@@ -335,34 +288,29 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public void loadFeatured() {
         extensionRepository.findByFeatured(true).forEach(extension ->
-                featured.put(extension.getId(), generateExtensionDTO(extension)));
+                featured.put(extension.getId(), extension));
     }
 
     @Override
     public void updateMostRecent(){
         mostRecent.clear();
-        mostRecent.addAll(generateExtensionDTOList(
-                extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate"))));
+        mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate")));
     }
 
     @Override
-    public ExtensionDTO reloadExtension(Extension extension){
-        ExtensionDTO extensionDTO = generateExtensionDTO(extension);
-        if(mostRecent.contains(extensionDTO)){
-            int index = mostRecent.indexOf(extensionDTO);
-            mostRecent.set(index, extensionDTO);
+    public Extension reloadExtension(Extension extension){
+        if(mostRecent.contains(extension)){
+            int index = mostRecent.indexOf(extension);
+            mostRecent.set(index, extension);
         }
 
-        if(featured.containsKey(extensionDTO.getId())){
-            featured.replace(extensionDTO.getId(), extensionDTO);
+        if(featured.containsKey(extension.getId())){
+            featured.replace(extension.getId(), extension);
         }
-        return extensionDTO;
+        return extension;
     }
     @Override
     public boolean checkName(String name){
-        if(extensionRepository.findByName(name) == null){
-            return true;
-        }
-        return false;
+        return extensionRepository.findByName(name) == null;
     }
 }

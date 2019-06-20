@@ -26,14 +26,8 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public TagDTO findByName(String name) {
-        Tag tag = tagRepository.findById(name).orElseThrow(() -> new RuntimeException("Tag not found."));
-        TagDTO tagDTO = new TagDTO(tag);
-        tagDTO.setExtensions(tag.getExtensions()
-                .stream()
-                .map(this::generateExtensionDTO)
-                .collect(Collectors.toList()));
-        return tagDTO;
+    public Tag findByName(String name) {
+        return tagRepository.findById(name).orElseThrow(() -> new RuntimeException("Tag not found."));
     }
 
     @Override
@@ -73,34 +67,4 @@ public class TagServiceImpl implements TagService {
         tagNames.forEach(tagName -> tags.add(tagRepository.save(new Tag(tagName))));
         return tags;
     }
-
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-            }
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-        if (extension.getImage() != null) {
-            extensionDTO.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
-            extensionDTO.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getCover() != null) {
-            extensionDTO.setCoverLocation(extension.getCover().getLocation());
-        }
-        return extensionDTO;
-    }
-
 }

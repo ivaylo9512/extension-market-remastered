@@ -108,7 +108,7 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
 
-        File image = generateFile(receivedFile, type, userId);
+        File image = generateFile(receivedFile, type, user.getId());
 
         try {
             if (!image.getType().startsWith("image/")) {
@@ -123,6 +123,7 @@ public class FileServiceImpl implements FileService {
             throw new FileStorageException("Couldn't store image.");
         }
     }
+
     private void saveFile(File image, MultipartFile receivedFile) throws IOException {
         Path targetLocation = this.fileLocation.resolve(image.getName());
         Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);

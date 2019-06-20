@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/extensions")
@@ -83,7 +84,7 @@ public class ExtensionController {
             loggedUser = null;
             rating = 0;
         }
-        ExtensionDTO extensionDTO = extensionService.generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
+        ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
         extensionDTO.setCurrentUserRatingValue(rating);
         return extensionDTO;
     }
@@ -114,7 +115,7 @@ public class ExtensionController {
             File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
             extension.setCover(image);
         }
-        return extensionService.save(extension);
+        return generateExtensionDTO(extensionService.save(extension));
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/create")
@@ -152,7 +153,7 @@ public class ExtensionController {
             File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
             extension.setCover(cover);
         }
-        return extensionService.save(extension);
+        return generateExtensionDTO(extensionService.save(extension));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -192,17 +193,17 @@ public class ExtensionController {
             File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
             extension.setCover(cover);
         }
-        return extensionService.save(extension);
+        return generateExtensionDTO(extensionService.save(extension));
     }
 
     @GetMapping("/featured")
     public List<ExtensionDTO> featured() {
-        return extensionService.findFeatured();
+        return generateExtensionDTOList(extensionService.findFeatured());
     }
 
     @GetMapping("/download/{id}")
     public ExtensionDTO download(@PathVariable(name = "id") int id) {
-        return extensionService.increaseDownloadCount(id);
+        return generateExtensionDTO(extensionService.increaseDownloadCount(id));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -229,19 +230,19 @@ public class ExtensionController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/unpublished")
     public List<ExtensionDTO> pending() {
-        return extensionService.findPending();
+        return generateExtensionDTOList(extensionService.findPending());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/status/{state}")
     public ExtensionDTO setPublishedState(@PathVariable(name = "id") int id, @PathVariable("state") String state) {
-        return extensionService.setPublishedState(id, state);
+        return generateExtensionDTO(extensionService.setPublishedState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/featured/{state}")
     public ExtensionDTO setFeaturedState(@PathVariable("id") int id, @PathVariable("state") String state) {
-        return extensionService.setFeaturedState(id, state);
+        return generateExtensionDTO(extensionService.setFeaturedState(id, state));
     }
 
     @GetMapping(value = "/checkName")
@@ -339,5 +340,40 @@ public class ExtensionController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
+    private List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions) {
+        return extensions.stream()
+                .map(this::generateExtensionDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ExtensionDTO generateExtensionDTO(Extension extension) {
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if (extension.getGithub() != null) {
+            extensionDTO.setGitHubLink(extension.getGithub().getLink());
+            if (extension.getGithub().getLastCommit() != null) {
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+            }
+            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
+            if (extension.getGithub().getLastSuccess() != null) {
+                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+            }
+            if (extension.getGithub().getLastFail() != null) {
+                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+            }
+        }
+        if (extension.getImage() != null) {
+            extensionDTO.setImageLocation(extension.getImage().getLocation());
+        }
+        if (extension.getFile() != null) {
+            extensionDTO.setFileLocation(extension.getFile().getLocation());
+        }
+        if (extension.getCover() != null) {
+            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+        }
+        return extensionDTO;
+    }
+
 
 }

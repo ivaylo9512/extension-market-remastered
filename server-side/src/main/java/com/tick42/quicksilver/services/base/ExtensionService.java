@@ -18,7 +18,7 @@ public interface ExtensionService {
 
     Extension update(int extensionId, ExtensionSpec extension, int userId);
 
-    ExtensionDTO save(Extension extension);
+    Extension save(Extension extension);
 
     void delete(int id, int userId);
 
@@ -26,25 +26,21 @@ public interface ExtensionService {
 
     PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage);
 
-    List<ExtensionDTO> findFeatured();
+    List<Extension> findFeatured();
 
-    ExtensionDTO setPublishedState(int id, String newState);
+    Extension setPublishedState(int id, String newState);
 
-    ExtensionDTO setFeaturedState(int id, String newState);
+    Extension setFeaturedState(int id, String newState);
 
-    List<ExtensionDTO> findPending();
+    List<Extension> findPending();
 
-    List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions);
-
-    ExtensionDTO generateExtensionDTO(Extension extension);
-
-    ExtensionDTO increaseDownloadCount(int id);
+    Extension increaseDownloadCount(int id);
 
     void loadFeatured();
 
     void updateMostRecent();
 
-    ExtensionDTO reloadExtension(Extension extension);
+    Extension reloadExtension(Extension extension);
 
     boolean checkName(String name);
 }

@@ -3,7 +3,9 @@ package com.tick42.quicksilver.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
 import com.tick42.quicksilver.models.Spec.UserSpec;
@@ -33,6 +35,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -94,20 +97,28 @@ public class UserController {
         } catch (Exception e) {
             loggedUser = null;
         }
-        return userService.findById(id, loggedUser);
+        UserModel user = userService.findById(id, loggedUser);
+        UserDTO userDTO = generateUserDTO(user);
+        userDTO.setExtensions(user.getExtensions()
+                .stream()
+                .map(this::generateExtensionDTO)
+                .collect(Collectors.toList()));
+        return userDTO;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/setState/{id}/{newState}")
     public UserDTO setState(@PathVariable("newState") String state,
                             @PathVariable("id") int id) {
-        return userService.setState(id, state);
+        return generateUserDTO(userService.setState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/all")
     public List<UserDTO> listAllUsers(@RequestParam(name = "state", required = false) String state) {
-        return userService.findAll(state);
+        return userService.findAll(state).stream()
+                .map(this::generateUserDTO)
+                .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -117,7 +128,7 @@ public class UserController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return userService.changePassword(userId, changePasswordSpec);
+        return generateUserDTO(userService.changePassword(userId, changePasswordSpec));
     }
 
     @ExceptionHandler
@@ -181,5 +192,42 @@ public class UserController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toArray());
+    }
+
+    private UserDTO generateUserDTO(UserModel user){
+        UserDTO userDTO = new UserDTO(user);
+        if(user.getProfileImage() != null){
+            userDTO.setProfileImage(user.getProfileImage().getLocation());
+        }
+        return userDTO;
+    }
+
+    private ExtensionDTO generateExtensionDTO(Extension extension) {
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if (extension.getGithub() != null) {
+            extensionDTO.setGitHubLink(extension.getGithub().getLink());
+            if (extension.getGithub().getLastCommit() != null) {
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+            }
+            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
+            if (extension.getGithub().getLastSuccess() != null) {
+                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+            }
+            if (extension.getGithub().getLastFail() != null) {
+                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+            }
+        }
+        if (extension.getImage() != null) {
+            extensionDTO.setImageLocation(extension.getImage().getLocation());
+        }
+        if (extension.getFile() != null) {
+            extensionDTO.setFileLocation(extension.getFile().getLocation());
+        }
+        if (extension.getCover() != null) {
+            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+        }
+        return extensionDTO;
     }
 }
