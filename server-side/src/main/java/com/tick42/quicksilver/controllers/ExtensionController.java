@@ -9,6 +9,7 @@ import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.ExtensionService;
 
@@ -243,15 +244,6 @@ public class ExtensionController {
         return extensionService.setFeaturedState(id, state);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/{id}/github")
-    public ExtensionDTO fetchGitHubData(@PathVariable("id") int id) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-
-        return extensionService.fetchGitHub(id, userId);
-    }
     @GetMapping(value = "/checkName")
     public boolean isNameAvailable(@RequestParam(name = "name") String name){
         return extensionService.checkName(name);

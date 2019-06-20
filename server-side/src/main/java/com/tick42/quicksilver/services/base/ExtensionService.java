@@ -38,8 +38,6 @@ public interface ExtensionService {
 
     ExtensionDTO generateExtensionDTO(Extension extension);
 
-    ExtensionDTO fetchGitHub(int extensionId, int userId);
-
     ExtensionDTO increaseDownloadCount(int id);
 
     void loadFeatured();

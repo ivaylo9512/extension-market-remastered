@@ -1,11 +1,15 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
+import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +26,13 @@ import javax.validation.Valid;
 public class GitHubController {
 
     private final GitHubService gitHubService;
+    private final ExtensionService extensionService;
+    private final UserService userService;
 
-    @Autowired
-    public GitHubController(GitHubService gitHubService) {
+    public GitHubController(GitHubService gitHubService, ExtensionService extensionService, UserService userService) {
         this.gitHubService = gitHubService;
+        this.extensionService = extensionService;
+        this.userService = userService;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -57,6 +64,19 @@ public class GitHubController {
         return gitHubService.generateGitHub(link);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping(value = "/auth/{id}/fetch")
+    public GitHubModel fetchGitHubData(@PathVariable("id") int id) {
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+        int userId = loggedUser.getId();
+
+        Extension extension = extensionService.findById(id, null);
+
+        UserModel user = userService.findById(userId, null);
+
+        return gitHubService.fetchGitHub(extension.getGithub(), user);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody

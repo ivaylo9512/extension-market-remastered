@@ -1,7 +1,9 @@
 package com.tick42.quicksilver.services.base;
 
+import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
+import com.tick42.quicksilver.models.UserModel;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
@@ -21,4 +23,7 @@ public interface GitHubService {
     GitHubSettingSpec getSettings(int userId);
 
     void delete(GitHubModel gitHub);
+
+    GitHubModel fetchGitHub(GitHubModel gitHub, UserModel userModel);
+
 }

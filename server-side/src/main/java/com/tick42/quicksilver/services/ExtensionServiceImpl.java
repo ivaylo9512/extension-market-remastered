@@ -297,27 +297,6 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public ExtensionDTO fetchGitHub(int extensionId, int userId) {
-        Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
-
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-
-        if (!user.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to trigger a github refresh.");
-        }
-
-        gitHubService.setRemoteDetails(extension.getGithub());
-
-        extensionRepository.save(extension);
-
-        return generateExtensionDTO(extension);
-    }
-
-    @Override
     public ExtensionDTO increaseDownloadCount(int extensionId) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
