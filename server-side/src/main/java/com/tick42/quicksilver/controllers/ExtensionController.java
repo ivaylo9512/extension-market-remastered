@@ -187,7 +187,7 @@ public class ExtensionController {
             extension.setCover(cover);
         }
     }
-    
+
     @GetMapping("/featured")
     public List<ExtensionDTO> featured() {
         return generateExtensionDTOList(extensionService.getFeatured());
@@ -215,10 +215,10 @@ public class ExtensionController {
     public void delete(@PathVariable(name = "id") int id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        UserModel user = userService.findById(loggedUser.getId(), null);
 
         ratingService.updateRatingOnExtensionDelete(id);
-        extensionService.delete(id, userId);
+        extensionService.delete(id, user);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

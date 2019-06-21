@@ -23,7 +23,7 @@ public interface ExtensionService {
 
     Extension save(Extension extension);
 
-    void delete(int id, int userId);
+    void delete(int id, UserModel userModel);
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 

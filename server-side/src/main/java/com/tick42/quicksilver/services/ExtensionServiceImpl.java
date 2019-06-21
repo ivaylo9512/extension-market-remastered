@@ -21,21 +21,16 @@ import java.util.*;
 public class ExtensionServiceImpl implements ExtensionService {
 
     private final ExtensionRepository extensionRepository;
-    private final TagService tagService;
     private final GitHubService gitHubService;
-    private UserRepository userRepository;
     private Map<Integer, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
     @Autowired
-    public ExtensionServiceImpl(ExtensionRepository extensionRepository, TagService tagService,
-                                GitHubService gitHubService, UserRepository userRepository) {
+    public ExtensionServiceImpl(ExtensionRepository extensionRepository, GitHubService gitHubService) {
         this.extensionRepository = extensionRepository;
-        this.tagService = tagService;
         this.gitHubService = gitHubService;
-        this.userRepository = userRepository;
     }
 
     @Override
@@ -74,6 +69,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setName(extensionSpec.getName());
         extension.setVersion(extensionSpec.getVersion());
         extension.setDescription(extensionSpec.getDescription());
+        extension.setTags(tags);
 
         if(extensionSpec.getGithub() != null) {
             GitHubModel oldGitHub = extension.getGithub();
@@ -82,9 +78,6 @@ public class ExtensionServiceImpl implements ExtensionService {
             gitHubService.delete(oldGitHub);
         }
 
-        if(tags != null){
-            extension.setTags(tags);
-        }
 
         return extensionRepository.save(extension);
     }
@@ -95,13 +88,9 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public void delete(int extensionId, int userId) {
+    public void delete(int extensionId, UserModel user) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
-
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
