@@ -1,13 +1,9 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
+import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.UserDetails;
-import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -69,14 +65,10 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension update(int extensionId, ExtensionSpec extensionSpec, int userId) {
+    public Extension update(int extensionId, ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
-
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
@@ -93,8 +85,9 @@ public class ExtensionServiceImpl implements ExtensionService {
             gitHubService.delete(oldGitHub);
         }
 
-
-        extension.setTags(tagService.generateTags(extensionSpec.getTags()));
+        if(tags != null){
+            extension.setTags(tags);
+        }
 
         return extensionRepository.save(extension);
     }

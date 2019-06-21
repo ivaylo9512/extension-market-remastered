@@ -2,26 +2,20 @@ package com.tick42.quicksilver.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.UserDetails;
-import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
-import com.tick42.quicksilver.services.base.ExtensionService;
+import com.tick42.quicksilver.services.base.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import com.tick42.quicksilver.services.base.FileService;
-import com.tick42.quicksilver.services.base.RatingService;
 import com.tick42.quicksilver.validators.ExtensionValidator;
 import io.jsonwebtoken.JwtException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -46,11 +41,14 @@ public class ExtensionController {
     private final ExtensionService extensionService;
     private final FileService fileService;
     private RatingService ratingService;
+    private UserService userService;
+    private TagService tagService;
 
-    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService) {
+    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService) {
         this.extensionService = extensionService;
         this.fileService = fileService;
         this.ratingService = ratingService;
+        this.userService = userService;
     }
 
     @GetMapping("/getHomeExtensions")
@@ -176,6 +174,8 @@ public class ExtensionController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
+        UserModel user = userService.findById(userId, null);
+
         ObjectMapper mapper = new ObjectMapper();
         ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
 
@@ -186,7 +186,8 @@ public class ExtensionController {
             throw new BindException(bindingResult);
         }
 
-        Extension extension = extensionService.update(extensionId,extensionSpec, userId);
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+        Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
 
         if(extensionImage != null){
             File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
@@ -215,12 +216,14 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping("/auth/{id}")
-    public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extension) {
+    public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extensionSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
+        UserModel user = userService.findById(userId, null);
 
-        return new ExtensionDTO(extensionService.update(id, extension, userId));
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+        return new ExtensionDTO(extensionService.update(id, extensionSpec, user, tags));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
