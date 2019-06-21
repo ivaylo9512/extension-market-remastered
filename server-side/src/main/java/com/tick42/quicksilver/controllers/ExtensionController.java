@@ -65,13 +65,16 @@ public class ExtensionController {
     }
 
     @GetMapping("/filter")
-    public PageDTO<ExtensionDTO> findAll(
+    public PageDTO<ExtensionDTO> findPageWithCriteria(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "orderBy", required = false) String orderBy,
-            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "page", required = false) Integer requestedPage,
             @RequestParam(name = "perPage", required = false) Integer perPage) {
 
-        return extensionService.findAll(name, orderBy, page, perPage);
+        PageDTO<Extension> page = extensionService.findPageWithCriteria(name, orderBy, requestedPage, perPage);
+        PageDTO<ExtensionDTO> pageDTO = new PageDTO<>(page);
+        pageDTO.setExtensions(generateExtensionDTOList(page.getExtensions()));
+        return pageDTO;
     }
 
     @GetMapping("/{id}")

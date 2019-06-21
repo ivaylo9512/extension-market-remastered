@@ -71,7 +71,7 @@ public class GitHubController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        Extension extension = extensionService.findById(id, null);
+        Extension extension = extensionService.findById(id, loggedUser);
 
         UserModel user = userService.findById(userId, null);
 

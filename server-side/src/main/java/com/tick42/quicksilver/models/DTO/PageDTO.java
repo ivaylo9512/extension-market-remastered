@@ -1,7 +1,5 @@
 package com.tick42.quicksilver.models.DTO;
 
-import com.tick42.quicksilver.models.Extension;
-
 import java.util.List;
 
 public class PageDTO<T> {
@@ -19,6 +17,11 @@ public class PageDTO<T> {
         this.totalResults = totalResults;
         this.extensions = extensions;
         this.totalPages = totalPages;
+    }
+    public PageDTO(PageDTO pageDTO) {
+        this.currentPage = pageDTO.getCurrentPage();
+        this.totalResults = pageDTO.getTotalResults();
+        this.totalPages = pageDTO.getTotalPages();
     }
 
     public int getCurrentPage() {

@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
@@ -146,7 +145,13 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer pageSize) {
+    public long findTotalResults(String name){
+        return extensionRepository.getTotalResults(name);
+    }
+
+    @Override
+    public PageDTO<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer pageSize) {
+
         if (page == null || page < 0) {
             page = 0;
         }
@@ -163,7 +168,7 @@ public class ExtensionServiceImpl implements ExtensionService {
             orderBy = "date";
         }
 
-        Long totalResults = extensionRepository.getTotalResults(name);
+        long totalResults = findTotalResults(name);
         int totalPages = (int) Math.ceil(totalResults * 1.0 / pageSize);
 
         if (page > totalPages && totalResults != 0) {
@@ -188,7 +193,7 @@ public class ExtensionServiceImpl implements ExtensionService {
                 throw new InvalidParameterException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
         }
 
-        return new PageDTO<>(extension, page, totalPages, totalResults);
+        return new PageDTO<>(extensions, page, totalPages, totalResults);
     }
 
     @Override
@@ -270,6 +275,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         if(loggedUser != null){
             Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
             admin = authorities.contains("ROLE_ADMIN");
+            System.out.println(authorities);
         }
 
         if (!extension.getOwner().getIsActive() &&

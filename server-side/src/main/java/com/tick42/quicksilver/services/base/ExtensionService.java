@@ -22,15 +22,15 @@ public interface ExtensionService {
 
     void delete(int id, int userId);
 
-    HomePageDTO getHomeExtensions(Integer mostRecentCount, Integer mostDownloadedCount);
-
     List<Extension> findMostRecent(Integer mostRecentCount);
 
     List<Extension> getFeatured();
 
     List<Extension> findMostDownloaded(Integer mostDownloadedCount);
 
-    PageDTO<ExtensionDTO> findAll(String name, String orderBy, Integer page, Integer perPage);
+    PageDTO<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer perPage);
+
+    long findTotalResults(String name);
 
     Extension setPublishedState(int id, String newState);
 
