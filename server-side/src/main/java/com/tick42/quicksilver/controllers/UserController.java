@@ -52,20 +52,12 @@ public class UserController {
     @PostMapping(value = "/register")
     public UserDetails register(@RequestParam(name = "image", required = false) MultipartFile image,
                                 @RequestParam(name = "user") String userJson) throws IOException, BindException {
-        ObjectMapper mapper = new ObjectMapper();
-        UserSpec user = mapper.readValue(userJson, UserSpec.class);
-
-        Validator validator = new UserValidator();
-        BindingResult bindingResult = new DataBinder(user).getBindingResult();
-        validator.validate(user, bindingResult);
-        if(bindingResult.hasErrors()){
-            throw new BindException(bindingResult);
-        }
+        UserSpec user = validateUser(userJson);
 
         UserModel newUser = userService.register(user, "ROLE_USER");
 
         if(image != null){
-            File logo = fileService.storeUserLogo(image, newUser.getId(), "logo");
+            File logo = fileService.storeUserLogo(image, newUser, "logo");
             newUser.setProfileImage(logo);
             userService.save(newUser);
         }
@@ -75,7 +67,22 @@ public class UserController {
         return new UserDetails(newUser, authorities);
     }
 
-        @PostMapping("/login")
+    private UserSpec validateUser(String userJson) throws BindException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        UserSpec user = mapper.readValue(userJson, UserSpec.class);
+        Validator validator = new UserValidator();
+
+        BindingResult bindingResult = new DataBinder(user).getBindingResult();
+        validator.validate(user, bindingResult);
+
+        if(bindingResult.hasErrors()){
+            throw new BindException(bindingResult);
+        }
+
+        return user;
+    }
+
+    @PostMapping("/login")
         public UserDetails login(){
             return (UserDetails) SecurityContextHolder
                     .getContext()

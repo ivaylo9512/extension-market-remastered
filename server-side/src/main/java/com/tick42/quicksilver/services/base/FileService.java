@@ -13,5 +13,5 @@ public interface FileService {
 
     public File storeImage(MultipartFile receivedFile, Extension extension, UserModel user, String type);
 
-    public File storeUserLogo(MultipartFile receivedFile, int userId, String type);
+    public File storeUserLogo(MultipartFile receivedFile, UserModel user, String type);
 }

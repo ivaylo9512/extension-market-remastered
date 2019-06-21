@@ -89,10 +89,7 @@ public class FileServiceImpl implements FileService {
         }
     }
     @Override
-    public File storeUserLogo(MultipartFile receivedFile, int userId, String type) {
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public File storeUserLogo(MultipartFile receivedFile, UserModel user, String type) {
 
 
         File image = generateFile(receivedFile, type, user.getId());
