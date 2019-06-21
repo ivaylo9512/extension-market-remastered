@@ -39,14 +39,11 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension create(ExtensionSpec extensionSpec, int userId) {
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public Extension create(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
 
         Extension extension = new Extension(extensionSpec);
         extension.setOwner(user);
-        extension.setTags(tagService.generateTags(extensionSpec.getTags()));
+        extension.setTags(tags);
         if(extensionSpec.getGithub() != null) {
             extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
         }

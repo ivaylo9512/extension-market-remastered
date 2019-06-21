@@ -15,7 +15,7 @@ import java.util.Set;
 
 public interface ExtensionService {
 
-    Extension create(ExtensionSpec model, int id);
+    Extension create(ExtensionSpec model, UserModel user, Set<Tag> tags);
 
     Extension findById(int id, UserDetails loggedUser);
 

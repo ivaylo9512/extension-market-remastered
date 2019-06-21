@@ -108,18 +108,8 @@ public class ExtensionController {
 
         Extension extension = extensionService.findById(extensionId, loggedUser);
 
-        if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
-            extension.setImage(image);
-        }
-        if(extensionFile != null){
-            File file = fileService.storeFile(extensionFile, extensionId, userId);
-            extension.setImage(file);
-        }
-        if(extensionCover != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "cover");
-            extension.setCover(image);
-        }
+        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+
         return generateExtensionDTO(extensionService.save(extension));
     }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -133,31 +123,15 @@ public class ExtensionController {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
-        ObjectMapper mapper = new ObjectMapper();
-        ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
 
-        Validator validator = new ExtensionValidator();
-        BindingResult bindingResult = new DataBinder(extensionSpec).getBindingResult();
-        validator.validate(extensionSpec, bindingResult);
-        if(bindingResult.hasErrors()){
-            throw new BindException(bindingResult);
-        }
+        UserModel user = userService.findById(userId, null);
+        ExtensionSpec extensionSpec = validateExtension(extensionJson);
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
-        Extension extension = extensionService.create(extensionSpec, userId);
-        int extensionId = extension.getId();
+        Extension extension = extensionService.create(extensionSpec, user, tags);
 
-        if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
-            extension.setImage(image);
-        }
-        if(extensionFile != null){
-            File file = fileService.storeFile(extensionFile, extensionId, userId);
-            extension.setFile(file);
-        }
-        if(extensionCover != null){
-            File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
-            extension.setCover(cover);
-        }
+        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+
         return generateExtensionDTO(extensionService.save(extension));
     }
 
@@ -175,7 +149,16 @@ public class ExtensionController {
         int userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, null);
+        ExtensionSpec extensionSpec = validateExtension(extensionJson);
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
+        Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
+        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+
+        return generateExtensionDTO(extensionService.save(extension));
+    }
+
+    private ExtensionSpec validateExtension(String extensionJson) throws BindException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
 
@@ -185,9 +168,11 @@ public class ExtensionController {
         if(bindingResult.hasErrors()){
             throw new BindException(bindingResult);
         }
+        return extensionSpec;
+    }
 
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
-        Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
+    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension, int userId) {
+        int extensionId = extension.getId();
 
         if(extensionImage != null){
             File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
@@ -201,9 +186,8 @@ public class ExtensionController {
             File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
             extension.setCover(cover);
         }
-        return generateExtensionDTO(extensionService.save(extension));
     }
-
+    
     @GetMapping("/featured")
     public List<ExtensionDTO> featured() {
         return generateExtensionDTOList(extensionService.getFeatured());
