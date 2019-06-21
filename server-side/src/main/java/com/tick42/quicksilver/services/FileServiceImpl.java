@@ -46,19 +46,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File storeFile(MultipartFile receivedFile, int extensionId, int userId) {
-
-        Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
-
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public File storeFile(MultipartFile receivedFile, Extension extension, UserModel user) {
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to add files to this extension.");
         }
 
-        File file = generateFile(receivedFile, "file", extensionId);
+        File file = generateFile(receivedFile, "file", extension.getId());
 
         try {
             saveFile(file, receivedFile);

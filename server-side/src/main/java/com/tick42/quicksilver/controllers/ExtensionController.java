@@ -108,7 +108,7 @@ public class ExtensionController {
 
         Extension extension = extensionService.findById(extensionId, loggedUser);
 
-        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+        setFiles(extensionImage, extensionFile, extensionCover, extension, extension.getOwner());
 
         return generateExtensionDTO(extensionService.save(extension));
     }
@@ -130,7 +130,7 @@ public class ExtensionController {
 
         Extension extension = extensionService.create(extensionSpec, user, tags);
 
-        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+        setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
         return generateExtensionDTO(extensionService.save(extension));
     }
@@ -153,7 +153,7 @@ public class ExtensionController {
         Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
         Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
-        setFiles(extensionImage, extensionFile, extensionCover, extension, userId);
+        setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
         return generateExtensionDTO(extensionService.save(extension));
     }
@@ -171,19 +171,18 @@ public class ExtensionController {
         return extensionSpec;
     }
 
-    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension, int userId) {
-        int extensionId = extension.getId();
+    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension, UserModel user) {
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, userId, "image");
+            File image = fileService.storeImage(extensionImage, extension, user, "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
-            File file = fileService.storeFile(extensionFile, extensionId, userId);
+            File file = fileService.storeFile(extensionFile, extension, user);
             extension.setFile(file);
         }
         if(extensionCover != null){
-            File cover = fileService.storeImage(extensionCover, extensionId, userId, "cover");
+            File cover = fileService.storeImage(extensionCover, extension, user, "cover");
             extension.setCover(cover);
         }
     }
