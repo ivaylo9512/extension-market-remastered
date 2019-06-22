@@ -40,16 +40,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setOwner(user);
         extension.setTags(tags);
 
-        if(extensionSpec.getImage() != null){
-            extension.setImage(extensionSpec.getImage());
-        }
-        if(extensionSpec.getFile() != null){
-            extension.setFile(extensionSpec.getFile());
-        }
-        if(extensionSpec.getCover() != null){
-            extension.setCover(extensionSpec.getCover());
-        }
-
         if(extensionSpec.getGithub() != null) {
             extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
         }
@@ -81,16 +71,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setVersion(extensionSpec.getVersion());
         extension.setDescription(extensionSpec.getDescription());
         extension.setTags(tags);
-
-        if(extensionSpec.getImage() != null){
-            extension.setImage(extensionSpec.getImage());
-        }
-        if(extensionSpec.getFile() != null){
-            extension.setFile(extensionSpec.getFile());
-        }
-        if(extensionSpec.getCover() != null){
-            extension.setCover(extensionSpec.getCover());
-        }
 
         if(extensionSpec.getGithub() != null) {
             GitHubModel oldGitHub = extension.getGithub();
