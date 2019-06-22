@@ -5,10 +5,8 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
-import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
-import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -73,8 +71,8 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setTags(tags);
 
         if(extensionSpec.getGithub() != null) {
-            GitHubModel oldGitHub = extension.getGithub();
-            GitHubModel newGitHub = gitHubService.generateGitHub(extensionSpec.getGithub());
+            GitHub oldGitHub = extension.getGithub();
+            GitHub newGitHub = gitHubService.generateGitHub(extensionSpec.getGithub());
             extension.setGithub(newGitHub);
             gitHubService.delete(oldGitHub);
         }

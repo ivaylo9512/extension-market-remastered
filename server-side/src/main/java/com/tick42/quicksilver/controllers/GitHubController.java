@@ -1,9 +1,9 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
-import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.DTO.GitHubDTO;
 import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHubModel;
+import com.tick42.quicksilver.models.GitHub;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -56,17 +56,17 @@ public class GitHubController {
     }
 
     @GetMapping("/getRepoDetails")
-    public GitHubModel getRepoDetails(@RequestParam(name = "link") String link){
-        GitHubModel gitHub = gitHubService.generateGitHub(link);
+    public GitHubDTO getRepoDetails(@RequestParam(name = "link") String link){
+        GitHub gitHub = gitHubService.generateGitHub(link);
         if(gitHub.getFailMessage() != null){
             throw new GitHubRepositoryException("Couldn't connect to GitHub check the URL.");
         }
-        return gitHubService.generateGitHub(link);
+        return new GitHubDTO(gitHubService.generateGitHub(link));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/fetch")
-    public GitHubModel fetchGitHubData(@PathVariable("id") int id) {
+    public GitHubDTO fetchGitHubData(@PathVariable("id") int id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
@@ -75,7 +75,7 @@ public class GitHubController {
 
         UserModel user = userService.findById(userId, null);
 
-        return gitHubService.fetchGitHub(extension.getGithub(), user);
+        return new GitHubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

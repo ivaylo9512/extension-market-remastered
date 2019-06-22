@@ -34,7 +34,7 @@ public class Extension {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "github_id")
-    private GitHubModel github;
+    private GitHub github;
 
     @Column(name = "times_downloaded")
     private int timesDownloaded = 0;
@@ -174,11 +174,11 @@ public class Extension {
         this.image = image;
     }
 
-    public GitHubModel getGithub() {
+    public GitHub getGithub() {
         return github;
     }
 
-    public void setGithub(GitHubModel github) {
+    public void setGithub(GitHub github) {
         this.github = github;
     }
 

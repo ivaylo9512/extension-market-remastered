@@ -1,20 +1,16 @@
 package com.tick42.quicksilver.services.base;
 
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.GitHubModel;
+import com.tick42.quicksilver.models.GitHub;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserModel;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import java.io.IOException;
-
 public interface GitHubService {
-    void setRemoteDetails(GitHubModel gitHubModel);
+    void setRemoteDetails(GitHub gitHub);
 
-    void getRepoDetails(GitHubModel gitHubModel) throws Exception;
+    void getRepoDetails(GitHub gitHub) throws Exception;
 
-    GitHubModel generateGitHub(String link);
+    GitHub generateGitHub(String link);
 
     void updateExtensionDetails();
 
@@ -22,8 +18,8 @@ public interface GitHubService {
 
     GitHubSettingSpec getSettings(int userId);
 
-    void delete(GitHubModel gitHub);
+    void delete(GitHub gitHub);
 
-    GitHubModel fetchGitHub(GitHubModel gitHub, UserModel userModel);
+    GitHub fetchGitHub(GitHub gitHub, UserModel userModel);
 
 }

@@ -1,10 +1,8 @@
 package com.tick42.quicksilver.repositories.base;
 
-import com.tick42.quicksilver.models.GitHubModel;
+import com.tick42.quicksilver.models.GitHub;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-
-public interface GitHubRepository extends JpaRepository<GitHubModel, Integer> {
+public interface GitHubRepository extends JpaRepository<GitHub, Integer> {
 
 }

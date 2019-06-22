@@ -3,7 +3,6 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -15,17 +14,11 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.validation.constraints.Null;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -394,7 +387,7 @@ public class ExtensionServiceImplTests {
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
 
-        GitHubModel github = new GitHubModel();
+        GitHub github = new GitHub();
         github.setLastCommit(commitTime);
         github.setPullRequests(10);
         github.setOpenIssues(20);
@@ -441,7 +434,7 @@ public class ExtensionServiceImplTests {
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
 
-        GitHubModel github = new GitHubModel();
+        GitHub github = new GitHub();
         github.setLastCommit(commitTime);
         github.setPullRequests(10);
         github.setOpenIssues(20);

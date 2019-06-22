@@ -3,8 +3,7 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.config.Scheduler;
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHubModel;
+import com.tick42.quicksilver.models.GitHub;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserModel;
@@ -20,10 +19,8 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -36,7 +33,7 @@ public class GitHubServiceImpl implements GitHubService {
     private SettingsRepository settingsRepository;
     private UserRepository userRepository;
     private Settings settings;
-    private GitHub gitHub;
+    private org.kohsuke.github.GitHub gitHub;
 
 
 
@@ -50,13 +47,13 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void setRemoteDetails(GitHubModel gitHubModel) {
+    public void setRemoteDetails(GitHub gitHub) {
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
         Future<Boolean> future = executor.submit(() -> {
             try {
 
-                GHRepository repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
+                GHRepository repo = this.gitHub.getRepository(gitHub.getUser() + "/" + gitHub.getRepo());
 
                 int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
                 int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
@@ -70,15 +67,15 @@ public class GitHubServiceImpl implements GitHubService {
 
                 }
 
-                gitHubModel.setPullRequests(pulls);
-                gitHubModel.setOpenIssues(issues);
-                gitHubModel.setLastCommit(lastCommit);
-                gitHubModel.setLastSuccess(LocalDateTime.now());
+                gitHub.setPullRequests(pulls);
+                gitHub.setOpenIssues(issues);
+                gitHub.setLastCommit(lastCommit);
+                gitHub.setLastSuccess(LocalDateTime.now());
                 return true;
             } catch (GHException e) {
-                throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
+                throw new GitHubRepositoryException("Connected to " + gitHub.getLink() + " but couldn't fetch data.");
             } catch (IOException e) {
-                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
+                throw new GitHubRepositoryException("Couldn't connect to " + gitHub.getLink() + ". Check URL.");
             }
         });
 
@@ -90,8 +87,8 @@ public class GitHubServiceImpl implements GitHubService {
 
         } catch (ExecutionException e){
             e.printStackTrace();
-            gitHubModel.setFailMessage(e.getMessage());
-            gitHubModel.setLastFail(LocalDateTime.now());
+            gitHub.setFailMessage(e.getMessage());
+            gitHub.setLastFail(LocalDateTime.now());
 
         } catch (TimeoutException e) {
             settings = settingsRepository.findById(settings.getId() + 1)
@@ -101,8 +98,8 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void getRepoDetails(GitHubModel gitHubModel) throws IOException{
-        GHRepository repo = gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
+    public void getRepoDetails(GitHub gitHub) throws IOException{
+        GHRepository repo = this.gitHub.getRepository(gitHub.getUser() + "/" + gitHub.getRepo());
 
         int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
         int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
@@ -115,25 +112,25 @@ public class GitHubServiceImpl implements GitHubService {
                     .toLocalDateTime();
         }
 
-        gitHubModel.setPullRequests(pulls);
-        gitHubModel.setOpenIssues(issues);
-        gitHubModel.setLastCommit(lastCommit);
-        gitHubModel.setLastSuccess(LocalDateTime.now());
+        gitHub.setPullRequests(pulls);
+        gitHub.setOpenIssues(issues);
+        gitHub.setLastCommit(lastCommit);
+        gitHub.setLastSuccess(LocalDateTime.now());
     }
     @Override
-    public GitHubModel generateGitHub(String link) {
+    public GitHub generateGitHub(String link) {
         String[] githubCred = link.replaceAll("https://github.com/", "").split("/");
         String user = githubCred[0];
         String repo = githubCred[1];
-        GitHubModel gitHubModel = new GitHubModel(link, user, repo);
-        setRemoteDetails(gitHubModel);
-        return gitHubModel;
+        GitHub gitHub = new GitHub(link, user, repo);
+        setRemoteDetails(gitHub);
+        return gitHub;
     }
 
     @Override
     public void updateExtensionDetails() {
-        List<GitHubModel> gitHubModels = gitHubRepository.findAll();
-        gitHubModels.forEach(gitHub -> {
+        List<GitHub> gitHubs = gitHubRepository.findAll();
+        gitHubs.forEach(gitHub -> {
             setRemoteDetails(gitHub);
             gitHubRepository.save(gitHub);
         });
@@ -157,7 +154,7 @@ public class GitHubServiceImpl implements GitHubService {
         if (settings.getToken() == null || settings.getUsername() == null) return;
 
         try {
-            gitHub = GitHub.connect(settings.getUsername(), settings.getToken());
+            gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't connect to github.");
         }
@@ -188,7 +185,7 @@ public class GitHubServiceImpl implements GitHubService {
 
 
     @Override
-    public GitHubModel fetchGitHub(GitHubModel gitHub, UserModel loggedUser) {
+    public GitHub fetchGitHub(GitHub gitHub, UserModel loggedUser) {
 
         if (!loggedUser.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to trigger a github refresh.");
@@ -199,7 +196,7 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void delete(GitHubModel gitHub){
+    public void delete(GitHub gitHub){
         gitHubRepository.delete(gitHub);
     }
 }
