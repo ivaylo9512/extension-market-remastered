@@ -27,11 +27,6 @@ public class GitHubDTO {
         this.user = gitHub.getUser();
         this.pullRequests = gitHub.getPullRequests();
         this.openIssues = gitHub.getOpenIssues();
-        this.failMessage = gitHub.getFailMessage();
-        setLastCommit(gitHub.getLastCommit());
-        setLastFail(gitHub.getLastFail());
-        setLastSuccess(gitHub.getLastSuccess());
-
     }
 
     public int getId() {

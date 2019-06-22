@@ -61,7 +61,7 @@ public class GitHubController {
         if(gitHub.getFailMessage() != null){
             throw new GitHubRepositoryException("Couldn't connect to GitHub check the URL.");
         }
-        return new GitHubDTO(gitHubService.generateGitHub(link));
+        return generateGithubDTO(gitHubService.generateGitHub(link));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -75,9 +75,26 @@ public class GitHubController {
 
         UserModel user = userService.findById(userId, null);
 
-        return new GitHubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
+        return generateGithubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
+    private GitHubDTO generateGithubDTO(GitHub gitHub){
+        GitHubDTO gitHubDTO = new GitHubDTO(gitHub);
+        if(gitHub.getLastSuccess() != null) {
+            gitHubDTO.setLastSuccess(gitHub.getLastSuccess());
+        }
+        if(gitHub.getLastFail() != null){
+            gitHubDTO.setLastFail(gitHub.getLastFail());
+        }
+        if(gitHub.getLastCommit() != null){
+            gitHubDTO.setLastCommit(gitHub.getLastCommit());
+        }
+        if(gitHub.getFailMessage() != null){
+            gitHubDTO.setFailMessage(gitHub.getFailMessage());
+        }
+
+        return gitHubDTO;
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
     public ResponseEntity handleInvalidGitHubSettingSpecException(MethodArgumentNotValidException e) {
