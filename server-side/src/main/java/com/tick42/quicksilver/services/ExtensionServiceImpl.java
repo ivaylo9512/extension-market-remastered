@@ -39,6 +39,17 @@ public class ExtensionServiceImpl implements ExtensionService {
         Extension extension = new Extension(extensionSpec);
         extension.setOwner(user);
         extension.setTags(tags);
+
+        if(extensionSpec.getImage() != null){
+            extension.setImage(extensionSpec.getImage());
+        }
+        if(extensionSpec.getFile() != null){
+            extension.setFile(extensionSpec.getFile());
+        }
+        if(extensionSpec.getCover() != null){
+            extension.setCover(extensionSpec.getCover());
+        }
+
         if(extensionSpec.getGithub() != null) {
             extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
         }
@@ -57,9 +68,9 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension update(int extensionId, ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
+    public Extension update(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
 
-        Extension extension = extensionRepository.findById(extensionId)
+        Extension extension = extensionRepository.findById(extensionSpec.getId())
                 .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
@@ -70,6 +81,16 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setVersion(extensionSpec.getVersion());
         extension.setDescription(extensionSpec.getDescription());
         extension.setTags(tags);
+
+        if(extensionSpec.getImage() != null){
+            extension.setImage(extensionSpec.getImage());
+        }
+        if(extensionSpec.getFile() != null){
+            extension.setFile(extensionSpec.getFile());
+        }
+        if(extensionSpec.getCover() != null){
+            extension.setCover(extensionSpec.getCover());
+        }
 
         if(extensionSpec.getGithub() != null) {
             GitHubModel oldGitHub = extension.getGithub();

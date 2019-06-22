@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models.Spec;
 
 import com.tick42.quicksilver.models.Extension;
+import com.tick42.quicksilver.models.File;
 
 import javax.persistence.Entity;
 import javax.validation.Valid;
@@ -9,6 +10,8 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 public class ExtensionSpec {
+    @NotNull
+    private int id;
 
     @NotNull
     @Size(min=1, message="Name should be at least 1 character.")
@@ -28,6 +31,10 @@ public class ExtensionSpec {
     private String github;
 
     private String tags;
+
+    private File file;
+    private File image;
+    private File cover;
 
     public ExtensionSpec() {
     }
@@ -70,5 +77,37 @@ public class ExtensionSpec {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+    public File getImage() {
+        return image;
+    }
+
+    public void setImage(File image) {
+        this.image = image;
+    }
+
+    public File getCover() {
+        return cover;
+    }
+
+    public void setCover(File cover) {
+        this.cover = cover;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

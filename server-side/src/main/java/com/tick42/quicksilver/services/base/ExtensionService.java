@@ -19,7 +19,7 @@ public interface ExtensionService {
 
     Extension findById(int id, UserDetails loggedUser);
 
-    Extension update(int extensionId, ExtensionSpec extension, UserModel user, Set<Tag> tags);
+    Extension update(ExtensionSpec extension, UserModel user, Set<Tag> tags);
 
     Extension save(Extension extension);
 

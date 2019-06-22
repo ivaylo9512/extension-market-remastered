@@ -17,6 +17,8 @@ public class ExtensionValidator implements Validator {
 
     public void validate(Object target, Errors errors) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "Name must be at least 7 characters long.");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "id", "No id present.");
+
         ExtensionSpec extensionSpec = (ExtensionSpec) target;
         if(extensionSpec.getGithub().length() == 0){
             extensionSpec.setGithub(null);

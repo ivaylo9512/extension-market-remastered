@@ -95,24 +95,6 @@ public class ExtensionController {
         return extensionDTO;
     }
 
-
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/upload/extensionFiles/{extensionId}")
-    public ExtensionDTO saveExtensionFiles(
-            @PathVariable(name = "extensionId") int extensionId,
-            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
-            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
-            @RequestParam(name = "cover", required = false) MultipartFile extensionCover) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-
-        Extension extension = extensionService.findById(extensionId, loggedUser);
-
-        setFiles(extensionImage, extensionFile, extensionCover, extension, extension.getOwner());
-
-        return generateExtensionDTO(extensionService.save(extension));
-    }
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/create")
     @Transactional
@@ -137,10 +119,9 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth/edit/{extensionId}")
+    @PostMapping("/auth/edit")
     @Transactional
     public ExtensionDTO editExtension(
-            @PathVariable(name = "extensionId") int extensionId,
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
             @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
@@ -153,7 +134,7 @@ public class ExtensionController {
         ExtensionSpec extensionSpec = validateExtension(extensionJson);
         Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
-        Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
+        Extension extension = extensionService.update(extensionSpec, user, tags);
 
         setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
@@ -174,17 +155,18 @@ public class ExtensionController {
     }
 
     private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension, UserModel user) {
+        int extensionId = extension.getId();
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extension, user, "image");
+            File image = fileService.storeImage(extensionImage, extensionId, user, "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
-            File file = fileService.storeFile(extensionFile, extension, user);
+            File file = fileService.storeFile(extensionFile, extensionId, user);
             extension.setFile(file);
         }
         if(extensionCover != null){
-            File cover = fileService.storeImage(extensionCover, extension, user, "cover");
+            File cover = fileService.storeImage(extensionCover, extensionId, user, "cover");
             extension.setCover(cover);
         }
     }
@@ -197,18 +179,6 @@ public class ExtensionController {
     @GetMapping("/download/{id}")
     public ExtensionDTO download(@PathVariable(name = "id") int id) {
         return generateExtensionDTO(extensionService.increaseDownloadCount(id));
-    }
-
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @PatchMapping("/auth/{id}")
-    public ExtensionDTO update(@PathVariable int id, @Valid @RequestBody ExtensionSpec extensionSpec) {
-        UserDetails loggedUser = (UserDetails)SecurityContextHolder
-                .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-        UserModel user = userService.findById(userId, null);
-
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
-        return new ExtensionDTO(extensionService.update(id, extensionSpec, user, tags));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")

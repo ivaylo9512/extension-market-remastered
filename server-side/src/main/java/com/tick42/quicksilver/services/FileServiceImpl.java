@@ -28,13 +28,9 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
 
     private final Path fileLocation;
-    private final ExtensionRepository extensionRepository;
-    private final UserRepository userRepository;
 
     @Autowired
-    public FileServiceImpl(ExtensionRepository extensionRepository, UserRepository userRepository) {
-        this.extensionRepository = extensionRepository;
-        this.userRepository = userRepository;
+    public FileServiceImpl() {
         this.fileLocation = Paths.get("./uploads")
                 .toAbsolutePath().normalize();
 
@@ -46,13 +42,9 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File storeFile(MultipartFile receivedFile, Extension extension, UserModel user) {
+    public File storeFile(MultipartFile receivedFile, int extensionId, UserModel user) {
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to add files to this extension.");
-        }
-
-        File file = generateFile(receivedFile, "file", extension.getId());
+        File file = generateFile(receivedFile, "file", extensionId);
 
         try {
             saveFile(file, receivedFile);
@@ -66,14 +58,9 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public File storeImage(MultipartFile receivedFile, Extension extension, UserModel user, String type) {
+    public File storeImage(MultipartFile receivedFile, int extensionId, UserModel user, String type) {
 
-
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to add images to this extension.");
-        }
-
-        File image = generateFile(receivedFile, type, extension.getId());
+        File image = generateFile(receivedFile, type, extensionId);
 
         try {
             if (!image.getType().startsWith("image/")) {
