@@ -387,7 +387,7 @@ public class ExtensionServiceImplTests {
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
 
-        GitHub github = new GitHub();
+        GitHubModel github = new GitHubModel();
         github.setLastCommit(commitTime);
         github.setPullRequests(10);
         github.setOpenIssues(20);
@@ -434,7 +434,7 @@ public class ExtensionServiceImplTests {
         Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
         when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
 
-        GitHub github = new GitHub();
+        GitHubModel github = new GitHubModel();
         github.setLastCommit(commitTime);
         github.setPullRequests(10);
         github.setOpenIssues(20);

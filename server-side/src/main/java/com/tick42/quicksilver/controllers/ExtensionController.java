@@ -112,7 +112,15 @@ public class ExtensionController {
         ExtensionSpec extensionSpec = validateExtension(extensionJson);
         Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
-        Extension extension = extensionService.create(extensionSpec, user, tags);
+        Extension extension = new Extension(extensionSpec);
+        extension.setOwner(user);
+        extension.setTags(tags);
+
+        if(extensionSpec.getGithub() != null)
+            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+
+
+        extensionService.save(extension);
 
         setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 

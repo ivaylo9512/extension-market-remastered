@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "github")
-public class GitHub {
+public class GitHubModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,11 +46,11 @@ public class GitHub {
     @Column(name = "fail_msg")
     private String failMessage;
 
-    public GitHub() {
+    public GitHubModel() {
 
     }
 
-    public GitHub(String link, String user, String repo) {
+    public GitHubModel(String link, String user, String repo) {
         this.link = link;
         this.user = user;
         this.repo = repo;

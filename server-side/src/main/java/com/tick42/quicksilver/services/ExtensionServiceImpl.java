@@ -19,30 +19,14 @@ import java.util.*;
 public class ExtensionServiceImpl implements ExtensionService {
 
     private final ExtensionRepository extensionRepository;
-    private final GitHubService gitHubService;
     private Map<Integer, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
     @Autowired
-    public ExtensionServiceImpl(ExtensionRepository extensionRepository, GitHubService gitHubService) {
+    public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
         this.extensionRepository = extensionRepository;
-        this.gitHubService = gitHubService;
-    }
-
-    @Override
-    public Extension create(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
-
-        Extension extension = new Extension(extensionSpec);
-        extension.setOwner(user);
-        extension.setTags(tags);
-
-        if(extensionSpec.getGithub() != null) {
-            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        }
-
-        return extensionRepository.save(extension);
     }
 
     @Override

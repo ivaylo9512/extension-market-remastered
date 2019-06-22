@@ -3,7 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.DTO.GitHubDTO;
 import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHub;
+import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -57,9 +57,9 @@ public class GitHubController {
 
     @GetMapping("/getRepoDetails")
     public GitHubDTO getRepoDetails(@RequestParam(name = "link") String link){
-        GitHub gitHub = gitHubService.generateGitHub(link);
-        if(gitHub.getFailMessage() != null){
-            throw new GitHubRepositoryException("Couldn't connect to GitHub check the URL.");
+        GitHubModel gitHubModel = gitHubService.generateGitHub(link);
+        if(gitHubModel.getFailMessage() != null){
+            throw new GitHubRepositoryException("Couldn't connect to GitHubModel check the URL.");
         }
         return generateGithubDTO(gitHubService.generateGitHub(link));
     }
@@ -78,19 +78,19 @@ public class GitHubController {
         return generateGithubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
-    private GitHubDTO generateGithubDTO(GitHub gitHub){
-        GitHubDTO gitHubDTO = new GitHubDTO(gitHub);
-        if(gitHub.getLastSuccess() != null) {
-            gitHubDTO.setLastSuccess(gitHub.getLastSuccess());
+    private GitHubDTO generateGithubDTO(GitHubModel gitHubModel){
+        GitHubDTO gitHubDTO = new GitHubDTO(gitHubModel);
+        if(gitHubModel.getLastSuccess() != null) {
+            gitHubDTO.setLastSuccess(gitHubModel.getLastSuccess());
         }
-        if(gitHub.getLastFail() != null){
-            gitHubDTO.setLastFail(gitHub.getLastFail());
+        if(gitHubModel.getLastFail() != null){
+            gitHubDTO.setLastFail(gitHubModel.getLastFail());
         }
-        if(gitHub.getLastCommit() != null){
-            gitHubDTO.setLastCommit(gitHub.getLastCommit());
+        if(gitHubModel.getLastCommit() != null){
+            gitHubDTO.setLastCommit(gitHubModel.getLastCommit());
         }
-        if(gitHub.getFailMessage() != null){
-            gitHubDTO.setFailMessage(gitHub.getFailMessage());
+        if(gitHubModel.getFailMessage() != null){
+            gitHubDTO.setFailMessage(gitHubModel.getFailMessage());
         }
 
         return gitHubDTO;

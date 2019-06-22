@@ -6,7 +6,7 @@ import javax.validation.constraints.Size;
 
 public class GitHubSettingSpec {
 
-    @NotNull(message = "Provide a GitHub username.")
+    @NotNull(message = "Provide a GitHubModel username.")
     @Size(min = 1, message = "Username should be filled in.")
     private String username;
 

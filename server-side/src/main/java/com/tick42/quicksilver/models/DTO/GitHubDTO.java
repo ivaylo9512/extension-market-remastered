@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models.DTO;
 
-import com.tick42.quicksilver.models.GitHub;
+import com.tick42.quicksilver.models.GitHubModel;
+
 import java.time.LocalDateTime;
 
 public class GitHubDTO {
@@ -22,11 +23,11 @@ public class GitHubDTO {
 
     }
 
-    public GitHubDTO(GitHub gitHub) {
-        this.id = gitHub.getId();
-        this.user = gitHub.getUser();
-        this.pullRequests = gitHub.getPullRequests();
-        this.openIssues = gitHub.getOpenIssues();
+    public GitHubDTO(GitHubModel gitHubModel) {
+        this.id = gitHubModel.getId();
+        this.user = gitHubModel.getUser();
+        this.pullRequests = gitHubModel.getPullRequests();
+        this.openIssues = gitHubModel.getOpenIssues();
     }
 
     public int getId() {
