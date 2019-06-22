@@ -138,7 +138,11 @@ public class ExtensionController {
 
         setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
-        return generateExtensionDTO(extensionService.save(extension));
+        ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.save(extension));
+        int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
+        extensionDTO.setCurrentUserRatingValue(rating);
+
+        return extensionDTO;
     }
 
     private ExtensionSpec validateExtension(String extensionJson) throws BindException, IOException {
