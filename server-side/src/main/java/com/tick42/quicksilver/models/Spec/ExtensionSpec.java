@@ -30,6 +30,9 @@ public class ExtensionSpec {
     @Pattern(regexp = "^https://github.com/.+/.+$", message = "Link to github should match https://github.com/USER/REPOSITORY")
     private String github;
 
+    @NotNull
+    private int githubId;
+
     private String tags;
 
     private File file;
@@ -109,5 +112,13 @@ public class ExtensionSpec {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getGithubId() {
+        return githubId;
+    }
+
+    public void setGithubId(int githubId) {
+        this.githubId = githubId;
     }
 }

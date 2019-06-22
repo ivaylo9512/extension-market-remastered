@@ -70,13 +70,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         extension.setDescription(extensionSpec.getDescription());
         extension.setTags(tags);
 
-        if(extensionSpec.getGithub() != null) {
-            GitHub oldGitHub = extension.getGithub();
-            GitHub newGitHub = gitHubService.generateGitHub(extensionSpec.getGithub());
-            extension.setGithub(newGitHub);
-            gitHubService.delete(oldGitHub);
-        }
-
         return extensionRepository.save(extension);
     }
 

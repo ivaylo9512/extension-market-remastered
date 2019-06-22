@@ -10,6 +10,8 @@ public interface GitHubService {
 
     void getRepoDetails(GitHub gitHub) throws Exception;
 
+    GitHub updateGithub(int githubId, String githubLink);
+
     GitHub generateGitHub(String link);
 
     void updateExtensionDetails();

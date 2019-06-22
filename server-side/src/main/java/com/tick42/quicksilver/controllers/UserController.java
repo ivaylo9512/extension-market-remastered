@@ -213,28 +213,30 @@ public class UserController {
         ExtensionDTO extensionDTO = new ExtensionDTO(extension);
         if (extension.getGithub() != null) {
             extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-            }
             extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
             extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
+            extensionDTO.setGithubId(extension.getGithub().getId());
+
+            if (extension.getGithub().getLastCommit() != null)
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+
+            if (extension.getGithub().getLastSuccess() != null)
                 extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
+
             if (extension.getGithub().getLastFail() != null) {
                 extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
                 extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
-        if (extension.getImage() != null) {
+        if (extension.getImage() != null)
             extensionDTO.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
+
+        if (extension.getFile() != null)
             extensionDTO.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getCover() != null) {
+
+        if (extension.getCover() != null)
             extensionDTO.setCoverLocation(extension.getCover().getLocation());
-        }
+
         return extensionDTO;
     }
 }

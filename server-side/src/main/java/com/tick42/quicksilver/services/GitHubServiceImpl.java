@@ -128,6 +128,13 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
+    public GitHub updateGithub(int githubId, String githubLink) {
+        GitHub newGitHub = generateGitHub(githubLink);
+        newGitHub.setId(githubId);
+
+        return newGitHub;
+    }
+    @Override
     public void updateExtensionDetails() {
         List<GitHub> gitHubs = gitHubRepository.findAll();
         gitHubs.forEach(gitHub -> {

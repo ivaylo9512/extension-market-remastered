@@ -12,7 +12,6 @@ import com.tick42.quicksilver.services.base.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 
 import com.tick42.quicksilver.validators.ExtensionValidator;
 import io.jsonwebtoken.JwtException;
@@ -43,13 +42,15 @@ public class ExtensionController {
     private RatingService ratingService;
     private UserService userService;
     private TagService tagService;
+    private GitHubService gitHubService;
 
-    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService, TagService tagService) {
+    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService, TagService tagService, GitHubService gitHubService) {
         this.extensionService = extensionService;
         this.fileService = fileService;
         this.ratingService = ratingService;
         this.userService = userService;
         this.tagService = tagService;
+        this.gitHubService = gitHubService;
     }
 
     @GetMapping("/getHomeExtensions")
@@ -136,6 +137,10 @@ public class ExtensionController {
 
         Extension extension = extensionService.update(extensionSpec, user, tags);
 
+        if(extensionSpec.getGithub() != null)
+            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
+
+
         setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
         ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.save(extension));
@@ -152,9 +157,10 @@ public class ExtensionController {
         Validator validator = new ExtensionValidator();
         BindingResult bindingResult = new DataBinder(extensionSpec).getBindingResult();
         validator.validate(extensionSpec, bindingResult);
-        if(bindingResult.hasErrors()){
+
+        if(bindingResult.hasErrors())
             throw new BindException(bindingResult);
-        }
+
         return extensionSpec;
     }
 
@@ -319,28 +325,30 @@ public class ExtensionController {
         ExtensionDTO extensionDTO = new ExtensionDTO(extension);
         if (extension.getGithub() != null) {
             extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            if (extension.getGithub().getLastCommit() != null) {
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-            }
             extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
             extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            if (extension.getGithub().getLastSuccess() != null) {
+            extensionDTO.setGithubId(extension.getGithub().getId());
+
+            if (extension.getGithub().getLastCommit() != null)
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+
+            if (extension.getGithub().getLastSuccess() != null)
                 extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-            }
+
             if (extension.getGithub().getLastFail() != null) {
                 extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
                 extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
-        if (extension.getImage() != null) {
+        if (extension.getImage() != null)
             extensionDTO.setImageLocation(extension.getImage().getLocation());
-        }
-        if (extension.getFile() != null) {
+
+        if (extension.getFile() != null)
             extensionDTO.setFileLocation(extension.getFile().getLocation());
-        }
-        if (extension.getCover() != null) {
+
+        if (extension.getCover() != null)
             extensionDTO.setCoverLocation(extension.getCover().getLocation());
-        }
+
         return extensionDTO;
     }
 
