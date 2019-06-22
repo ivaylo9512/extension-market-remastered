@@ -3,6 +3,8 @@ package com.tick42.quicksilver.models.DTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Tag;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -129,7 +131,7 @@ public class ExtensionDTO {
         return uploadDate;
     }
 
-    public void setUploadDate(Date uploadDate) {
+    public void setUploadDate(LocalDateTime uploadDate) {
         this.uploadDate = uploadDate.toString();
     }
 
@@ -161,7 +163,7 @@ public class ExtensionDTO {
         return lastCommit;
     }
 
-    public void setLastCommit(Date lastCommit) {
+    public void setLastCommit(LocalDateTime lastCommit) {
         this.lastCommit = lastCommit.toString();
     }
 
@@ -225,7 +227,7 @@ public class ExtensionDTO {
         return lastSuccessfulPullOfData;
     }
 
-    public void setLastSuccessfulPullOfData(Date lastSuccessfulPullOfData) {
+    public void setLastSuccessfulPullOfData(LocalDateTime lastSuccessfulPullOfData) {
         this.lastSuccessfulPullOfData = lastSuccessfulPullOfData.toString();
     }
 
@@ -233,7 +235,7 @@ public class ExtensionDTO {
         return lastFailedAttemptToCollectData;
     }
 
-    public void setLastFailedAttemptToCollectData(Date lastFailedAttemptToCollectData) {
+    public void setLastFailedAttemptToCollectData(LocalDateTime lastFailedAttemptToCollectData) {
         this.lastFailedAttemptToCollectData = lastFailedAttemptToCollectData.toString();
     }
 

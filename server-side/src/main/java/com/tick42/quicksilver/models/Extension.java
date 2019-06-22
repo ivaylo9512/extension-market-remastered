@@ -3,6 +3,7 @@ package com.tick42.quicksilver.models;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -56,7 +57,7 @@ public class Extension {
     private boolean pending = true;
 
     @Column(name = "upload_date")
-    private Date uploadDate = new Date();
+    private LocalDateTime uploadDate = LocalDateTime.now();
 
     @Column(name = "featured")
     private boolean featured;
@@ -157,11 +158,11 @@ public class Extension {
         this.featured = featured;
     }
 
-    public Date getUploadDate() {
+    public LocalDateTime getUploadDate() {
         return uploadDate;
     }
 
-    public void setUploadDate(Date uploadDate) {
+    public void setUploadDate(LocalDateTime uploadDate) {
         this.uploadDate = uploadDate;
     }
 

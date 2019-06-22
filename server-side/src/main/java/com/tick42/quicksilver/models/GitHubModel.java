@@ -1,6 +1,10 @@
 package com.tick42.quicksilver.models;
 
+import org.apache.tomcat.jni.Local;
+
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -25,7 +29,7 @@ public class GitHubModel {
     private Extension extension;
 
     @Column(name = "last_commit")
-    private Date lastCommit;
+    private LocalDateTime lastCommit;
 
     @Column(name = "pull_requests")
     private int pullRequests;
@@ -34,10 +38,10 @@ public class GitHubModel {
     private int openIssues;
 
     @Column(name = "last_success")
-    private Date lastSuccess;
+    private LocalDateTime lastSuccess;
 
     @Column(name = "last_fail")
-    private Date lastFail;
+    private LocalDateTime lastFail;
 
     @Column(name = "fail_msg")
     private String failMessage;
@@ -92,11 +96,11 @@ public class GitHubModel {
         this.extension = extension;
     }
 
-    public Date getLastCommit() {
+    public LocalDateTime getLastCommit() {
         return lastCommit;
     }
 
-    public void setLastCommit(Date lastCommit) {
+    public void setLastCommit(LocalDateTime lastCommit) {
         this.lastCommit = lastCommit;
     }
 
@@ -116,19 +120,19 @@ public class GitHubModel {
         this.openIssues = openIssues;
     }
 
-    public Date getLastSuccess() {
+    public LocalDateTime getLastSuccess() {
         return lastSuccess;
     }
 
-    public void setLastSuccess(Date lastSuccess) {
+    public void setLastSuccess(LocalDateTime lastSuccess) {
         this.lastSuccess = lastSuccess;
     }
 
-    public Date getLastFail() {
+    public LocalDateTime getLastFail() {
         return lastFail;
     }
 
-    public void setLastFail(Date lastFail) {
+    public void setLastFail(LocalDateTime lastFail) {
         this.lastFail = lastFail;
     }
 

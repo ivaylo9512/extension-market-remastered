@@ -44,11 +44,12 @@ public class ExtensionController {
     private UserService userService;
     private TagService tagService;
 
-    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService) {
+    public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService, TagService tagService) {
         this.extensionService = extensionService;
         this.fileService = fileService;
         this.ratingService = ratingService;
         this.userService = userService;
+        this.tagService = tagService;
     }
 
     @GetMapping("/getHomeExtensions")
@@ -153,6 +154,7 @@ public class ExtensionController {
         Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
         Extension extension = extensionService.update(extensionId,extensionSpec, user, tags);
+
         setFiles(extensionImage, extensionFile, extensionCover, extension, user);
 
         return generateExtensionDTO(extensionService.save(extension));

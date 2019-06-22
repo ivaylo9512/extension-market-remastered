@@ -78,7 +78,6 @@ public class ExtensionServiceImpl implements ExtensionService {
             gitHubService.delete(oldGitHub);
         }
 
-
         return extensionRepository.save(extension);
     }
 
@@ -254,7 +253,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         if(loggedUser != null){
             Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
             admin = authorities.contains("ROLE_ADMIN");
-            System.out.println(authorities);
         }
 
         if (!extension.getOwner().getIsActive() &&
@@ -283,11 +281,6 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public Extension reloadExtension(Extension extension){
-        if(mostRecent.contains(extension)){
-            int index = mostRecent.indexOf(extension);
-            mostRecent.set(index, extension);
-        }
-
         if(featured.containsKey(extension.getId())){
             featured.replace(extension.getId(), extension);
         }

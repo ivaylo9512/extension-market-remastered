@@ -20,6 +20,9 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
@@ -58,16 +61,19 @@ public class GitHubServiceImpl implements GitHubService {
                 int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
                 int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
 
-                Date lastCommit = null;
+                LocalDateTime lastCommit = null;
                 List<GHCommit> commits = repo.listCommits().asList();
                 if (commits.size() > 0) {
-                    lastCommit = commits.get(0).getCommitDate();
+                    lastCommit = commits.get(0).getCommitDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
+
                 }
 
                 gitHubModel.setPullRequests(pulls);
                 gitHubModel.setOpenIssues(issues);
                 gitHubModel.setLastCommit(lastCommit);
-                gitHubModel.setLastSuccess(new Date());
+                gitHubModel.setLastSuccess(LocalDateTime.now());
                 return true;
             } catch (GHException e) {
                 throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
@@ -85,7 +91,7 @@ public class GitHubServiceImpl implements GitHubService {
         } catch (ExecutionException e){
             e.printStackTrace();
             gitHubModel.setFailMessage(e.getMessage());
-            gitHubModel.setLastFail(new Date());
+            gitHubModel.setLastFail(LocalDateTime.now());
 
         } catch (TimeoutException e) {
             settings = settingsRepository.findById(settings.getId() + 1)
@@ -101,16 +107,18 @@ public class GitHubServiceImpl implements GitHubService {
         int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
         int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
 
-        Date lastCommit = null;
+        LocalDateTime lastCommit = null;
         List<GHCommit> commits = repo.listCommits().asList();
         if (commits.size() > 0) {
-            lastCommit = commits.get(0).getCommitDate();
+            lastCommit = commits.get(0).getCommitDate().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
         }
 
         gitHubModel.setPullRequests(pulls);
         gitHubModel.setOpenIssues(issues);
         gitHubModel.setLastCommit(lastCommit);
-        gitHubModel.setLastSuccess(new Date());
+        gitHubModel.setLastSuccess(LocalDateTime.now());
     }
     @Override
     public GitHubModel generateGitHub(String link) {
