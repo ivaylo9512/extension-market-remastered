@@ -27,8 +27,8 @@ public class File {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "location")
-    private String location;
+    @Column(name = "download_count")
+    private int downloadCount;
 
     public File() {
 
@@ -66,19 +66,19 @@ public class File {
         this.type = type;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getDownloadCount() {
+        return downloadCount;
+    }
+
+    public void setDownloadCount(int downloadCount) {
+        this.downloadCount = downloadCount;
     }
 }

@@ -36,9 +36,6 @@ public class Extension {
     @JoinColumn(name = "github_id")
     private GitHubModel github;
 
-    @Column(name = "times_downloaded")
-    private int timesDownloaded = 0;
-
     @Column(name = "version")
     private String version;
 
@@ -103,14 +100,6 @@ public class Extension {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public int getTimesDownloaded() {
-        return timesDownloaded;
-    }
-
-    public void setTimesDownloaded(int timesDownloaded) {
-        this.timesDownloaded = timesDownloaded;
     }
 
     public String getVersion() {

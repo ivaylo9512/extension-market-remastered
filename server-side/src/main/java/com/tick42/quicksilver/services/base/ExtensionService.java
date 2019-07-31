@@ -39,8 +39,6 @@ public interface ExtensionService {
 
     List<Extension> findPending();
 
-    Extension increaseDownloadCount(int id);
-
     void loadFeatured();
 
     void updateMostRecent();

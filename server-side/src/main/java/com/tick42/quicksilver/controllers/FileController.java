@@ -5,6 +5,7 @@ import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
+import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.FileService;
@@ -52,6 +53,12 @@ public class FileController {
 
         if (contentType == null) {
             contentType = "application/octet-stream";
+        }
+
+        if(fileName.contains("file")) {
+            File file = fileService.findByName(fileName);
+            fileService.increaseCount(file);
+
         }
 
         return ResponseEntity.ok()

@@ -194,11 +194,6 @@ public class ExtensionController {
         return generateExtensionDTOList(extensionService.getFeatured());
     }
 
-    @GetMapping("/download/{id}")
-    public ExtensionDTO download(@PathVariable(name = "id") int id) {
-        return generateExtensionDTO(extensionService.increaseDownloadCount(id));
-    }
-
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @DeleteMapping("/auth/{id}")
     public void delete(@PathVariable(name = "id") int id) {
@@ -348,14 +343,16 @@ public class ExtensionController {
                 extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
+
+        String base = "http://localhost:8090/api/download/";
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(extension.getImage().getLocation());
+            extensionDTO.setImageLocation(base + extension.getImage().getName());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(extension.getFile().getLocation());
+            extensionDTO.setFileLocation(base + extension.getFile().getName());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+            extensionDTO.setCoverLocation(base + extension.getCover().getName());
 
         return extensionDTO;
     }

@@ -206,20 +206,6 @@ public class ExtensionServiceImpl implements ExtensionService {
         return extensionRepository.findByPending(true);
     }
 
-    @Override
-    public Extension increaseDownloadCount(int extensionId) {
-        Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
-
-        if(extension.isPending() || !extension.getOwner().getIsActive()) {
-            throw new ExtensionUnavailableException("Download count won't increase - the extension is unavailable");
-        }
-
-        extension.setTimesDownloaded(extension.getTimesDownloaded() + 1);
-
-        return reloadExtension(extensionRepository.save(extension));
-    }
-
     private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
         if (extension == null) {
             throw new ExtensionNotFoundException("Extension doesn't exist.");

@@ -1,13 +1,9 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
-import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.FileRepository;
-import com.tick42.quicksilver.repositories.base.UserRepository;
-import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +24,10 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
 
     private final Path fileLocation;
+    private final FileRepository fileRepository;
 
-    @Autowired
-    public FileServiceImpl() {
+    public FileServiceImpl(FileRepository fileRepository) {
+        this.fileRepository = fileRepository;
         this.fileLocation = Paths.get("./uploads")
                 .toAbsolutePath().normalize();
 
@@ -48,9 +45,7 @@ public class FileServiceImpl implements FileService {
 
         try {
             saveFile(file, receivedFile);
-
             return file;
-
         } catch (IOException e) {
             throw new FileStorageException("Couldn't store file");
         }
@@ -79,7 +74,7 @@ public class FileServiceImpl implements FileService {
     public File storeUserLogo(MultipartFile receivedFile, UserModel user, String type) {
 
 
-        File image = generateFile(receivedFile, type, user.getId());
+        File image = generateFile(receivedFile, "logo", user.getId());
 
         try {
             if (!image.getType().startsWith("image/")) {
@@ -115,6 +110,17 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public File increaseCount(File file){
+        file.setDownloadCount(file.getDownloadCount() + 1);
+        return fileRepository.save(file);
+    }
+
+    @Override
+    public File findByName(String fileName){
+        return fileRepository.findByName(fileName);
+    }
+
     private File generateFile(MultipartFile receivedFile, String type, int extensionId) {
         String fileType = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
         String fileName = extensionId + "_" + type + "." + fileType;
@@ -124,7 +130,6 @@ public class FileServiceImpl implements FileService {
                 .toUriString();
         File file = new File();
         file.setName(fileName);
-        file.setLocation(fileDownloadUri);
         file.setSize(receivedFile.getSize());
         file.setType(receivedFile.getContentType());
         return file;

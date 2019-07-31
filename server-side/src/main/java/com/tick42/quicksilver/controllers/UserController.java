@@ -43,6 +43,7 @@ public class UserController {
 
     private final UserService userService;
     private final FileService fileService;
+    private String base = "http://localhost:8090/api/download/";
 
     public UserController(UserService userService, FileService fileService) {
         this.userService = userService;
@@ -204,7 +205,7 @@ public class UserController {
     private UserDTO generateUserDTO(UserModel user){
         UserDTO userDTO = new UserDTO(user);
         if(user.getProfileImage() != null){
-            userDTO.setProfileImage(user.getProfileImage().getLocation());
+            userDTO.setProfileImage(base + user.getProfileImage().getName());
         }
         return userDTO;
     }
@@ -228,14 +229,16 @@ public class UserController {
                 extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
+
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(extension.getImage().getLocation());
+            extensionDTO.setImageLocation(base + extension.getImage().getName());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(extension.getFile().getLocation());
+            extensionDTO.setFileLocation(base + extension.getFile().getName());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(extension.getCover().getLocation());
+            extensionDTO.setCoverLocation(base + extension.getCover().getName());
+
 
         return extensionDTO;
     }

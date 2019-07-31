@@ -14,4 +14,8 @@ public interface FileService {
     public File storeImage(MultipartFile receivedFile, int extensionId, UserModel user, String type);
 
     public File storeUserLogo(MultipartFile receivedFile, UserModel user, String type);
+
+    File increaseCount(File file);
+
+    File findByName(String fileName);
 }
