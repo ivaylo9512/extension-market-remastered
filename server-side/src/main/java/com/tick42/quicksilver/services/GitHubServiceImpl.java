@@ -92,9 +92,18 @@ public class GitHubServiceImpl implements GitHubService {
             gitHubModel.setLastFail(LocalDateTime.now());
 
         } catch (TimeoutException e) {
-            settings = settingsRepository.findById(settings.getId() + 1)
-                    .orElse(settingsRepository.findById(1)
-                            .orElseThrow(() -> new RuntimeException("No settings found.")));
+            tryGithub();
+        }
+    }
+
+    private void tryGithub(){
+        settings = settingsRepository.findById(settings.getId() + 1)
+                .orElse(settingsRepository.findById(1)
+                        .orElseThrow(() -> new RuntimeException("No settings found.")));
+        try {
+            gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't connect to github.");
         }
     }
 
@@ -181,16 +190,11 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public GitHubSettingSpec getSettings(int userId) {
-        Settings userSettings = settingsRepository.findByUser(userRepository.getOne(userId));
-        GitHubSettingSpec currentSettings = new GitHubSettingSpec();
-        if(userSettings != null){
-            currentSettings.setToken(userSettings.getToken());
-            currentSettings.setUsername(userSettings.getUsername());
-        }
-        currentSettings.setRate(settings.getRate());
-        currentSettings.setWait(settings.getWait());
-        return currentSettings;
+    public Settings getSettings(UserModel user) {
+        Settings userSettings = settingsRepository.findByUser(user);
+        if(userSettings == null) userSettings = new Settings();
+
+        return userSettings;
     }
 
 

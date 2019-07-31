@@ -1,12 +1,9 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
+import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.GitHubDTO;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
-import com.tick42.quicksilver.models.UserDetails;
-import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
@@ -48,12 +45,13 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/auth")
-    public GitHubSettingSpec getGitHubSetting() {
+    public Settings getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return gitHubService.getSettings(userId);
+        UserModel user = userService.findById(userId, loggedUser);
+        return gitHubService.getSettings(user);
     }
 
     @GetMapping("/getRepoDetails")

@@ -19,7 +19,7 @@ public interface GitHubService {
 
     Settings createScheduledTask(UserModel user, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec);
 
-    GitHubSettingSpec getSettings(int userId);
+    Settings getSettings(UserModel user);
 
     void delete(GitHubModel gitHubModel);
 
