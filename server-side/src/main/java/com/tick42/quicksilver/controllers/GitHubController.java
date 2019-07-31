@@ -3,6 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.GitHubDTO;
+import com.tick42.quicksilver.models.DTO.GitHubSettingDTO;
 import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
@@ -34,24 +35,24 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/auth")
-    public void gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
+    public GitHubSettingDTO gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
         UserModel userModel = userService.findById(userId, loggedUser);
-        gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec);
+        return new GitHubSettingDTO(gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/auth")
-    public Settings getGitHubSetting() {
+    public GitHubSettingDTO getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        return gitHubService.getSettings(user);
+        return new GitHubSettingDTO(gitHubService.getSettings(user));
     }
 
     @GetMapping("/getRepoDetails")
