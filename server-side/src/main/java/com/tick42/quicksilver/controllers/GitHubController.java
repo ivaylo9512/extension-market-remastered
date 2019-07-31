@@ -42,7 +42,8 @@ public class GitHubController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        gitHubService.createScheduledTask(userId, taskRegistrar, gitHubSettingSpec);
+        UserModel userModel = userService.findById(userId, loggedUser);
+        gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

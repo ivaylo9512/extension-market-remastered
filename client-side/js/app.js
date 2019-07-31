@@ -20,8 +20,6 @@ let app = (() => {
                 let featured = render.shortenTitle(res['featured']);
                 let mostDownloaded = render.shortenTitle(res['mostDownloaded']);
 
-                console.log(featured)
-                                console.log(mostRecent)
                 show.homeFeatured(featured);
                 show.homeMostDownloaded(mostDownloaded)
                 show.homeMostRecent(mostRecent)
@@ -339,10 +337,9 @@ let app = (() => {
             username,
             password,
         }
-
         remote.login(user).then(
             res => {
-                let userDetails = JSON.parse(res);
+                let userDetails = res;
                 localStorage.setItem('Authorization', userDetails['token']);
                 localStorage.setItem('id', userDetails['id']);
                 localStorage.setItem('username', userDetails['username']);

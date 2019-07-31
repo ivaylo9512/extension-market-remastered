@@ -6,7 +6,6 @@ import com.tick42.quicksilver.models.DTO.PageDTO;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
-import com.tick42.quicksilver.services.base.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -254,6 +253,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         mostRecent.clear();
         mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate")));
     }
+
 
     @Override
     public Extension reloadExtension(Extension extension){

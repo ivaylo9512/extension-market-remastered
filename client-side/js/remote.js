@@ -144,7 +144,7 @@ remote = (() => {
     let login = (user) => {
         return $.ajax({
             type: 'POST',
-            url: base + '/login',
+            url: base + '/api/users/login',
             data: JSON.stringify(user),
             contentType: 'application/json'
         })

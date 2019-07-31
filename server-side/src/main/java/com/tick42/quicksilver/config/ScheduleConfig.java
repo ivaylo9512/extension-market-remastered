@@ -1,7 +1,9 @@
 package com.tick42.quicksilver.config;
 
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
+import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,9 @@ public class ScheduleConfig implements SchedulingConfigurer {
     private GitHubService gitHubService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private ExtensionService extensionService;
 
     @Bean
@@ -38,7 +43,9 @@ public class ScheduleConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        gitHubService.createScheduledTask(1, taskRegistrar, null);
+        UserModel admin = userService.findById(1, null);
+        gitHubService.createScheduledTask(admin, taskRegistrar, null);
+
         extensionService.updateMostRecent();
         extensionService.loadFeatured();
     }

@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         UserModel foundUser = userRepository.findByUsername(username);
         if(foundUser == null){
-            throw new BadCredentialsException("Bad credentials");
+            throw new BadCredentialsException("Invalid username or password.");
         }
         if (!foundUser.getIsActive()) {
             throw new BlockedUserException("User is disabled.");

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 @Service
@@ -144,21 +145,22 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void createScheduledTask(int userId, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
+    public Settings createScheduledTask(UserModel user, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
 
-        settings = settingsRepository.findById(userId).orElse(new Settings());
+        settings = settingsRepository.findByUser(user);
+
+        if(settings == null) settings = new Settings();
 
         if (gitHubSettingSpec != null) {
             Settings newSettings = new Settings(gitHubSettingSpec);
 
-            if(settings.getId() != null){
-                newSettings.setId(settings.getId());
-             }
-            newSettings.setUser(userRepository.getOne(userId));
+            if(settings.getId() != null) newSettings.setId(settings.getId());
+
+            newSettings.setUser(user);
             settings = settingsRepository.save(newSettings);
         }
 
-        if (settings.getToken() == null || settings.getUsername() == null) return;
+        if (settings.getToken() == null || settings.getUsername() == null) return null;
 
         try {
             gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
@@ -167,14 +169,15 @@ public class GitHubServiceImpl implements GitHubService {
         }
 
 
-        if (scheduler.getTask() != null) {
-            scheduler.getTask().cancel();
-        }
+        if (scheduler.getTask() != null) scheduler.getTask().cancel();
+
 
         FixedRateTask updateGitHubData = new FixedRateTask(this::updateExtensionDetails, settings.getRate(), settings.getWait());
 
         taskRegistrar.setTaskScheduler(threadPoolTaskScheduler);
         scheduler.setTask(taskRegistrar.scheduleFixedRateTask(updateGitHubData));
+
+        return settings;
     }
 
     @Override
