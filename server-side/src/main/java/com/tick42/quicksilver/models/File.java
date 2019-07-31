@@ -34,6 +34,20 @@ public class File {
 
     }
 
+    @Override
+    public int hashCode() {
+        return getId();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this) return true;
+        if(!(obj instanceof File)) return false;
+
+        File extension = (File) obj;
+        return extension.getId() == getId();
+    }
+
     public int getId() {
         return id;
     }

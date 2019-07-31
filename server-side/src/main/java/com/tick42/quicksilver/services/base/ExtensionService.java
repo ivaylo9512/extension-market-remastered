@@ -1,14 +1,11 @@
 package com.tick42.quicksilver.services.base;
 
 
+import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.DTO.ExtensionDTO;
 import com.tick42.quicksilver.models.DTO.HomePageDTO;
 import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.Tag;
-import com.tick42.quicksilver.models.UserDetails;
-import com.tick42.quicksilver.models.UserModel;
 
 import java.util.List;
 import java.util.Set;
@@ -44,6 +41,8 @@ public interface ExtensionService {
     void updateMostRecent();
 
     Extension reloadExtension(Extension extension);
+
+    void reloadFile(File file);
 
     boolean checkName(String name);
 }

@@ -78,6 +78,21 @@ public class Extension {
         this.name = name;
         this.tags = tags;
     }
+
+    @Override
+    public int hashCode() {
+        return getId();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this) return true;
+        if(!(obj instanceof Extension)) return false;
+
+        Extension extension = (Extension) obj;
+        return extension.getId() == getId();
+    }
+
     public int getId() {
         return id;
     }

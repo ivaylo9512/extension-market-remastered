@@ -160,6 +160,8 @@ public class ExtensionServiceImpl implements ExtensionService {
                 extension.isPending(false);
                 break;
             case "unpublish":
+                featured.remove(extensionId);
+                extension.isFeatured(false);
                 extension.isPending(true);
                 break;
             default:
@@ -197,6 +199,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         }else{
             featured.remove(extensionId);
         }
+        reloadExtension(extension);
 
         return extension;
     }
@@ -246,8 +249,27 @@ public class ExtensionServiceImpl implements ExtensionService {
         if(featured.containsKey(extension.getId())){
             featured.replace(extension.getId(), extension);
         }
+
+        int index = mostRecent.indexOf(extension);
+        if(index != -1){
+            mostRecent.set(index, extension);
+        }
         return extension;
     }
+
+    @Override
+    public void reloadFile(File file){
+        featured.forEach((integer, extension) -> {
+            if(extension.getFile().equals(file))
+                extension.getFile().setDownloadCount(file.getDownloadCount());
+        });
+
+        mostRecent.forEach(extension -> {
+            if (extension.getFile() == file)
+                extension.getFile().setDownloadCount(file.getDownloadCount());
+        });
+    }
+
     @Override
     public boolean checkName(String name){
         return extensionRepository.findByName(name) == null;

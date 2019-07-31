@@ -1,15 +1,12 @@
 package com.tick42.quicksilver.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.FileService;
-import com.tick42.quicksilver.validators.ExtensionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +16,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
@@ -34,10 +29,12 @@ public class FileController {
 
 
     private final FileService fileService;
+    private final ExtensionService extensionService;
 
     @Autowired
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, ExtensionService extensionService) {
         this.fileService = fileService;
+        this.extensionService = extensionService;
     }
 
 
@@ -58,7 +55,7 @@ public class FileController {
         if(fileName.contains("file")) {
             File file = fileService.findByName(fileName);
             fileService.increaseCount(file);
-
+            extensionService.reloadFile(file);
         }
 
         return ResponseEntity.ok()
