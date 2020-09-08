@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.FileFormatException;
+import com.tick42.quicksilver.exceptions.FileNotFoundUncheckedException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.File;
@@ -83,6 +84,14 @@ public class FileController {
 
     @ExceptionHandler
     ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity handleExtensionNotFoundException(FileNotFoundUncheckedException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

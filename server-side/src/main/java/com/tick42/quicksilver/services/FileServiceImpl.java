@@ -6,7 +6,6 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -104,10 +103,10 @@ public class FileServiceImpl implements FileService {
             if (resource.exists()) {
                 return resource;
             } else {
-                throw new FileNotFoundException("File not found");
+                throw new FileNotFoundUncheckedException("File not found");
             }
         } catch (MalformedURLException e) {
-            throw new FileNotFoundException("File not found " + e);
+            throw new FileNotFoundUncheckedException("File not found " + e);
         }
     }
 
