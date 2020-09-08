@@ -30,6 +30,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -139,6 +140,47 @@ public class UserController {
         return generateUserDTO(userService.changePassword(userId, changePasswordSpec));
     }
 
+    private UserDTO generateUserDTO(UserModel user){
+        UserDTO userDTO = new UserDTO(user);
+        if(user.getProfileImage() != null){
+            userDTO.setProfileImage(base + user.getProfileImage().getName());
+        }
+        return userDTO;
+    }
+
+    private ExtensionDTO generateExtensionDTO(Extension extension) {
+        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+        if (extension.getGithub() != null) {
+            extensionDTO.setGitHubLink(extension.getGithub().getLink());
+            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
+            extensionDTO.setGithubId(extension.getGithub().getId());
+
+            if (extension.getGithub().getLastCommit() != null)
+                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+
+            if (extension.getGithub().getLastSuccess() != null)
+                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+
+            if (extension.getGithub().getLastFail() != null) {
+                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+            }
+        }
+
+        if (extension.getImage() != null)
+            extensionDTO.setImageLocation(base + extension.getImage().getName());
+
+        if (extension.getFile() != null)
+            extensionDTO.setFileLocation(base + extension.getFile().getName());
+
+        if (extension.getCover() != null)
+            extensionDTO.setCoverLocation(base + extension.getCover().getName());
+
+
+        return extensionDTO;
+    }
+
     @ExceptionHandler
     ResponseEntity handleInvalidCredentialsException(InvalidCredentialsException e) {
         return ResponseEntity
@@ -147,9 +189,10 @@ public class UserController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleUserNotFoundException(UserNotFoundException e) {
+    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
+        e.printStackTrace();
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 
@@ -200,46 +243,5 @@ public class UserController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toArray());
-    }
-
-    private UserDTO generateUserDTO(UserModel user){
-        UserDTO userDTO = new UserDTO(user);
-        if(user.getProfileImage() != null){
-            userDTO.setProfileImage(base + user.getProfileImage().getName());
-        }
-        return userDTO;
-    }
-
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
-        if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDTO.setGithubId(extension.getGithub().getId());
-
-            if (extension.getGithub().getLastCommit() != null)
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
-
-            if (extension.getGithub().getLastSuccess() != null)
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-
-        if (extension.getImage() != null)
-            extensionDTO.setImageLocation(base + extension.getImage().getName());
-
-        if (extension.getFile() != null)
-            extensionDTO.setFileLocation(base + extension.getFile().getName());
-
-        if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(base + extension.getCover().getName());
-
-
-        return extensionDTO;
     }
 }

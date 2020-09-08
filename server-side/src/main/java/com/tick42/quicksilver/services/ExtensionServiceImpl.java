@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 
 @Service
@@ -31,7 +32,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public Extension findById(int extensionId, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         checkUserAndExtension(extension, loggedUser);
 
@@ -42,7 +43,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     public Extension update(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
 
         Extension extension = extensionRepository.findById(extensionSpec.getId())
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
@@ -64,7 +65,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public void delete(int extensionId, UserModel user) {
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
 
         if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
@@ -153,7 +154,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     public Extension setPublishedState(int extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         switch (state) {
             case "publish":
@@ -177,7 +178,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     public Extension setFeaturedState(int extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
 
         switch (state) {
@@ -211,7 +212,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
         if (extension == null) {
-            throw new ExtensionNotFoundException("Extension doesn't exist.");
+            throw new EntityNotFoundException("Extension doesn't exist.");
         }
         boolean admin = false;
         if(loggedUser != null){

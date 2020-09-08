@@ -10,6 +10,7 @@ import com.tick42.quicksilver.models.Spec.ExtensionSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
@@ -242,7 +243,7 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(ExtensionNotFoundException e) {
+    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

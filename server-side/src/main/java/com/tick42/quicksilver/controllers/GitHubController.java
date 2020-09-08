@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
 @RestController
@@ -95,6 +96,15 @@ public class GitHubController {
 
         return gitHubDTO;
     }
+
+    @ExceptionHandler
+    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
     public ResponseEntity handleInvalidGitHubSettingSpecException(MethodArgumentNotValidException e) {

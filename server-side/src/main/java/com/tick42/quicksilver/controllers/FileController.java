@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
@@ -19,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
@@ -82,7 +82,8 @@ public class FileController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(ExtensionNotFoundException e) {
+    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
+        e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
