@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.InvalidRatingException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
@@ -11,6 +10,8 @@ import com.tick42.quicksilver.repositories.base.RatingRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.RatingService;
 import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
 
 @Service
 public class RatingServiceImpl implements RatingService {
@@ -32,7 +33,7 @@ public class RatingServiceImpl implements RatingService {
         }
 
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         Rating newRating = new Rating(rating, extensionId, userId);
         double currentExtensionRating = extension.getRating();
@@ -85,7 +86,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public void updateRatingOnExtensionDelete(int extensionId) {
         Extension extension = extensionRepository.findById(extensionId)
-                .orElseThrow(() -> new ExtensionNotFoundException("Extension not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
 
         double extensionRating = extension.getRating();

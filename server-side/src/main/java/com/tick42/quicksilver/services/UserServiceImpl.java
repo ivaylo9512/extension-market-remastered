@@ -21,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserModel setState(int userId, String state) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
 
         switch (state) {
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserModel findById(int userId, UserDetails loggedUser) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         boolean admin = false;
         if(loggedUser != null) {
@@ -141,7 +142,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserModel changePassword(int userId, ChangeUserPasswordSpec changePasswordSpec){
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if (!changePasswordSpec.getNewPassword().equals(changePasswordSpec.getRepeatNewPassword())){
             throw new PasswordsMissMatchException("passwords don't match");
