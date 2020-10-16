@@ -1,16 +1,10 @@
 package com.tick42.quicksilver.models;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
 import com.tick42.quicksilver.models.Spec.UserSpec;
 import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,12 +17,10 @@ public class UserModel {
     private int id;
 
     @NotNull(message="is required")
-    @Size(min=1, message="is required")
     @Column(name = "username")
     private String username;
 
     @NotNull(message="is required")
-    @Size(min=1, message="is required")
     private String password;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)

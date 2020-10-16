@@ -40,21 +40,16 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension update(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
+        public Extension update(Extension newExtension) {
 
-        Extension extension = extensionRepository.findById(extensionSpec.getId())
+        Extension extension = extensionRepository.findById(newExtension.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
+        if (newExtension.getOwner().getId() != extension.getOwner().getId() && !newExtension.getOwner().getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
         }
 
-        extension.setName(extensionSpec.getName());
-        extension.setVersion(extensionSpec.getVersion());
-        extension.setDescription(extensionSpec.getDescription());
-        extension.setTags(tags);
-
-        return extensionRepository.save(extension);
+        return extensionRepository.save(newExtension);
     }
 
     @Override
