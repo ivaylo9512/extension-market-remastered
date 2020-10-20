@@ -1,15 +1,11 @@
 package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.InvalidCredentialsException;
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.UserDTO;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.Spec.UserSpec;
+import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,12 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
@@ -44,7 +37,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-
         switch (state) {
             case "enable":
                 user.setIsActive(true);
@@ -59,7 +51,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel save(UserModel user) {
+    public UserModel create(UserModel user) {
         return userRepository.save(user);
     }
 
@@ -91,16 +83,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserModel findById(int userId, UserDetails loggedUser) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        boolean admin = false;
-        if(loggedUser != null) {
-            Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
-            admin = authorities.contains("ROLE_ADMIN");
-        }
-
-        if (!user.getIsActive() && !admin) {
-            throw new UserProfileUnavailableException("UserModel profile is unavailable.");
+        if (!user.getIsActive() && (loggedUser == null ||
+                !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("Role_ADMIN"))) {
+            throw new UserProfileUnavailableException("User is unavailable.");
         }
         return user;
     }
@@ -124,7 +111,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         UserModel foundUser = userRepository.findByUsername(username);
         if(foundUser == null){
             throw new BadCredentialsException("Invalid username or password.");

@@ -3,12 +3,12 @@ package com.tick42.quicksilver.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.UserDTO;
+import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
+import com.tick42.quicksilver.models.DTOs.UserDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.Spec.UserSpec;
+import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
@@ -61,7 +61,7 @@ public class UserController {
         if(image != null){
             File logo = fileService.storeUserLogo(image, newUser, "logo");
             newUser.setProfileImage(logo);
-            userService.save(newUser);
+            userService.create(newUser);
         }
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(newUser.getRole()));
