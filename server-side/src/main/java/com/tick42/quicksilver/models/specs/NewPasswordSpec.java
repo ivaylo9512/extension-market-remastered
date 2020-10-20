@@ -3,19 +3,10 @@ package com.tick42.quicksilver.models.Spec;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-public class ChangeUserPasswordSpec {
-
-    @Size(min=7, max=22, message="Name should be be between 7 and 18 char.")
-    @NotNull
+public class NewPasswordSpec {
+    private String username;
     private String currentPassword;
-
-    @Size(min=7, max=22, message="Name should be be between 7 and 18 char.")
-    @NotNull
     private String newPassword;
-
-    @Size(min=7, max=22, message="Name should be be between 7 and 18 char.")
-    @NotNull
-
     private String repeatNewPassword;
 
     public String getCurrentPassword() {
@@ -40,5 +31,13 @@ public class ChangeUserPasswordSpec {
 
     public void setRepeatNewPassword(String repeatNewPassword) {
         this.repeatNewPassword = repeatNewPassword;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
