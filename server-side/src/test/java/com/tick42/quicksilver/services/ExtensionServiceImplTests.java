@@ -2,8 +2,8 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
+import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
+import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
@@ -88,7 +88,7 @@ public class ExtensionServiceImplTests {
     public void setPublishedState_whenSetToPublished_returnPublishedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.isPending(true);
+        extension.setIsPending(true);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
@@ -96,14 +96,14 @@ public class ExtensionServiceImplTests {
         ExtensionDTO extensionShouldBePending = extensionService.setPublishedState(1, "publish");
 
         //Assert
-        Assert.assertFalse(extensionShouldBePending.isPending());
+        Assert.assertFalse(extensionShouldBePending.getIsPending());
     }
 
     @Test
     public void setPublishedState_whenSetToUnpublished_returnUnpublishedExtensionDTO() {
         // Arrange
         Extension extension = new Extension();
-        extension.isPending(false);
+        extension.setIsPending(false);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
@@ -111,7 +111,7 @@ public class ExtensionServiceImplTests {
         ExtensionDTO extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
 
         //Assert
-        Assert.assertTrue(extensionShouldBeUnpublished.isPending());
+        Assert.assertTrue(extensionShouldBeUnpublished.getIsPending());
     }
 
     @Test(expected = InvalidStateException.class)
@@ -133,8 +133,8 @@ public class ExtensionServiceImplTests {
         //Arrange
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
-        extension1.isPending(true);
-        extension2.isPending(true);
+        extension1.setIsPending(true);
+        extension2.setIsPending(true);
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
         when(extensionRepository.findByPending(true)).thenReturn(extensions);
@@ -144,8 +144,8 @@ public class ExtensionServiceImplTests {
 
         //Assert
         Assert.assertEquals(2, pendingExtensionDTOs.size());
-        Assert.assertTrue(pendingExtensionDTOs.get(0).isPending());
-        Assert.assertTrue(pendingExtensionDTOs.get(1).isPending());
+        Assert.assertTrue(pendingExtensionDTOs.get(0).getIsPending());
+        Assert.assertTrue(pendingExtensionDTOs.get(1).getIsPending());
     }
 
     @Test
@@ -220,7 +220,7 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(true);
 
         Extension extension = new Extension();
-        extension.isPending(true);
+        extension.setIsPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
@@ -241,7 +241,7 @@ public class ExtensionServiceImplTests {
         owner.setId(2);
 
         Extension extension = new Extension();
-        extension.isPending(true);
+        extension.setIsPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
@@ -262,7 +262,7 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.isPending(true);
+        extension.setIsPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
@@ -287,7 +287,7 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.isPending(true);
+        extension.setIsPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
@@ -312,7 +312,7 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.isPending(false);
+        extension.setIsPending(false);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
@@ -605,7 +605,7 @@ public class ExtensionServiceImplTests {
     @Test(expected = ExtensionUnavailableException.class)
     public void increaseDownloadCount_whenExtensionIsPending_shouldThrow() {
         Extension extension = new Extension();
-        extension.isPending(true);
+        extension.setIsPending(true);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
@@ -619,7 +619,7 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(false);
         Extension extension = new Extension();
         extension.setOwner(owner);
-        extension.isPending(false);
+        extension.setIsPending(false);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
@@ -634,7 +634,7 @@ public class ExtensionServiceImplTests {
         owner.setIsActive(true);
         Extension extension = new Extension();
         extension.setOwner(owner);
-        extension.isPending(false);
+        extension.setIsPending(false);
         extension.setTimesDownloaded(times);
 
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));

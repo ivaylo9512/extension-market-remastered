@@ -48,7 +48,7 @@ public class ExtensionDTO {
         this.isFeatured = extension.isFeatured();
         this.ownerId = extension.getOwner().getId();
         this.ownerName = extension.getOwner().getUsername();
-        this.isPending = extension.isPending();
+        this.isPending = extension.getIsPending();
         this.tags = extension.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         this.timesDownloaded = extension.getFile().getDownloadCount();
         this.version = extension.getVersion();
@@ -111,11 +111,11 @@ public class ExtensionDTO {
         this.timesDownloaded = timesDownloaded;
     }
 
-    public boolean isPending() {
+    public boolean getIsPending() {
         return isPending;
     }
 
-    public void setPending(boolean pending) {
+    public void setIsPending(boolean pending) {
         isPending = pending;
     }
 

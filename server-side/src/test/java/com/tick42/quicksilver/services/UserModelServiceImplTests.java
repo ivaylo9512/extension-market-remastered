@@ -2,9 +2,9 @@ package com.tick42.quicksilver.services;
 
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTO.UserDTO;
-import com.tick42.quicksilver.models.Spec.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.Spec.UserSpec;
+import com.tick42.quicksilver.models.DTOs.UserDTO;
+import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;

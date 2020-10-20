@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.models;
 
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
+import com.tick42.quicksilver.models.specs.ExtensionSpec;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -141,11 +141,11 @@ public class Extension {
         this.owner = owner;
     }
 
-    public boolean isPending() {
+    public boolean getIsPending() {
         return pending;
     }
 
-    public void isPending(boolean pending) {
+    public void setIsPending(boolean pending) {
         this.pending = pending;
     }
 
