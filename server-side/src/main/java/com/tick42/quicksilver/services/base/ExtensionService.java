@@ -1,14 +1,8 @@
 package com.tick42.quicksilver.services.base;
 
-
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.HomePageDTO;
-import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-
+import com.tick42.quicksilver.models.DTOs.PageDTO;
 import java.util.List;
-import java.util.Set;
 
 public interface ExtensionService {
 
@@ -18,7 +12,7 @@ public interface ExtensionService {
 
     Extension save(Extension extension);
 
-    void delete(int id, UserModel userModel);
+    void delete(int id, UserDetails loggedUser);
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 

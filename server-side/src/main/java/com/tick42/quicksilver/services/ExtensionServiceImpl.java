@@ -2,8 +2,7 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
+import com.tick42.quicksilver.models.DTOs.PageDTO;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,11 @@ public class ExtensionServiceImpl implements ExtensionService {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
-        checkUserAndExtension(extension, loggedUser);
+        UserModel owner = extension.getOwner();
+        if(extension.getIsPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
+                (loggedUser.getId() != owner.getId() || owner.getIsActive())))){
+            throw new ExtensionUnavailableException("Extension is unavailable.");
+        }
 
         return extension;
     }
@@ -58,16 +61,18 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public void delete(int extensionId, UserModel user) {
+    public Extension delete(int extensionId, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
-
-        if (user.getId() != extension.getOwner().getId() && !user.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to delete this extension.");
+        UserModel owner = extension.getOwner();
+        if(!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
+                loggedUser.getId() != owner.getId() && owner.getIsActive()){
+            throw new ExtensionUnavailableException("You are not authorized to delete this extension.");
         }
-
         extensionRepository.delete(extension);
+
+        return extension;
     }
 
     @Override
@@ -153,12 +158,12 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         switch (state) {
             case "publish":
-                extension.isPending(false);
+                extension.setIsPending(false);
                 break;
             case "unpublish":
                 featured.remove(extensionId);
                 extension.isFeatured(false);
-                extension.isPending(true);
+                extension.setIsPending(true);
                 break;
             default:
                 throw new InvalidStateException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
@@ -203,28 +208,6 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public List<Extension> findPending() {
         return extensionRepository.findByPending(true);
-    }
-
-    private void checkUserAndExtension(Extension extension, UserDetails loggedUser) {
-        if (extension == null) {
-            throw new EntityNotFoundException("Extension doesn't exist.");
-        }
-        boolean admin = false;
-        if(loggedUser != null){
-            Set<String> authorities = AuthorityUtils.authorityListToSet(loggedUser.getAuthorities());
-            admin = authorities.contains("ROLE_ADMIN");
-        }
-
-        if (!extension.getOwner().getIsActive() &&
-                ((loggedUser == null) || (!admin))) {
-            throw new ExtensionUnavailableException("Extension is unavailable.");
-        }
-
-        if (extension.isPending() &&
-                ((loggedUser == null) ||
-                        (extension.getOwner().getId() != loggedUser.getId() && !admin))) {
-            throw new ExtensionUnavailableException("Extension is unavailable.");
-        }
     }
 
     @Override
