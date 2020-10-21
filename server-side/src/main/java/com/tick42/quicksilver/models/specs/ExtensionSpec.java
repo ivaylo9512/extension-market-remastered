@@ -1,10 +1,6 @@
-package com.tick42.quicksilver.models.Spec;
+package com.tick42.quicksilver.models.specs;
 
-import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
-
-import javax.persistence.Entity;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;

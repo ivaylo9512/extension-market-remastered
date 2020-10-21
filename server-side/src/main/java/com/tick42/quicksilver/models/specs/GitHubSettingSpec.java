@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.models.Spec;
+package com.tick42.quicksilver.models.specs;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;

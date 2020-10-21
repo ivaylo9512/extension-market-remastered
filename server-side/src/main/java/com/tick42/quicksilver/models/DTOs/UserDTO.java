@@ -1,7 +1,6 @@
-package com.tick42.quicksilver.models.DTO;
+package com.tick42.quicksilver.models.DTOs;
 
 import com.tick42.quicksilver.models.UserModel;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

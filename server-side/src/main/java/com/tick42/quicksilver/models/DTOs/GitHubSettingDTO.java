@@ -1,10 +1,6 @@
-package com.tick42.quicksilver.models.DTO;
+package com.tick42.quicksilver.models.DTOs;
 
 import com.tick42.quicksilver.models.Settings;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 public class GitHubSettingDTO {
 

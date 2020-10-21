@@ -1,10 +1,8 @@
-package com.tick42.quicksilver.models.DTO;
+package com.tick42.quicksilver.models.DTOs;
 
 import com.tick42.quicksilver.models.Tag;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TagDTO {
     private String tag;

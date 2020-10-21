@@ -1,12 +1,9 @@
-package com.tick42.quicksilver.models.DTO;
+package com.tick42.quicksilver.models.DTOs;
 
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Tag;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 

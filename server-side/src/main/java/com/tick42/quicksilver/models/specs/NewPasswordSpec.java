@@ -1,7 +1,4 @@
-package com.tick42.quicksilver.models.Spec;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+package com.tick42.quicksilver.models.specs;
 
 public class NewPasswordSpec {
     private String username;

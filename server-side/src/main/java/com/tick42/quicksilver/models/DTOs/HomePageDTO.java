@@ -1,6 +1,4 @@
-package com.tick42.quicksilver.models.DTO;
-
-import com.tick42.quicksilver.models.Extension;
+package com.tick42.quicksilver.models.DTOs;
 
 import java.util.List;
 

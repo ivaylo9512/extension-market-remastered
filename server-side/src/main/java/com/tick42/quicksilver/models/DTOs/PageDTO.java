@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.models.DTO;
+package com.tick42.quicksilver.models.DTOs;
 
 import java.util.List;
 
