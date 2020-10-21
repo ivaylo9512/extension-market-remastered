@@ -1,10 +1,9 @@
 package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.InvalidCredentialsException;
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,20 +125,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel changePassword(int userId, ChangeUserPasswordSpec changePasswordSpec){
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    public UserModel changePassword(NewPasswordSpec passwordSpec){
+        UserModel user = userRepository.findByUsername(passwordSpec.getUsername());
 
-        if (!changePasswordSpec.getNewPassword().equals(changePasswordSpec.getRepeatNewPassword())){
-            throw new PasswordsMissMatchException("passwords don't match");
+        if(user == null){
+            throw new EntityNotFoundException("User with" + passwordSpec.getUsername() + "is not found.");
         }
 
-        if (!user.getPassword().equals(changePasswordSpec.getCurrentPassword())){
+        if (!user.getPassword().equals(passwordSpec.getCurrentPassword())){
             throw new InvalidCredentialsException("Invalid current password.");
         }
-        user.setPassword(changePasswordSpec.getNewPassword());
-        userRepository.save(user);
-        return user;
+        user.setPassword(passwordSpec.getNewPassword());
+        return userRepository.save(user);
 
     }
 }

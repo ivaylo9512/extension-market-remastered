@@ -1,10 +1,8 @@
 package com.tick42.quicksilver.services.base;
 
-import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.specs.UserSpec;
+import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
-
 
 import java.util.List;
 
@@ -19,5 +17,5 @@ public interface UserService {
 
     UserModel register(UserSpec userSpec, String role);
 
-    UserModel changePassword(int id, ChangeUserPasswordSpec changePasswordSpec);
+    UserModel changePassword(NewPasswordSpec changePasswordSpec);
 }
