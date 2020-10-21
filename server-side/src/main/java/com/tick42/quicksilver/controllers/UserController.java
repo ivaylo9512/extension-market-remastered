@@ -7,14 +7,14 @@ import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
 import com.tick42.quicksilver.models.DTOs.UserDTO;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
-import com.tick42.quicksilver.models.specs.UserSpec;
+import com.tick42.quicksilver.models.specs.NewPasswordSpec;
+import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
-import com.tick42.quicksilver.validators.UserValidator;
+import com.tick42.quicksilver.validators.RegisterValidator;
 import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -54,7 +54,7 @@ public class UserController {
     @PostMapping(value = "/register")
     public UserDetails register(@RequestParam(name = "image", required = false) MultipartFile image,
                                 @RequestParam(name = "user") String userJson) throws IOException, BindException {
-        UserSpec user = validateUser(userJson);
+        RegisterSpec user = validateUser(userJson);
 
         UserModel newUser = userService.register(user, "ROLE_USER");
 
@@ -69,10 +69,10 @@ public class UserController {
         return new UserDetails(newUser, authorities);
     }
 
-    private UserSpec validateUser(String userJson) throws BindException, IOException {
+    private RegisterSpec validateUser(String userJson) throws BindException, IOException {
         ObjectMapper mapper = new ObjectMapper();
-        UserSpec user = mapper.readValue(userJson, UserSpec.class);
-        Validator validator = new UserValidator();
+        RegisterSpec user = mapper.readValue(userJson, RegisterSpec.class);
+        Validator validator = new RegisterValidator();
 
         BindingResult bindingResult = new DataBinder(user).getBindingResult();
         validator.validate(user, bindingResult);
@@ -94,8 +94,8 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
-    public UserModel registerAdmin(@Valid @RequestBody UserSpec user){
-        return userService.register(user, "ROLE_ADMIN");
+    public UserModel registerAdmin(@Valid @RequestBody RegisterSpec newUser){
+        return userService.register(newUser, "ROLE_ADMIN");
     }
 
     @GetMapping(value = "/{id}")
@@ -132,12 +132,12 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
-    public UserDTO changePassword(@Valid @RequestBody ChangeUserPasswordSpec changePasswordSpec, HttpServletRequest request){
+    public UserDTO changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec, HttpServletRequest request){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return generateUserDTO(userService.changePassword(userId, changePasswordSpec));
+        return generateUserDTO(userService.changePassword(newPasswordSpec));
     }
 
     private UserDTO generateUserDTO(UserModel user){
