@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
@@ -85,12 +84,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-        public UserDetails login(){
-            return (UserDetails) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
-        }
+    public UserDetails login(){
+        return (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
@@ -98,8 +97,8 @@ public class UserController {
         return userService.register(newUser, "ROLE_ADMIN");
     }
 
-    @GetMapping(value = "/{id}")
-    public UserDTO profile(@PathVariable(name = "id") int id, HttpServletRequest request) {
+    @GetMapping(value = "/findById/{id}")
+    public UserDTO findById(@PathVariable(name = "id") int id, HttpServletRequest request) {
         UserDetails loggedUser;
         try {
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
@@ -107,26 +106,21 @@ public class UserController {
             loggedUser = null;
         }
         UserModel user = userService.findById(id, loggedUser);
-        UserDTO userDTO = generateUserDTO(user);
-        userDTO.setExtensions(user.getExtensions()
-                .stream()
-                .map(this::generateExtensionDTO)
-                .collect(Collectors.toList()));
-        return userDTO;
+        return new UserDTO(user);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/setState/{id}/{newState}")
     public UserDTO setState(@PathVariable("newState") String state,
                             @PathVariable("id") int id) {
-        return generateUserDTO(userService.setState(id, state));
+        return new UserDTO(userService.setState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/all")
-    public List<UserDTO> listAllUsers(@RequestParam(name = "state", required = false) String state) {
+    public List<UserDTO> findAll(@RequestParam(name = "state", required = false) String state) {
         return userService.findAll(state).stream()
-                .map(this::generateUserDTO)
+                .map(UserDTO::new)
                 .collect(Collectors.toList());
     }
 
@@ -137,15 +131,7 @@ public class UserController {
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
 
-        return generateUserDTO(userService.changePassword(newPasswordSpec));
-    }
-
-    private UserDTO generateUserDTO(UserModel user){
-        UserDTO userDTO = new UserDTO(user);
-        if(user.getProfileImage() != null){
-            userDTO.setProfileImage(base + user.getProfileImage().getName());
-        }
-        return userDTO;
+        return new UserDTO(userService.changePassword(newPasswordSpec));
     }
 
     private ExtensionDTO generateExtensionDTO(Extension extension) {
