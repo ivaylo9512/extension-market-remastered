@@ -2,9 +2,9 @@ package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTO.GitHubDTO;
-import com.tick42.quicksilver.models.DTO.GitHubSettingDTO;
-import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
+import com.tick42.quicksilver.models.DTOs.GitHubDTO;
+import com.tick42.quicksilver.models.DTOs.GitHubSettingDTO;
+import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;

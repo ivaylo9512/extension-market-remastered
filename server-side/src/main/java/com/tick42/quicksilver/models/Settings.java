@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.models;
 
-import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
-
+import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import javax.persistence.*;
 
 @Entity

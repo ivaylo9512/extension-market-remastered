@@ -2,7 +2,7 @@ package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
-import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 

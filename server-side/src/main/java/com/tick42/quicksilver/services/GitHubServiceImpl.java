@@ -5,7 +5,7 @@ import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
-import com.tick42.quicksilver.models.Spec.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
@@ -17,12 +17,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.*;
 
 @Service

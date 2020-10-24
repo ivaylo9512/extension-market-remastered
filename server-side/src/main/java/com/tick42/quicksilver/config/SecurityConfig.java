@@ -6,7 +6,6 @@ import com.tick42.quicksilver.security.AuthorizationProvider;
 import com.tick42.quicksilver.security.FailureHandler;
 import com.tick42.quicksilver.services.UserServiceImpl;
 import org.apache.http.HttpHeaders;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,12 +31,16 @@ import java.util.Collections;
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private UserServiceImpl userService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuthorizationProvider authorizationProvider;
+    private final UserServiceImpl userService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthorizationProvider authorizationProvider;
+
+    public SecurityConfig(UserServiceImpl userService, PasswordEncoder passwordEncoder, AuthorizationProvider authorizationProvider) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.authorizationProvider = authorizationProvider;
+    }
+
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userService).passwordEncoder(new BCryptPasswordEncoder());

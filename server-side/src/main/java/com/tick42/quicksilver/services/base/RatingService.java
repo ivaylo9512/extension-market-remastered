@@ -2,10 +2,8 @@ package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
-import com.tick42.quicksilver.models.UserModel;
 
 public interface RatingService {
-
     Extension rate(int extensionId, int rating, int userId);
 
     int userRatingForExtension(int extensionId, int userId);

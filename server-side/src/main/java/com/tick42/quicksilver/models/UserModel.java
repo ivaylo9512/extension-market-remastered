@@ -2,8 +2,7 @@ package com.tick42.quicksilver.models;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import com.tick42.quicksilver.models.Spec.UserSpec;
+import com.tick42.quicksilver.models.specs.RegisterSpec;
 import org.hibernate.annotations.Type;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,9 +58,9 @@ public class UserModel {
         this.role = role;
     }
 
-    public UserModel(UserSpec userSpec, String role) {
-        this.setUsername(userSpec.getUsername());
-        this.setPassword(userSpec.getPassword());
+    public UserModel(RegisterSpec newUser, String role) {
+        this.setUsername(newUser.getUsername());
+        this.setPassword(newUser.getPassword());
         this.setRole(role);
     }
 
