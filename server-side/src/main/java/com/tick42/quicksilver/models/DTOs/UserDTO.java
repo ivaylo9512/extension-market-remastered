@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.models.DTOs;
 
+import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,12 @@ public class UserDTO {
     private String country;
     private String info;
 
-
     public UserDTO() {
 
     }
 
     public UserDTO(UserModel userModel) {
+        setProfileImage(userModel.getProfileImage());
         this.id = userModel.getId();
         this.username = userModel.getUsername();
         this.extensions = userModel.getExtensions()
@@ -97,8 +98,10 @@ public class UserDTO {
         return profileImage;
     }
 
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
+    public void setProfileImage(File profileImage) {
+        if(profileImage != null){
+            this.profileImage = profileImage.getName();
+        }
     }
 
     public String getCountry() {

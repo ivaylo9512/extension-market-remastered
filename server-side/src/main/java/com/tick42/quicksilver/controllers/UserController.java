@@ -43,7 +43,6 @@ public class UserController {
 
     private final UserService userService;
     private final FileService fileService;
-    private String base = "http://localhost:8090/api/download/";
 
     public UserController(UserService userService, FileService fileService) {
         this.userService = userService;
@@ -155,13 +154,13 @@ public class UserController {
         }
 
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(base + extension.getImage().getName());
+            extensionDTO.setImageLocation(extension.getImage().getName());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(base + extension.getFile().getName());
+            extensionDTO.setFileLocation(extension.getFile().getName());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(base + extension.getCover().getName());
+            extensionDTO.setCoverLocation(extension.getCover().getName());
 
 
         return extensionDTO;
