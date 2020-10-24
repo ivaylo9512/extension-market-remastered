@@ -4,6 +4,7 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
+import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<UserModel> user;
 
         if (state == null) {
-            state = "";
+            throw new InvalidStateException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
         switch (state) {
@@ -92,19 +93,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel register(UserSpec userSpec, String role) {
-        UserModel user = userRepository.findByUsername(userSpec.getUsername());
+    public UserModel register(RegisterSpec newUser, String role) {
+        UserModel user = userRepository.findByUsername(newUser.getUsername());
 
         if (user != null) {
             throw new UsernameExistsException("Username is already taken.");
         }
 
-        if (!userSpec.getPassword().equals(userSpec.getRepeatPassword())) {
-            throw new PasswordsMissMatchException("Passwords must match.");
-        }
-
-        user = new UserModel(userSpec, role);
+        user = new UserModel(newUser, role);
         user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(4)));
+
         return userRepository.save(user);
     }
 
@@ -133,7 +131,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         if (!user.getPassword().equals(passwordSpec.getCurrentPassword())){
-            throw new InvalidCredentialsException("Invalid current password.");
+            throw new BadCredentialsException("Invalid current password.");
         }
         user.setPassword(passwordSpec.getNewPassword());
         return userRepository.save(user);
