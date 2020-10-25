@@ -4,8 +4,7 @@ import com.tick42.quicksilver.models.GitHubModel;
 import java.time.LocalDateTime;
 
 public class GitHubDTO {
-
-    private int id;
+    private long id;
     private int pullRequests;
     private int openIssues;
 
@@ -29,11 +28,11 @@ public class GitHubDTO {
         this.openIssues = gitHubModel.getOpenIssues();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

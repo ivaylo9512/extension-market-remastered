@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.User;
 import java.util.Collection;
 
 public class UserDetails extends User {
-    private int id;
+    private long id;
     private String token;
 
     public UserDetails(UserModel userModel, Collection<? extends GrantedAuthority> authorities){
@@ -16,11 +16,11 @@ public class UserDetails extends User {
         super(username,password,authorities);
         this.id = id;
     }
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

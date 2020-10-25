@@ -3,13 +3,11 @@ package com.tick42.quicksilver.models;
 import javax.persistence.*;
 import java.io.Serializable;
 
-
 @Entity
 @IdClass(RatingPK.class)
 @Table(name = "ratings")
 public class Rating implements Serializable {
 
-    @Column(name = "rating")
     private int rating;
 
     @Id

@@ -3,34 +3,28 @@ package com.tick42.quicksilver.models.specs;
 import com.tick42.quicksilver.models.File;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 public class ExtensionSpec {
     @NotNull
-    private int id;
+    private long id;
 
-    @NotNull
-    @Size(min=1, message="Name should be at least 1 character.")
+    @NotNull(message = "Name is required")
     private String name;
 
-
-    @NotNull
-    @Size(min=1, message="Version should be at least 1 character.")
+    @NotNull(message = "Version is required")
     private String version;
 
-    @NotNull
-    @Size(min=1, message="Description should be at least 1 character.")
+    @NotNull(message = "Description is required")
     private String description;
 
-    @NotNull
+    @NotNull(message = "Github is required")
     @Pattern(regexp = "^https://github.com/.+/.+$", message = "Link to github should match https://github.com/USER/REPOSITORY")
     private String github;
 
-    @NotNull
+    @NotNull(message = "Github id is required")
     private int githubId;
 
     private String tags;
-
     private File file;
     private File image;
     private File cover;
@@ -102,11 +96,11 @@ public class ExtensionSpec {
         this.cover = cover;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

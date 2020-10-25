@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExtensionDTO {
-    private int id;
+    private long id;
     private String name;
     private String version;
     private String description;
@@ -17,7 +17,7 @@ public class ExtensionDTO {
     private boolean isFeatured;
     private String uploadDate;
     private String ownerName;
-    private int ownerId;
+    private long ownerId;
     private String gitHubLink;
     private String lastCommit;
     private int openIssues;
@@ -65,14 +65,14 @@ public class ExtensionDTO {
 
     @Override
     public int hashCode() {
+        return Long.hashCode(id);
+    }
+
+    public long getId() {
         return id;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -140,11 +140,11 @@ public class ExtensionDTO {
         this.ownerName = ownerName;
     }
 
-    public int getOwnerId() {
+    public long getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(int ownerId) {
+    public void setOwnerId(long ownerId) {
         this.ownerId = ownerId;
     }
 

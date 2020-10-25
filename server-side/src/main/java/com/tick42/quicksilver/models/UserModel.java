@@ -13,10 +13,9 @@ public class UserModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @NotNull(message="is required")
-    @Column(name = "username")
     private String username;
 
     @NotNull(message="is required")
@@ -30,23 +29,15 @@ public class UserModel {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean active = true;
 
-    private String role;
-
-    @Column(name = "rating")
-    private double rating;
-
-    @Column(name = "extensions_rated")
-    private int extensionsRated;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "image_id")
     private File profileImage;
 
-    @Column(name = "country")
+    private String role;
+    private double rating;
     private String country;
-
-    @Column(name = "info")
     private String info;
+    private int extensionsRated;
 
     public UserModel(){
 
@@ -88,11 +79,11 @@ public class UserModel {
         this.password = password;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

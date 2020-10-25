@@ -1,11 +1,7 @@
 package com.tick42.quicksilver.models;
 
-import org.apache.tomcat.jni.Local;
-
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "github")
@@ -13,37 +9,20 @@ public class GitHubModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(name = "link")
-    private String link;
-
-    @Column(name = "user")
-    private String user;
-
-    @Column(name = "repo")
-    private String repo;
+    private long id;
 
     @OneToOne
     @PrimaryKeyJoinColumn
     private Extension extension;
 
-    @Column(name = "last_commit")
+    private String link;
+    private String user;
+    private String repo;
     private LocalDateTime lastCommit;
-
-    @Column(name = "pull_requests")
     private int pullRequests;
-
-    @Column(name = "open_issues")
     private int openIssues;
-
-    @Column(name = "last_success")
     private LocalDateTime lastSuccess;
-
-    @Column(name = "last_fail")
     private LocalDateTime lastFail;
-
-    @Column(name = "fail_msg")
     private String failMessage;
 
     public GitHubModel() {
@@ -56,11 +35,11 @@ public class GitHubModel {
         this.repo = repo;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

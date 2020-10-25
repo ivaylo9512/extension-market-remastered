@@ -8,12 +8,10 @@ public class Settings {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private long id;
 
-    @Column(name = "rate")
     private int rate;
 
-    @Column(name = "wait")
     private int wait;
 
     @Column(name = "git_token")
@@ -23,7 +21,6 @@ public class Settings {
     private String username;
 
     @OneToOne
-    @JoinColumn(name = "user")
     private UserModel user;
 
     public Settings() {
@@ -35,11 +32,11 @@ public class Settings {
         this.token = settingsSpec.getToken();
         this.username = settingsSpec.getUsername();
     }
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 

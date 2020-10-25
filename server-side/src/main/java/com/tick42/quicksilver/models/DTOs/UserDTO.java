@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserDTO {
-    private int id;
+    private long id;
     private String username;
     private int totalExtensions;
     private List<ExtensionDTO> extensions = new ArrayList<>();
@@ -38,11 +38,11 @@ public class UserDTO {
         this.info = userModel.getInfo();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

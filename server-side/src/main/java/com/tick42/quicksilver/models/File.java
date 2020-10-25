@@ -12,31 +12,31 @@ public class File {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
-    @Column(name = "name")
-    private String name;
 
     @OneToOne
     @PrimaryKeyJoinColumn
     private Extension extension;
 
-    @Column(name = "size")
-    private double size;
-
-    @Column(name = "type")
+    private String name;
     private String type;
-
-    @Column(name = "download_count")
+    private double size;
     private int downloadCount;
 
-    public File() {
+    public File(){
 
+    }
+
+    public File(String name, double size, String type){
+        this.name = name;
+        this.size = size;
+        this.type = type;
     }
 
     @Override
     public int hashCode() {
-        return getId();
+        return Long.hashCode(id);
     }
 
     @Override
@@ -48,11 +48,11 @@ public class File {
         return extension.getId() == getId();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

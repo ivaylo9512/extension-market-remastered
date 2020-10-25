@@ -1,4 +1,3 @@
-
 package com.tick42.quicksilver.models;
 
 import java.io.Serializable;

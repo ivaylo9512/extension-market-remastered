@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.models;
 
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -9,35 +8,24 @@ import java.util.*;
 @Entity
 @Table(name = "extensions")
 public class Extension {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "description")
-    private String description;
+    private long id;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "file_id")
     private File file;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "image_id")
     private File image;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "cover_id")
     private File cover;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "github_id")
     private GitHubModel github;
 
-    @Column(name = "version")
-    private String version;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private UserModel owner;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinTable(
@@ -46,23 +34,13 @@ public class Extension {
             inverseJoinColumns = @JoinColumn(name = "tag"))
     private Set<Tag> tags = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "owner")
-    private UserModel owner;
-
-    @Column(name = "pending")
-    private boolean pending = true;
-
-    @Column(name = "upload_date")
+    private String name;
+    private String description;
+    private String version;
     private LocalDateTime uploadDate = LocalDateTime.now();
-
-    @Column(name = "featured")
+    private boolean pending = true;
     private boolean featured;
-
-    @Column(name = "rating")
     private double rating;
-
-    @Column(name = "times_rated")
     private int timesRated;
 
     public Extension() {
@@ -81,7 +59,7 @@ public class Extension {
 
     @Override
     public int hashCode() {
-        return getId();
+        return Long.hashCode(id);
     }
 
     @Override
@@ -93,11 +71,11 @@ public class Extension {
         return extension.getId() == getId();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
