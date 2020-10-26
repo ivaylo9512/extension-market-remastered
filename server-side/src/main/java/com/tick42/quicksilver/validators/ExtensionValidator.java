@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.validators;
 
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
-import org.bouncycastle.asn1.x509.Extensions;
+import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -16,7 +15,7 @@ public class ExtensionValidator implements Validator {
     }
 
     public void validate(Object target, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "Name must be at least 7 characters long.");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", String.format("Name must be at least %d characters long.", MINIMUM_NAME_LENGTH));
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "id", "No id present.");
 
         ExtensionSpec extensionSpec = (ExtensionSpec) target;
@@ -27,7 +26,7 @@ public class ExtensionValidator implements Validator {
             errors.rejectValue("github", "Github must match http://github.com/:user/:repo");
         }
         if (errors.getFieldErrorCount("name") == 0 && extensionSpec.getName().trim().length() < MINIMUM_NAME_LENGTH) {
-            errors.rejectValue("name", "Name must be at least 7 characters");
+            errors.rejectValue("name", String.format("Name must be at least %d characters", MINIMUM_NAME_LENGTH));
         }
     }
 }

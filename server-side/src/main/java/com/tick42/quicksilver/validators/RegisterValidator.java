@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.validators;
 
-import com.tick42.quicksilver.models.specs.UserSpec;
+import com.tick42.quicksilver.models.specs.RegisterSpec;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -13,14 +13,14 @@ public class RegisterValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return UserSpec.class.isAssignableFrom(clazz);
+        return RegisterSpec.class.isAssignableFrom(clazz);
     }
 
     public void validate(Object target, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "Name must be at least 7 characters long.");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", "Password must be at least 7 characters long.");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", String.format("Username must be between %d and %d characters", MINIMUM_NAME_LENGTH, MAXIMUM_NAME_LENGTH));
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", String.format("Password must be between %d and %d characters", MINIMUM_PASSWORD_LENGTH, MAXIMUM_PASSWORD_LENGTH));
 
-        UserSpec userSpec = (UserSpec)target;
+        RegisterSpec userSpec = (RegisterSpec) target;
         if(!userSpec.getPassword().equals(userSpec.getRepeatPassword())){
             errors.reject("Passwords must match.");
         }
