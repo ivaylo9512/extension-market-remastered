@@ -10,8 +10,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -123,14 +121,6 @@ public class FileServiceImpl implements FileService {
     private File generateFile(MultipartFile receivedFile, String type, int extensionId) {
         String fileType = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
         String fileName = extensionId + "_" + type + "." + fileType;
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/download/")
-                .path(fileName)
-                .toUriString();
-        File file = new File();
-        file.setName(fileName);
-        file.setSize(receivedFile.getSize());
-        file.setType(receivedFile.getContentType());
-        return file;
+        return new File(fileName, receivedFile.getSize(), receivedFile.getContentType());
     }
 }
