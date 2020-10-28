@@ -1,4 +1,5 @@
 package com.tick42.quicksilver.security;
+
 import com.tick42.quicksilver.models.UserDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;

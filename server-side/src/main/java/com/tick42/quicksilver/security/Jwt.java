@@ -9,12 +9,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 public class Jwt {
     private static String jwtSecret = "MyJwtSecret";
     private static int jwtExpirationInMs = 10000000;
@@ -54,7 +51,7 @@ public class Jwt {
 
             user = new UserDetails(body.getSubject(), token, authorities, Integer.parseInt(body.getId()));
         } catch (ExpiredJwtException e) {
-                throw new BadCredentialsException("Jwt token has expired.");
+            throw new BadCredentialsException("Jwt token has expired.");
         } catch (Exception e) {
             throw new BadCredentialsException("Jwt token is incorrect");
         }
