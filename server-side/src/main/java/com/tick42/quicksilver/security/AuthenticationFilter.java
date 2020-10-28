@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    public AuthenticationFilter() {
-    }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws BadCredentialsException {

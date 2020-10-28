@@ -14,7 +14,6 @@ import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
 import com.tick42.quicksilver.validators.RegisterValidator;
-import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -164,13 +163,6 @@ public class UserController {
 
 
         return extensionDTO;
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleInvalidCredentialsException(InvalidCredentialsException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
     }
 
     @ExceptionHandler
