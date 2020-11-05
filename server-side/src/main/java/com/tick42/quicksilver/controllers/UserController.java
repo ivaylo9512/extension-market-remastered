@@ -49,50 +49,33 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDetails register(@RequestParam(name = "image", required = false) MultipartFile image,
-                                @RequestParam(name = "user") String userJson) throws IOException, BindException {
-        RegisterSpec user = validateUser(userJson);
+    public UserDTO register(@ModelAttribute RegisterSpec registerSpec) {
+        UserModel newUser = new UserModel(registerSpec, "ROLE_USER");
 
-        UserModel newUser = userService.register(user, "ROLE_USER");
-
-        if(image != null){
-            File logo = fileService.storeUserLogo(image, newUser, "logo");
-            newUser.setProfileImage(logo);
-            userService.create(newUser);
+        if(registerSpec.getProfileImage() != null){
+            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
+            newUser.setProfileImage(profileImage);
         }
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(newUser.getRole()));
-
-        return new UserDetails(newUser, authorities);
-    }
-
-    private RegisterSpec validateUser(String userJson) throws BindException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        RegisterSpec user = mapper.readValue(userJson, RegisterSpec.class);
-        Validator validator = new RegisterValidator();
-
-        BindingResult bindingResult = new DataBinder(user).getBindingResult();
-        validator.validate(user, bindingResult);
-
-        if(bindingResult.hasErrors()){
-            throw new BindException(bindingResult);
-        }
-
-        return user;
+        return new UserDTO(userService.create(newUser));
     }
 
     @PostMapping("/login")
-    public UserDetails login(){
-        return (UserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public UserDTO login(){
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return new UserDTO(user.getUserModel());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
-    public UserModel registerAdmin(@Valid @RequestBody RegisterSpec newUser){
-        return userService.register(newUser, "ROLE_ADMIN");
+    public UserModel registerAdmin(@ModelAttribute RegisterSpec registerSpec){
+        UserModel newUser = new UserModel(registerSpec, "ROLE_ADMIN");
+
+        if(registerSpec.getProfileImage() != null){
+            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
+            newUser.setProfileImage(profileImage);
+        }
+        return new UserDTO(userService.create(newUser));
     }
 
     @GetMapping(value = "/findById/{id}")
@@ -124,7 +107,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
-    public UserDTO changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec, HttpServletRequest request){
+    public UserDTO changePassword(@Valid NewPasswordSpec newPasswordSpec, HttpServletRequest request){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         int userId = loggedUser.getId();
