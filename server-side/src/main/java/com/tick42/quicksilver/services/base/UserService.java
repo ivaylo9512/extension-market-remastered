@@ -16,7 +16,5 @@ public interface UserService {
 
     UserModel findById(int id, UserDetails loggedUser);
 
-    UserModel register(RegisterSpec newUser, String role);
-
     UserModel changePassword(NewPasswordSpec changePasswordSpec);
 }
