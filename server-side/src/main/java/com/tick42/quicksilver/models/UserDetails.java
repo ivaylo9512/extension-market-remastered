@@ -6,11 +6,12 @@ import java.util.Collection;
 
 public class UserDetails extends User {
     private long id;
-    private String token;
+    private UserModel userModel;
 
     public UserDetails(UserModel userModel, Collection<? extends GrantedAuthority> authorities){
         super(userModel.getUsername(), userModel.getPassword(), authorities);
         this.id = userModel.getId();
+        this.userModel = userModel;
     }
     public UserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities, int id){
         super(username,password,authorities);
@@ -24,11 +25,11 @@ public class UserDetails extends User {
         this.id = id;
     }
 
-    public String getToken() {
-        return token;
+    public UserModel getUserModel() {
+        return userModel;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setUserModel(UserModel userModel) {
+        this.userModel = userModel;
     }
 }
