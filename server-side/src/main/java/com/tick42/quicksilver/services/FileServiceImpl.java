@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
@@ -36,58 +35,25 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File storeFile(MultipartFile receivedFile, long extensionId, UserModel user) {
+    public File create(MultipartFile receivedFile, String name) {
 
-        File file = generateFile(receivedFile, "file", extensionId);
+        File file = generate(receivedFile, name);
 
         try {
-            saveFile(file, receivedFile);
+            if (!file.getType().startsWith("image/")) {
+                throw new FileFormatException("File should be of type IMAGE.");
+            }
+
+            save(file, receivedFile);
+
             return file;
+
         } catch (IOException e) {
-            throw new FileStorageException("Couldn't store file");
+            throw new FileStorageException("Couldn't store the image.");
         }
     }
 
-
-    @Override
-    public File storeImage(MultipartFile receivedFile, long extensionId, String type) {
-
-        File image = generateFile(receivedFile, type, extensionId);
-
-        try {
-            if (!image.getType().startsWith("image/")) {
-                throw new FileFormatException("File should be of type IMAGE.");
-            }
-
-            saveFile(image, receivedFile);
-
-            return image;
-
-        } catch (IOException e) {
-            throw new FileStorageException("Couldn't store image.");
-        }
-    }
-    @Override
-    public File storeUserLogo(MultipartFile receivedFile, UserModel user, String type) {
-
-
-        File image = generateFile(receivedFile, "logo", user.getId());
-
-        try {
-            if (!image.getType().startsWith("image/")) {
-                throw new FileFormatException("File should be of type IMAGE.");
-            }
-
-            saveFile(image, receivedFile);
-
-            return image;
-
-        } catch (IOException e) {
-            throw new FileStorageException("Couldn't store image.");
-        }
-    }
-
-    private void saveFile(File image, MultipartFile receivedFile) throws IOException {
+    private void save(File image, MultipartFile receivedFile) throws IOException {
         Path targetLocation = this.fileLocation.resolve(image.getName());
         Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -118,9 +84,9 @@ public class FileServiceImpl implements FileService {
         return fileRepository.findByName(fileName);
     }
 
-    private File generateFile(MultipartFile receivedFile, String type, long extensionId) {
+    private File generate(MultipartFile receivedFile, String name) {
         String fileType = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
-        String fileName = extensionId + "_" + type + "." + fileType;
+        String fileName = name + "." + fileType;
         return new File(fileName, receivedFile.getSize(), receivedFile.getContentType());
     }
 }
