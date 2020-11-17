@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ExtensionService {
 
-    Extension findById(int id, UserDetails loggedUser);
+    Extension findById(long id, UserDetails loggedUser);
 
     Extension update(Extension extension);
 

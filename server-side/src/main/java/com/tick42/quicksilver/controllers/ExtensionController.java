@@ -3,17 +3,15 @@ package com.tick42.quicksilver.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTO.ExtensionDTO;
-import com.tick42.quicksilver.models.DTO.HomePageDTO;
-import com.tick42.quicksilver.models.DTO.PageDTO;
-import com.tick42.quicksilver.models.Spec.ExtensionSpec;
+`import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
+import com.tick42.quicksilver.models.DTOs.HomePageDTO;
+import com.tick42.quicksilver.models.DTOs.PageDTO;
+import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
-
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-
 import com.tick42.quicksilver.validators.ExtensionValidator;
 import io.jsonwebtoken.JwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -28,7 +26,6 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -107,7 +104,7 @@ public class ExtensionController {
             @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, null);
         ExtensionSpec extensionSpec = validateExtension(extensionJson);
@@ -121,7 +118,7 @@ public class ExtensionController {
 
         extensionService.save(extension);
 
-        setFiles(extensionImage, extensionFile, extensionCover, extension, user);
+        setFiles(extensionImage, extensionFile, extensionCover, extension);
 
         return generateExtensionDTO(extensionService.save(extension));
     }
@@ -136,7 +133,7 @@ public class ExtensionController {
             @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, null);
         ExtensionSpec extensionSpec = validateExtension(extensionJson);
@@ -148,7 +145,7 @@ public class ExtensionController {
             extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
 
 
-        setFiles(extensionImage, extensionFile, extensionCover, extension, user);
+        setFiles(extensionImage, extensionFile, extensionCover, extension);
 
         ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.save(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
@@ -171,19 +168,19 @@ public class ExtensionController {
         return extensionSpec;
     }
 
-    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension, UserModel user) {
-        int extensionId = extension.getId();
+    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension) {
+        long extensionId = extension.getId();
 
         if(extensionImage != null){
-            File image = fileService.storeImage(extensionImage, extensionId, user, "image");
+            File image = fileService.create(extensionImage, extensionId + "image");
             extension.setImage(image);
         }
         if(extensionFile != null){
-            File file = fileService.storeFile(extensionFile, extensionId, user);
+            File file = fileService.create(extensionFile, String.valueOf(extensionId));
             extension.setFile(file);
         }
         if(extensionCover != null){
-            File cover = fileService.storeImage(extensionCover, extensionId, user, "cover");
+            File cover = fileService.create(extensionCover, extensionId +"cover");
             extension.setCover(cover);
         }
     }
@@ -206,7 +203,7 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/unpublished")
-    public List<ExtensionDTO> pending() {
+    public List<ExtensionDTO> getPending() {
         return generateExtensionDTOList(extensionService.findPending());
     }
 
