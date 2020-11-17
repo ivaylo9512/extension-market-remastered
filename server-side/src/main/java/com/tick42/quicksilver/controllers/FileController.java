@@ -27,8 +27,6 @@ import java.io.IOException;
 @RequestMapping(value = "/api")
 public class FileController {
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
-
-
     private final FileService fileService;
     private final ExtensionService extensionService;
 
@@ -40,8 +38,8 @@ public class FileController {
 
 
     @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
-        Resource resource = fileService.loadFileAsResource(fileName);
+    public ResponseEntity<Resource> getAsResource(@PathVariable String fileName, HttpServletRequest request) {
+        Resource resource = fileService.getAsResource(fileName);
         String contentType = null;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());

@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
 import com.tick42.quicksilver.models.DTOs.UserDTO;
@@ -13,26 +12,20 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
-import com.tick42.quicksilver.validators.RegisterValidator;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,13 +42,18 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDTO register(@ModelAttribute RegisterSpec registerSpec) {
+    public UserDTO register(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
         UserModel newUser = new UserModel(registerSpec, "ROLE_USER");
 
         if(registerSpec.getProfileImage() != null){
             File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
             newUser.setProfileImage(profileImage);
         }
+
+        String token = Jwt.generate(new UserDetails(newUser, new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
+        response.addHeader("Authorization", "Token " + token);
+
         return new UserDTO(userService.create(newUser));
     }
 
@@ -68,13 +66,18 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
-    public UserModel registerAdmin(@ModelAttribute RegisterSpec registerSpec){
+    public UserDTO registerAdmin(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
         UserModel newUser = new UserModel(registerSpec, "ROLE_ADMIN");
 
         if(registerSpec.getProfileImage() != null){
             File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
             newUser.setProfileImage(profileImage);
         }
+
+        String token = Jwt.generate(new UserDetails(newUser, new ArrayList<>(
+                Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
+        response.addHeader("Authorization", "Token " + token);
+
         return new UserDTO(userService.create(newUser));
     }
 
@@ -110,7 +113,7 @@ public class UserController {
     public UserDTO changePassword(@Valid NewPasswordSpec newPasswordSpec, HttpServletRequest request){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         return new UserDTO(userService.changePassword(newPasswordSpec));
     }
