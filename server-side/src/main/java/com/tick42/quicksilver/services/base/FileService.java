@@ -6,11 +6,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
-    File storeFile(MultipartFile file, int extensionId, UserModel user);
+    File storeFile(MultipartFile file, long extensionId, UserModel user);
 
-    Resource loadFileAsResource(String fileName);
+    Resource getAsResource(String fileName);
 
-    File storeImage(MultipartFile receivedFile, int extensionId, UserModel user, String type);
+    File storeImage(MultipartFile receivedFile, long extensionId, String type);
 
     File storeUserLogo(MultipartFile receivedFile, UserModel user, String type);
 

@@ -32,7 +32,7 @@ public class ExtensionDTO {
     private double rating;
     private int timesRated;
     private int currentUserRatingValue;
-    private int githubId;
+    private long githubId;
 
     public ExtensionDTO() {
 
@@ -260,11 +260,11 @@ public class ExtensionDTO {
         this.coverLocation = coverLocation;
     }
 
-    public int getGithubId() {
+    public long getGithubId() {
         return githubId;
     }
 
-    public void setGithubId(int githubId) {
+    public void setGithubId(long githubId) {
         this.githubId = githubId;
     }
 }

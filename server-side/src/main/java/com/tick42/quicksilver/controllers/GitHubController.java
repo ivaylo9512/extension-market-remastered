@@ -39,7 +39,7 @@ public class GitHubController {
     public GitHubSettingDTO gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         UserModel userModel = userService.findById(userId, loggedUser);
         return new GitHubSettingDTO(gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec));
@@ -50,7 +50,7 @@ public class GitHubController {
     public GitHubSettingDTO getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
         return new GitHubSettingDTO(gitHubService.getSettings(user));
@@ -70,7 +70,7 @@ public class GitHubController {
     public GitHubDTO fetchGitHubData(@PathVariable("id") int id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         Extension extension = extensionService.findById(id, loggedUser);
 

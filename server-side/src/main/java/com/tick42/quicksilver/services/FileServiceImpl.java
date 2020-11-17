@@ -36,7 +36,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File storeFile(MultipartFile receivedFile, int extensionId, UserModel user) {
+    public File storeFile(MultipartFile receivedFile, long extensionId, UserModel user) {
 
         File file = generateFile(receivedFile, "file", extensionId);
 
@@ -50,7 +50,7 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public File storeImage(MultipartFile receivedFile, int extensionId, UserModel user, String type) {
+    public File storeImage(MultipartFile receivedFile, long extensionId, String type) {
 
         File image = generateFile(receivedFile, type, extensionId);
 
@@ -93,7 +93,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Resource loadFileAsResource(String fileName){
+    public Resource getAsResource(String fileName){
         try {
             Path filePath = this.fileLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
@@ -118,7 +118,7 @@ public class FileServiceImpl implements FileService {
         return fileRepository.findByName(fileName);
     }
 
-    private File generateFile(MultipartFile receivedFile, String type, int extensionId) {
+    private File generateFile(MultipartFile receivedFile, String type, long extensionId) {
         String fileType = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
         String fileName = extensionId + "_" + type + "." + fileType;
         return new File(fileName, receivedFile.getSize(), receivedFile.getContentType());

@@ -17,7 +17,7 @@ public class Jwt {
     private static int jwtExpirationInMs = 10000000;
     private static byte[] encodedJwtSecret = Base64.getEncoder().encode(jwtSecret.getBytes());
 
-    static String generate(UserDetails user) {
+    public static String generate(UserDetails user) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
