@@ -4,11 +4,11 @@ import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
 
 public interface RatingService {
-    Extension rate(int extensionId, int rating, int userId);
+    Extension rate(Extension extension, int rating, long userId);
 
-    int userRatingForExtension(int extensionId, int userId);
+    int userRatingForExtension(long extensionId, long userId);
 
     Extension newExtensionRating(double userRatingForExtension, Rating newRating, Extension extension);
 
-    void updateRatingOnExtensionDelete(int userExtension);
+    void updateRatingOnExtensionDelete(Extension extension);
 }

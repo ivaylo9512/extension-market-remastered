@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,8 +30,9 @@ public class RatingController {
     public double rating(@PathVariable("id") int id, @PathVariable("rating") int rating, HttpServletRequest request) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
-        Extension extension = ratingService.rate(id, rating, userId);
+        long userId = loggedUser.getId();
+
+        Extension extension = ratingService.rate(extensionService.findById(id, loggedUser), rating, userId);
         extensionService.reloadExtension(extension);
         return extension.getRating();
     }
@@ -41,7 +41,7 @@ public class RatingController {
     public int userRatingForExtension(@PathVariable("id") int id, HttpServletRequest request) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        int userId = loggedUser.getId();
+        long userId = loggedUser.getId();
 
         return ratingService.userRatingForExtension(id, userId);
     }
