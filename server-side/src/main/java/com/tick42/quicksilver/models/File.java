@@ -16,10 +16,12 @@ public class File {
     @PrimaryKeyJoinColumn
     private Extension extension;
 
+    @Column(name = "download_count")
+    private int downloadCount;
+
     private String name;
     private String type;
     private double size;
-    private int downloadCount;
 
     public File(){
 

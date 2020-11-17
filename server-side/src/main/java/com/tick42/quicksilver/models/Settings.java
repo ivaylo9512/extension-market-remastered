@@ -16,6 +16,7 @@ public class Settings {
     private String username;
 
     @OneToOne
+    @JoinColumn(name = "user")
     private UserModel user;
 
     private int rate;

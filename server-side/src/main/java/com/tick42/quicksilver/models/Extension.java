@@ -25,7 +25,14 @@ public class Extension {
     private GitHubModel github;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner")
     private UserModel owner;
+
+    @Column(name = "times_rated")
+    private int timesRated;
+
+    @Column(name = "upload_date")
+    private LocalDateTime uploadDate = LocalDateTime.now();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinTable(
@@ -37,11 +44,9 @@ public class Extension {
     private String name;
     private String description;
     private String version;
-    private LocalDateTime uploadDate = LocalDateTime.now();
     private boolean pending = true;
     private boolean featured;
     private double rating;
-    private int timesRated;
 
     public Extension() {
 

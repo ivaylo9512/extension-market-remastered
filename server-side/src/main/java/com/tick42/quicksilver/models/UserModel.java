@@ -26,13 +26,15 @@ public class UserModel {
     @JoinColumn(name = "image_id")
     private File profileImage;
 
+    @Column(name = "extensions_rated")
+    private int extensionsRated;
+
     private String username;
     private String password;
     private String role;
     private double rating;
     private String country;
     private String info;
-    private int extensionsRated;
 
     public UserModel(){
 

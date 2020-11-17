@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "github")
 public class GitHubModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -15,15 +14,27 @@ public class GitHubModel {
     @PrimaryKeyJoinColumn
     private Extension extension;
 
+    @Column(name = "pull_requests")
+    private int pullRequests;
+
+    @Column(name = "open_issues")
+    private int openIssues;
+
+    @Column(name = "last_commit")
+    private LocalDateTime lastCommit;
+
+    @Column(name = "last_success")
+    private LocalDateTime lastSuccess;
+
+    @Column(name = "last_fail")
+    private LocalDateTime lastFail;
+
+    @Column(name = "fail_message")
+    private String failMessage;
+
     private String link;
     private String user;
     private String repo;
-    private LocalDateTime lastCommit;
-    private int pullRequests;
-    private int openIssues;
-    private LocalDateTime lastSuccess;
-    private LocalDateTime lastFail;
-    private String failMessage;
 
     public GitHubModel() {
 
