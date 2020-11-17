@@ -51,6 +51,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserModel create(UserModel user) {
+        UserModel existingUser = userRepository.findByUsername(user.getUsername());
+
+        if (existingUser != null) {
+            throw new UsernameExistsException("Username is already taken.");
+        }
+
+        user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(4)));
         return userRepository.save(user);
     }
 
@@ -89,20 +96,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new UserProfileUnavailableException("User is unavailable.");
         }
         return user;
-    }
-
-    @Override
-    public UserModel register(RegisterSpec newUser, String role) {
-        UserModel user = userRepository.findByUsername(newUser.getUsername());
-
-        if (user != null) {
-            throw new UsernameExistsException("Username is already taken.");
-        }
-
-        user = new UserModel(newUser, role);
-        user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(4)));
-
-        return userRepository.save(user);
     }
 
     @Override
