@@ -4,28 +4,26 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class RatingPK implements Serializable {
-
-    protected int extension;
-
-    protected int user;
+    protected long extension;
+    protected long user;
 
     public RatingPK() {
     }
 
-    public RatingPK(int extension, int user) {
+    public RatingPK(long extension, long user) {
         this.extension = extension;
         this.user = user;
     }
 
-    public int getExtension() {
+    public long getExtension() {
         return extension;
     }
 
-    public void setExtension(int extension) {
+    public void setExtension(long extension) {
         this.extension = extension;
     }
 
-    public int getUser() {
+    public long getUser() {
         return user;
     }
 
@@ -41,9 +39,5 @@ public class RatingPK implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getUser(), getExtension());
-    }
-
-    public void setUser(int user) {
-        this.user = user;
     }
 }

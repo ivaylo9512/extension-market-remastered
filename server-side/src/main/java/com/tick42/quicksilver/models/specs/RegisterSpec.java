@@ -1,5 +1,7 @@
 package com.tick42.quicksilver.models.specs;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class RegisterSpec {
     private String username;
     private String password;

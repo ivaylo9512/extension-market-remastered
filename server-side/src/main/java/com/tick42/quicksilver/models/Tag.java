@@ -7,9 +7,7 @@ import java.util.Set;
 @Entity
 @Table(name = "tags")
 public class Tag {
-
     @Id
-    @Column(name = "name", unique = true)
     private String name;
 
     @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)

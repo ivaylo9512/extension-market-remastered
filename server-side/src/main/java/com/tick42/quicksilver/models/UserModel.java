@@ -10,16 +10,9 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 public class UserModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    @NotNull(message="is required")
-    private String username;
-
-    @NotNull(message="is required")
-    private String password;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
     @OrderBy(value = "upload_date DESC")
@@ -33,6 +26,8 @@ public class UserModel {
     @JoinColumn(name = "image_id")
     private File profileImage;
 
+    private String username;
+    private String password;
     private String role;
     private double rating;
     private String country;

@@ -5,20 +5,17 @@ import javax.persistence.*;
 
 @Entity
 public class Settings {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    private int rate;
-
-    private int wait;
-
     @Column(name = "git_token")
     private String token;
 
     @Column(name = "git_username")
     private String username;
+
+    private int rate;
+    private int wait;
 
     @OneToOne
     private UserModel user;

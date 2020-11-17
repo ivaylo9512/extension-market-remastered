@@ -7,19 +7,18 @@ import java.io.Serializable;
 @IdClass(RatingPK.class)
 @Table(name = "ratings")
 public class Rating implements Serializable {
+    @Id
+    private long extension;
+
+    @Id
+    private long user;
 
     private int rating;
-
-    @Id
-    private int extension;
-
-    @Id
-    private int user;
 
     public Rating() {
     }
 
-    public Rating(int rating, int extension, int user) {
+    public Rating(int rating, long extension, long user) {
         this.rating = rating;
         this.extension = extension;
         this.user = user;
@@ -37,7 +36,7 @@ public class Rating implements Serializable {
         this.rating = rating;
     }
 
-    public int getExtension() {
+    public long getExtension() {
         return extension;
     }
 
@@ -45,7 +44,7 @@ public class Rating implements Serializable {
         this.extension = extension;
     }
 
-    public int getUser() {
+    public long getUser() {
         return user;
     }
 
