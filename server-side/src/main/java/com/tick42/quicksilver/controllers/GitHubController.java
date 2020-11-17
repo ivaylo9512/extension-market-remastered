@@ -67,7 +67,7 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/fetch")
-    public GitHubDTO fetchGitHubData(@PathVariable("id") int id) {
+    public GitHubDTO fetchGitHubData(@PathVariable("id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();

@@ -96,7 +96,7 @@ public class GitHubServiceImpl implements GitHubService {
 
     private void tryGithub(){
         settings = settingsRepository.findById(settings.getId() + 1)
-                .orElse(settingsRepository.findById(1)
+                .orElse(settingsRepository.findById(1L)
                         .orElseThrow(() -> new RuntimeException("No settings found.")));
         try {
             gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
@@ -136,7 +136,7 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public GitHubModel updateGithub(int githubId, String githubLink) {
+    public GitHubModel updateGithub(long githubId, String githubLink) {
         GitHubModel newGitHubModel = generateGitHub(githubLink);
         newGitHubModel.setId(githubId);
 
@@ -161,7 +161,7 @@ public class GitHubServiceImpl implements GitHubService {
         if (gitHubSettingSpec != null) {
             Settings newSettings = new Settings(gitHubSettingSpec);
 
-            if(settings.getId() != null) newSettings.setId(settings.getId());
+            if(settings.getId() != 0) newSettings.setId(settings.getId());
 
             newSettings.setUser(user);
             settings = settingsRepository.save(newSettings);

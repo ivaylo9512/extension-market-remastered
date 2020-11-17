@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ExtensionRepository extends JpaRepository<Extension, Integer> {
+public interface ExtensionRepository extends JpaRepository<Extension, Long> {
 
     @Query(value = "from Extension where pending = false and owner.active = true and lower(name) like lower(concat(:name,'%'))")
     List<Extension> findAllOrderedBy(@Param("name") String name, Pageable pageRequest);

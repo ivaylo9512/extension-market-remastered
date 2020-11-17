@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel setState(int userId, String state) {
+    public UserModel setState(long userId, String state) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel findById(int userId, UserDetails loggedUser) {
+    public UserModel findById(long userId, UserDetails loggedUser) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 

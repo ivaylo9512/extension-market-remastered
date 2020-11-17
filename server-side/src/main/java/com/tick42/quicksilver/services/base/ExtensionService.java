@@ -12,7 +12,7 @@ public interface ExtensionService {
 
     Extension save(Extension extension);
 
-    void delete(int id, UserDetails loggedUser);
+    Extension delete(long id, UserDetails loggedUser);
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 
@@ -24,9 +24,9 @@ public interface ExtensionService {
 
     long findTotalResults(String name);
 
-    Extension setPublishedState(int id, String newState);
+    Extension setPublishedState(long id, String newState);
 
-    Extension setFeaturedState(int id, String newState);
+    Extension setFeaturedState(long id, String newState);
 
     List<Extension> findPending();
 

@@ -11,7 +11,7 @@ public interface GitHubService {
 
     void getRepoDetails(GitHubModel gitHubModel) throws Exception;
 
-    GitHubModel updateGithub(int githubId, String githubLink);
+    GitHubModel updateGithub(long githubId, String githubLink);
 
     GitHubModel generateGitHub(String link);
 

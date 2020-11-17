@@ -8,17 +8,18 @@ public class Settings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     @Column(name = "git_token")
     private String token;
 
     @Column(name = "git_username")
     private String username;
 
-    private int rate;
-    private int wait;
-
     @OneToOne
     private UserModel user;
+
+    private int rate;
+    private int wait;
 
     public Settings() {
 

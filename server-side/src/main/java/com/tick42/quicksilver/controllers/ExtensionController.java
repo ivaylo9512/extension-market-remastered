@@ -3,7 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-`import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
+import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
 import com.tick42.quicksilver.models.DTOs.HomePageDTO;
 import com.tick42.quicksilver.models.DTOs.PageDTO;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
@@ -76,7 +76,7 @@ public class ExtensionController {
     }
 
     @GetMapping("/{id}")
-    public ExtensionDTO findById(@PathVariable(name = "id") int extensionId, HttpServletRequest request) {
+    public ExtensionDTO findById(@PathVariable(name = "id") long extensionId, HttpServletRequest request) {
         UserDetails loggedUser;
         int rating;
         try {
@@ -192,13 +192,12 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @DeleteMapping("/auth/{id}")
-    public void delete(@PathVariable(name = "id") int id) {
+    public void delete(@PathVariable(name = "id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        UserModel user = userService.findById(loggedUser.getId(), null);
 
-        ratingService.updateRatingOnExtensionDelete(id);
-        extensionService.delete(id, user);
+        Extension extension = extensionService.delete(id, loggedUser);
+        ratingService.updateRatingOnExtensionDelete(extension);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -209,13 +208,13 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/status/{state}")
-    public ExtensionDTO setPublishedState(@PathVariable(name = "id") int id, @PathVariable("state") String state) {
+    public ExtensionDTO setPublishedState(@PathVariable(name = "id") long id, @PathVariable("state") String state) {
         return generateExtensionDTO(extensionService.setPublishedState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/featured/{state}")
-    public ExtensionDTO setFeaturedState(@PathVariable("id") int id, @PathVariable("state") String state) {
+    public ExtensionDTO setFeaturedState(@PathVariable("id") long id, @PathVariable("state") String state) {
         return generateExtensionDTO(extensionService.setFeaturedState(id, state));
     }
 

@@ -27,7 +27,7 @@ public class RatingController {
     }
 
     @PatchMapping(value = "/auth/rate/{id}/{rating}")
-    public double rating(@PathVariable("id") int id, @PathVariable("rating") int rating, HttpServletRequest request) {
+    public double rating(@PathVariable("id") long id, @PathVariable("rating") int rating) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -38,7 +38,7 @@ public class RatingController {
     }
 
     @GetMapping(value = "/auth/userRating/{id}")
-    public int userRatingForExtension(@PathVariable("id") int id, HttpServletRequest request) {
+    public int userRatingForExtension(@PathVariable("id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();

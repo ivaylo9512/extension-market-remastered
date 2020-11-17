@@ -18,7 +18,7 @@ import java.util.*;
 public class ExtensionServiceImpl implements ExtensionService {
 
     private final ExtensionRepository extensionRepository;
-    private Map<Integer, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
+    private Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
@@ -29,7 +29,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension findById(int extensionId, UserDetails loggedUser) {
+    public Extension findById(long extensionId, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
@@ -61,7 +61,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension delete(int extensionId, UserDetails loggedUser) {
+    public Extension delete(long extensionId, UserDetails loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
@@ -151,7 +151,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension setPublishedState(int extensionId, String state) {
+    public Extension setPublishedState(long extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
@@ -175,7 +175,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension setFeaturedState(int extensionId, String state) {
+    public Extension setFeaturedState(long extensionId, String state) {
 
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
