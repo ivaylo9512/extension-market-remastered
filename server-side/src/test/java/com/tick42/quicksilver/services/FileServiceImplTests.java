@@ -1,8 +1,6 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
-import com.tick42.quicksilver.exceptions.UserNotFoundException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
@@ -13,14 +11,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Optional;
-
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileServiceImplTests {
-
     @Mock
     MultipartFile multipartFile;
 
@@ -34,47 +29,47 @@ public class FileServiceImplTests {
     private FileServiceImpl fileService;
 
     @Test(expected = NullPointerException.class)
-    public void storeFile_whenExtensionNotExisitng_ShouldThrow() {
+    public void storeFile_whenExtensionNotExisting_ShouldThrow() {
         //Arrange
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
-        fileService.storeFile(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
     @Test(expected = NullPointerException.class)
-    public void storeImage_whenExtensionNotExisitng_ShouldThrow() {
+    public void storeImage_whenExtensionNotExisting_ShouldThrow() {
         //Arrange
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
-        fileService.storeImage(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
     @Test(expected = NullPointerException.class)
-    public void storeFile_whenUserNotExisitng_ShouldThrow() {
+    public void storeFile_whenUserNotExisting_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
-        when(userRepository.findById(1)).thenReturn(null);
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        fileService.storeFile(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
     @Test(expected = NullPointerException.class)
-    public void storeImage_whenUserNotExisitng_ShouldThrow() {
+    public void storeImage_whenUserNotExisting_ShouldThrow() {
         //Arrange
         Extension extension = new Extension();
-        when(userRepository.findById(1)).thenReturn(null);
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        fileService.storeImage(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
     @Test(expected = UnauthorizedExtensionModificationException.class)
-    public void storeFile_whenUserisNotOwnerAndNotAdmin_ShouldThrow() {
+    public void storeFile_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
         //Arrange
         UserModel userModel = new UserModel();
         userModel.setId(1);
@@ -84,15 +79,15 @@ public class FileServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        fileService.storeFile(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
     @Test(expected = UnauthorizedExtensionModificationException.class)
-    public void storeImage_whenUserisNotOwnerAndNotAdmin_ShouldThrow() {
+    public void storeImage_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
         //Arrange
         UserModel userModel = new UserModel();
         userModel.setId(1);
@@ -102,11 +97,11 @@ public class FileServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        fileService.storeImage(multipartFile, 1, 1);
+        fileService.create(multipartFile, "name");
     }
 
 }
