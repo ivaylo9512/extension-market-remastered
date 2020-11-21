@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExtensionDTO {
+public class ExtensionDto {
     private long id;
     private String name;
     private String version;
@@ -35,11 +35,11 @@ public class ExtensionDTO {
     private int currentUserRatingValue;
     private long githubId;
 
-    public ExtensionDTO() {
+    public ExtensionDto() {
 
     }
 
-    public ExtensionDTO(Extension extension) {
+    public ExtensionDto(Extension extension) {
         this.id = extension.getId();
         this.name = extension.getName();
         this.description = extension.getDescription();
@@ -59,8 +59,8 @@ public class ExtensionDTO {
     }
     @Override
     public boolean equals(Object o){
-        if(o instanceof ExtensionDTO){
-            ExtensionDTO compare = (ExtensionDTO) o;
+        if(o instanceof ExtensionDto){
+            ExtensionDto compare = (ExtensionDto) o;
             return this.id == compare.getId();
         }
         return false;
