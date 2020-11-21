@@ -17,6 +17,7 @@ public class UserDTO {
     private String profileImage;
     private String country;
     private String info;
+    private String role;
 
     public UserDTO() {
 
@@ -36,6 +37,7 @@ public class UserDTO {
         this.rating = userModel.getRating();
         this.country = userModel.getCountry();
         this.info = userModel.getInfo();
+        this.role = userModel.getRole();
     }
 
     public long getId() {
@@ -118,5 +120,13 @@ public class UserDTO {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
