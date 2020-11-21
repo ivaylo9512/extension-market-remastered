@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.models.DTOs;
+package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
