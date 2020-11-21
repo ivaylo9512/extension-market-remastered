@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.models.DTOs;
+package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class UserDTO {
+public class UserDto {
     private long id;
     private String username;
     private int totalExtensions;
-    private List<ExtensionDTO> extensions = new ArrayList<>();
+    private List<ExtensionDto> extensions = new ArrayList<>();
     private boolean isActive;
     private double rating;
     private int extensionsRated;
@@ -19,17 +19,17 @@ public class UserDTO {
     private String info;
     private String role;
 
-    public UserDTO() {
+    public UserDto() {
 
     }
 
-    public UserDTO(UserModel userModel) {
+    public UserDto(UserModel userModel) {
         setProfileImage(userModel.getProfileImage());
         this.id = userModel.getId();
         this.username = userModel.getUsername();
         this.extensions = userModel.getExtensions()
                 .stream()
-                .map(ExtensionDTO::new)
+                .map(ExtensionDto::new)
                 .collect(Collectors.toList());
         this.totalExtensions = this.extensions.size();
         this.isActive = userModel.getIsActive();
@@ -56,11 +56,11 @@ public class UserDTO {
         this.username = username;
     }
 
-    public List<ExtensionDTO> getExtensions() {
+    public List<ExtensionDto> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(List<ExtensionDTO> extensions) {
+    public void setExtensions(List<ExtensionDto> extensions) {
         this.extensions = extensions;
     }
 

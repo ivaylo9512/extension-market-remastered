@@ -1,7 +1,7 @@
 package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTOs.PageDTO;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import java.util.List;
 
 public interface ExtensionService {
@@ -20,7 +20,7 @@ public interface ExtensionService {
 
     List<Extension> findMostDownloaded(Integer mostDownloadedCount);
 
-    PageDTO<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer perPage);
+    PageDto<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer perPage);
 
     long findTotalResults(String name);
 

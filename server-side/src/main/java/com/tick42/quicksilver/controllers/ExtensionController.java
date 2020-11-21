@@ -3,9 +3,9 @@ package com.tick42.quicksilver.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
-import com.tick42.quicksilver.models.DTOs.HomePageDTO;
-import com.tick42.quicksilver.models.DTOs.PageDTO;
+import com.tick42.quicksilver.models.Dtos.ExtensionDto;
+import com.tick42.quicksilver.models.Dtos.HomePageDto;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
@@ -18,6 +18,7 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -52,52 +53,49 @@ public class ExtensionController {
     }
 
     @GetMapping("/getHomeExtensions")
-    public HomePageDTO getHomeExtensions(
+    public HomePageDto getHomeExtensions(
             @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
             @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
 
-        List<ExtensionDTO> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
-        List<ExtensionDTO> featured = generateExtensionDTOList(extensionService.getFeatured());
-        List<ExtensionDTO> mostDownloaded = generateExtensionDTOList(extensionService.findMostDownloaded(mostDownloadedCount));
-        return new HomePageDTO(mostRecent, featured, mostDownloaded);
+        List<ExtensionDto> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
+        List<ExtensionDto> featured = generateExtensionDTOList(extensionService.getFeatured());
+        List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findMostDownloaded(mostDownloadedCount));
+        return new HomePageDto(mostRecent, featured, mostDownloaded);
     }
 
     @GetMapping("/filter")
-    public PageDTO<ExtensionDTO> findPageWithCriteria(
+    public PageDto<ExtensionDto> findPageWithCriteria(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "orderBy", required = false) String orderBy,
             @RequestParam(name = "page", required = false) Integer requestedPage,
             @RequestParam(name = "perPage", required = false) Integer perPage) {
 
-        PageDTO<Extension> page = extensionService.findPageWithCriteria(name, orderBy, requestedPage, perPage);
-        PageDTO<ExtensionDTO> pageDTO = new PageDTO<>(page);
-        pageDTO.setExtensions(generateExtensionDTOList(page.getExtensions()));
-        return pageDTO;
+        PageDto<Extension> page = extensionService.findPageWithCriteria(name, orderBy, requestedPage, perPage);
+        PageDto<ExtensionDto> pageDto = new PageDto<>(page);
+        pageDto.setExtensions(generateExtensionDTOList(page.getExtensions()));
+        return pageDto;
     }
 
     @GetMapping("/{id}")
-    public ExtensionDTO findById(@PathVariable(name = "id") long extensionId, HttpServletRequest request) {
-        UserDetails loggedUser;
-        int rating;
-        try {
+    public ExtensionDto findById(@PathVariable(name = "id") long extensionId, HttpServletRequest request) {
+        UserDetails loggedUser = null;
+        int rating = 0;
+        String token = request.getHeader("Authorization");
+
+        if(token != null){
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
             rating = ratingService.userRatingForExtension(extensionId, loggedUser.getId());
-        } catch (Exception e) {
-            if(e.getMessage() != null && e.getMessage().equals("Jwt token has expired.")){
-                throw new JwtException("Jwt token has expired.");
-            }
-            loggedUser = null;
-            rating = 0;
         }
-        ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
-        extensionDTO.setCurrentUserRatingValue(rating);
-        return extensionDTO;
+
+        ExtensionDto extensionDto = generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
+        extensionDto.setCurrentUserRatingValue(rating);
+        return extensionDto;
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDTO createExtension(
+    public ExtensionDto createExtension(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
             @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
@@ -126,7 +124,7 @@ public class ExtensionController {
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDTO editExtension(
+    public ExtensionDto editExtension(
             @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
             @RequestParam(name = "file", required = false) MultipartFile extensionFile,
             @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
@@ -147,11 +145,11 @@ public class ExtensionController {
 
         setFiles(extensionImage, extensionFile, extensionCover, extension);
 
-        ExtensionDTO extensionDTO = generateExtensionDTO(extensionService.save(extension));
+        ExtensionDto extensionDto = generateExtensionDTO(extensionService.save(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
-        extensionDTO.setCurrentUserRatingValue(rating);
+        extensionDto.setCurrentUserRatingValue(rating);
 
-        return extensionDTO;
+        return extensionDto;
     }
 
     private ExtensionSpec validateExtension(String extensionJson) throws BindException, IOException {
@@ -186,7 +184,7 @@ public class ExtensionController {
     }
 
     @GetMapping("/featured")
-    public List<ExtensionDTO> featured() {
+    public List<ExtensionDto> featured() {
         return generateExtensionDTOList(extensionService.getFeatured());
     }
 
@@ -202,19 +200,19 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/unpublished")
-    public List<ExtensionDTO> getPending() {
+    public List<ExtensionDto> getPending() {
         return generateExtensionDTOList(extensionService.findPending());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/status/{state}")
-    public ExtensionDTO setPublishedState(@PathVariable(name = "id") long id, @PathVariable("state") String state) {
+    public ExtensionDto setPublishedState(@PathVariable(name = "id") long id, @PathVariable("state") String state) {
         return generateExtensionDTO(extensionService.setPublishedState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/featured/{state}")
-    public ExtensionDTO setFeaturedState(@PathVariable("id") long id, @PathVariable("state") String state) {
+    public ExtensionDto setFeaturedState(@PathVariable("id") long id, @PathVariable("state") String state) {
         return generateExtensionDTO(extensionService.setFeaturedState(id, state));
     }
 
@@ -234,6 +232,14 @@ public class ExtensionController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toArray());
+    }
+
+    @ExceptionHandler
+    ResponseEntity handleBadCredentialsException(BadCredentialsException e){
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
     }
 
     @ExceptionHandler
@@ -313,43 +319,43 @@ public class ExtensionController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
-    private List<ExtensionDTO> generateExtensionDTOList(List<Extension> extensions) {
+    private List<ExtensionDto> generateExtensionDTOList(List<Extension> extensions) {
         return extensions.stream()
                 .map(this::generateExtensionDTO)
                 .collect(Collectors.toList());
     }
 
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+    private ExtensionDto generateExtensionDTO(Extension extension) {
+        ExtensionDto extensionDto = new ExtensionDto(extension);
         if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDTO.setGithubId(extension.getGithub().getId());
+            extensionDto.setGitHubLink(extension.getGithub().getLink());
+            extensionDto.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDto.setPullRequests(extension.getGithub().getPullRequests());
+            extensionDto.setGithubId(extension.getGithub().getId());
 
             if (extension.getGithub().getLastCommit() != null)
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+                extensionDto.setLastCommit(extension.getGithub().getLastCommit());
 
             if (extension.getGithub().getLastSuccess() != null)
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+                extensionDto.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
 
             if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+                extensionDto.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDto.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
 
         String base = "http://localhost:8090/api/download/";
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(base + extension.getImage().getName());
+            extensionDto.setImageLocation(extension.getImage());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(base + extension.getFile().getName());
+            extensionDto.setFileLocation(extension.getFile());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(base + extension.getCover().getName());
+            extensionDto.setCoverLocation(extension.getCover());
 
-        return extensionDTO;
+        return extensionDto;
     }
 
 

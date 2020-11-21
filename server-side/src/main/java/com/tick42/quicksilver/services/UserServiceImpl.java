@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         if (!user.getIsActive() && (loggedUser == null ||
-                !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("Role_ADMIN"))) {
+                !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN"))) {
             throw new UserProfileUnavailableException("User is unavailable.");
         }
         return user;

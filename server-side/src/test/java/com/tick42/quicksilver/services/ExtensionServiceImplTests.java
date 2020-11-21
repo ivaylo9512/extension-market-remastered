@@ -2,7 +2,7 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
+import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -49,7 +49,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
+        ExtensionDto extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
 
         //Assert
         Assert.assertTrue(extensionShouldBeFeatured.isFeatured());
@@ -64,7 +64,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
+        ExtensionDto extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
 
         //Assert
         Assert.assertFalse(extensionShouldBeUnfeatured.isFeatured());
@@ -79,7 +79,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldThrow = extensionService.setFeaturedState(1, "wrongString");
+        ExtensionDto extensionShouldThrow = extensionService.setFeaturedState(1, "wrongString");
 
         //Assert
     }
@@ -93,7 +93,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldBePending = extensionService.setPublishedState(1, "publish");
+        ExtensionDto extensionShouldBePending = extensionService.setPublishedState(1, "publish");
 
         //Assert
         Assert.assertFalse(extensionShouldBePending.getIsPending());
@@ -108,7 +108,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
+        ExtensionDto extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
 
         //Assert
         Assert.assertTrue(extensionShouldBeUnpublished.getIsPending());
@@ -123,7 +123,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDTO extensionShouldThrow = extensionService.setPublishedState(1, "wrongString");
+        ExtensionDto extensionShouldThrow = extensionService.setPublishedState(1, "wrongString");
 
         //Assert
     }
@@ -140,12 +140,12 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findByPending(true)).thenReturn(extensions);
 
         //Act
-        List<ExtensionDTO> pendingExtensionDTOs = extensionService.findPending();
+        List<ExtensionDto> pendingExtensionDtos = extensionService.findPending();
 
         //Assert
-        Assert.assertEquals(2, pendingExtensionDTOs.size());
-        Assert.assertTrue(pendingExtensionDTOs.get(0).getIsPending());
-        Assert.assertTrue(pendingExtensionDTOs.get(1).getIsPending());
+        Assert.assertEquals(2, pendingExtensionDtos.size());
+        Assert.assertTrue(pendingExtensionDtos.get(0).getIsPending());
+        Assert.assertTrue(pendingExtensionDtos.get(1).getIsPending());
     }
 
     @Test
@@ -160,12 +160,12 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
 
         //Act
-        List<ExtensionDTO> featuredExtensionDTOs = extensionService.findFeatured();
+        List<ExtensionDto> featuredExtensionDtos = extensionService.findFeatured();
 
         //Assert
-        Assert.assertEquals(2, featuredExtensionDTOs.size());
-        Assert.assertTrue(featuredExtensionDTOs.get(0).isFeatured());
-        Assert.assertTrue(featuredExtensionDTOs.get(1).isFeatured());
+        Assert.assertEquals(2, featuredExtensionDtos.size());
+        Assert.assertTrue(featuredExtensionDtos.get(0).isFeatured());
+        Assert.assertTrue(featuredExtensionDtos.get(1).isFeatured());
     }
 
     @Test(expected = NullPointerException.class)
@@ -642,7 +642,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.save(extension)).thenReturn(extension);
 
         //Act
-        ExtensionDTO result = extensionService.increaseDownloadCount(1);
+        ExtensionDto result = extensionService.increaseDownloadCount(1);
 
         //Assert
         Assert.assertEquals(result.getTimesDownloaded(), times + 1);
@@ -712,10 +712,10 @@ public class ExtensionServiceImplTests {
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
         //Act
-        List<ExtensionDTO> extensionDTOs = extensionService.generateExtensionDTOList(extensions);
+        List<ExtensionDto> extensionDtos = extensionService.generateExtensionDTOList(extensions);
 
         //Assert
-        Assert.assertEquals(extensions.size(), extensionDTOs.size());
-        Assert.assertNotNull(extensionDTOs.get(1));
+        Assert.assertEquals(extensions.size(), extensionDtos.size());
+        Assert.assertNotNull(extensionDtos.get(1));
     }
 }

@@ -41,6 +41,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getId()));
         response.addHeader("Authorization", "Token " + token);
+
         chain.doFilter(request, response);
     }
 }

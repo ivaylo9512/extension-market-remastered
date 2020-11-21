@@ -2,7 +2,7 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTOs.PageDTO;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +104,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public PageDTO<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer pageSize) {
+    public PageDto<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer pageSize) {
 
         if (page == null || page < 0) {
             page = 0;
@@ -147,7 +147,7 @@ public class ExtensionServiceImpl implements ExtensionService {
                 throw new InvalidParameterException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
         }
 
-        return new PageDTO<>(extensions, page, totalPages, totalResults);
+        return new PageDto<>(extensions, page, totalPages, totalResults);
     }
 
     @Override

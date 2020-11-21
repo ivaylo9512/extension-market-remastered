@@ -2,8 +2,8 @@ package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.DTOs.GitHubDTO;
-import com.tick42.quicksilver.models.DTOs.GitHubSettingDTO;
+import com.tick42.quicksilver.models.Dtos.GitHubDto;
+import com.tick42.quicksilver.models.Dtos.GitHubSettingDto;
 import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
@@ -36,28 +36,28 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/auth")
-    public GitHubSettingDTO gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
+    public GitHubSettingDto gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel userModel = userService.findById(userId, loggedUser);
-        return new GitHubSettingDTO(gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec));
+        return new GitHubSettingDto(gitHubService.createScheduledTask(userModel, taskRegistrar, gitHubSettingSpec));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/auth")
-    public GitHubSettingDTO getGitHubSetting() {
+    public GitHubSettingDto getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        return new GitHubSettingDTO(gitHubService.getSettings(user));
+        return new GitHubSettingDto(gitHubService.getSettings(user));
     }
 
     @GetMapping("/getRepoDetails")
-    public GitHubDTO getRepoDetails(@RequestParam(name = "link") String link){
+    public GitHubDto getRepoDetails(@RequestParam(name = "link") String link){
         GitHubModel gitHubModel = gitHubService.generateGitHub(link);
         if(gitHubModel.getFailMessage() != null){
             throw new GitHubRepositoryException("Couldn't connect to GitHubModel check the URL.");
@@ -67,7 +67,7 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/fetch")
-    public GitHubDTO fetchGitHubData(@PathVariable("id") long id) {
+    public GitHubDto fetchGitHubData(@PathVariable("id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -79,22 +79,22 @@ public class GitHubController {
         return generateGithubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
-    private GitHubDTO generateGithubDTO(GitHubModel gitHubModel){
-        GitHubDTO gitHubDTO = new GitHubDTO(gitHubModel);
+    private GitHubDto generateGithubDTO(GitHubModel gitHubModel){
+        GitHubDto gitHubDto = new GitHubDto(gitHubModel);
         if(gitHubModel.getLastSuccess() != null) {
-            gitHubDTO.setLastSuccess(gitHubModel.getLastSuccess());
+            gitHubDto.setLastSuccess(gitHubModel.getLastSuccess());
         }
         if(gitHubModel.getLastFail() != null){
-            gitHubDTO.setLastFail(gitHubModel.getLastFail());
+            gitHubDto.setLastFail(gitHubModel.getLastFail());
         }
         if(gitHubModel.getLastCommit() != null){
-            gitHubDTO.setLastCommit(gitHubModel.getLastCommit());
+            gitHubDto.setLastCommit(gitHubModel.getLastCommit());
         }
         if(gitHubModel.getFailMessage() != null){
-            gitHubDTO.setFailMessage(gitHubModel.getFailMessage());
+            gitHubDto.setFailMessage(gitHubModel.getFailMessage());
         }
 
-        return gitHubDTO;
+        return gitHubDto;
     }
 
     @ExceptionHandler

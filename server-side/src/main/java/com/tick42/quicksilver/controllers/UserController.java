@@ -1,8 +1,8 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
-import com.tick42.quicksilver.models.DTOs.UserDTO;
+import com.tick42.quicksilver.models.Dtos.ExtensionDto;
+import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
@@ -42,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDTO register(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
+    public UserDto register(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
         UserModel newUser = new UserModel(registerSpec, "ROLE_USER");
 
         if(registerSpec.getProfileImage() != null){
@@ -54,19 +54,19 @@ public class UserController {
                 Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
         response.addHeader("Authorization", "Token " + token);
 
-        return new UserDTO(userService.create(newUser));
+        return new UserDto(userService.create(newUser));
     }
 
     @PostMapping("/login")
-    public UserDTO login(){
+    public UserDto login(){
         UserDetails user = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-        return new UserDTO(user.getUserModel());
+        return new UserDto(user.getUserModel());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
-    public UserDTO registerAdmin(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
+    public UserDto registerAdmin(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
         UserModel newUser = new UserModel(registerSpec, "ROLE_ADMIN");
 
         if(registerSpec.getProfileImage() != null){
@@ -78,11 +78,11 @@ public class UserController {
                 Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
         response.addHeader("Authorization", "Token " + token);
 
-        return new UserDTO(userService.create(newUser));
+        return new UserDto(userService.create(newUser));
     }
 
     @GetMapping(value = "/findById/{id}")
-    public UserDTO findById(@PathVariable(name = "id") int id, HttpServletRequest request) {
+    public UserDto findById(@PathVariable(name = "id") int id, HttpServletRequest request) {
         UserDetails loggedUser;
         try {
             loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
@@ -90,65 +90,65 @@ public class UserController {
             loggedUser = null;
         }
         UserModel user = userService.findById(id, loggedUser);
-        return new UserDTO(user);
+        return new UserDto(user);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/setState/{id}/{newState}")
-    public UserDTO setState(@PathVariable("newState") String state,
+    public UserDto setState(@PathVariable("newState") String state,
                             @PathVariable("id") int id) {
-        return new UserDTO(userService.setState(id, state));
+        return new UserDto(userService.setState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/auth/all")
-    public List<UserDTO> findAll(@RequestParam(name = "state", required = false) String state) {
+    public List<UserDto> findAll(@RequestParam(name = "state", required = false) String state) {
         return userService.findAll(state).stream()
-                .map(UserDTO::new)
+                .map(UserDto::new)
                 .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
-    public UserDTO changePassword(@Valid NewPasswordSpec newPasswordSpec, HttpServletRequest request){
+    public UserDto changePassword(@Valid NewPasswordSpec newPasswordSpec, HttpServletRequest request){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
-        return new UserDTO(userService.changePassword(newPasswordSpec));
+        return new UserDto(userService.changePassword(newPasswordSpec));
     }
 
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+    private ExtensionDto generateExtensionDTO(Extension extension) {
+        ExtensionDto extensionDto = new ExtensionDto(extension);
         if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDTO.setGithubId(extension.getGithub().getId());
+            extensionDto.setGitHubLink(extension.getGithub().getLink());
+            extensionDto.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDto.setPullRequests(extension.getGithub().getPullRequests());
+            extensionDto.setGithubId(extension.getGithub().getId());
 
             if (extension.getGithub().getLastCommit() != null)
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+                extensionDto.setLastCommit(extension.getGithub().getLastCommit());
 
             if (extension.getGithub().getLastSuccess() != null)
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+                extensionDto.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
 
             if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+                extensionDto.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDto.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
 
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(extension.getImage().getName());
+            extensionDto.setImageLocation(extension.getImage());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(extension.getFile().getName());
+            extensionDto.setFileLocation(extension.getFile());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(extension.getCover().getName());
+            extensionDto.setCoverLocation(extension.getCover());
 
 
-        return extensionDTO;
+        return extensionDto;
     }
 
     @ExceptionHandler

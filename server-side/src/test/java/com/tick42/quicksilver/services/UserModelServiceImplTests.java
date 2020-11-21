@@ -2,7 +2,7 @@ package com.tick42.quicksilver.services;
 
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.DTOs.UserDTO;
+import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
@@ -88,7 +88,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findByActive(false)).thenReturn(userModels);
 
         //Act
-        List<UserDTO> usersDTO = userService.findAll("blocked");
+        List<UserDto> usersDTO = userService.findAll("blocked");
 
         //Assert
         Assert.assertEquals(2, usersDTO.size());
@@ -108,7 +108,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findByActive(true)).thenReturn(userModels);
 
         //Act
-        List<UserDTO> usersDTO = userService.findAll("active");
+        List<UserDto> usersDTO = userService.findAll("active");
 
         //Assert
         Assert.assertEquals(2, usersDTO.size());
@@ -128,7 +128,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findAll()).thenReturn(userModels);
 
         //Act
-        List<UserDTO> usersDTO = userService.findAll("all");
+        List<UserDto> usersDTO = userService.findAll("all");
 
         //Assert
         Assert.assertEquals(2, usersDTO.size());
@@ -139,13 +139,13 @@ public class UserModelServiceImplTests {
     @Test(expected = InvalidStateException.class)
     public void findAll_whenStateNull_ShouldThrow() {
         //Act
-        List<UserDTO> usersDTO = userService.findAll(null);
+        List<UserDto> usersDTO = userService.findAll(null);
     }
 
     @Test(expected = InvalidStateException.class)
     public void findAllUsers_WithWrongState_ShouldThrow(){
         //Act
-        List<UserDTO> usersDTO = userService.findAll("ActiveUsersInvalidInput");
+        List<UserDto> usersDTO = userService.findAll("ActiveUsersInvalidInput");
     }
 
     @Test()
@@ -155,15 +155,15 @@ public class UserModelServiceImplTests {
         userModel.setIsActive(false);
         userModel.setId(1);
 
-        UserDTO userDTO = new UserDTO(userModel);
+        UserDto userDto = new UserDto(userModel);
 
         when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         //act
-        userDTO = userService.setState(1,"enable");
+        userDto = userService.setState(1,"enable");
 
         //Assert
-        Assert.assertEquals(userDTO.getIsActive(),true);
+        Assert.assertEquals(userDto.getIsActive(),true);
     }
 
     @Test()
@@ -173,15 +173,15 @@ public class UserModelServiceImplTests {
         userModel.setIsActive(true);
         userModel.setId(1);
 
-        UserDTO userDTO = new UserDTO(userModel);
+        UserDto userDto = new UserDto(userModel);
 
         when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         //act
-        userDTO = userService.setState(1,"block");
+        userDto = userService.setState(1,"block");
 
         //Assert
-        Assert.assertFalse(userDTO.getIsActive());
+        Assert.assertFalse(userDto.getIsActive());
     }
 
     @Test(expected = InvalidStateException.class)
@@ -193,7 +193,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
 
         //Act
-        UserDTO usersDTO = userService.setState(1,"InvalidState");
+        UserDto usersDTO = userService.setState(1,"InvalidState");
     }
 
     @Test(expected = NullPointerException.class)
@@ -202,7 +202,7 @@ public class UserModelServiceImplTests {
         when(userRepository.findById(1)).thenReturn(null);
 
         //Act
-        UserDTO usersDTO = userService.setState(1,"Active");
+        UserDto usersDTO = userService.setState(1,"Active");
     }
 
     @Test(expected = BadCredentialsException.class)

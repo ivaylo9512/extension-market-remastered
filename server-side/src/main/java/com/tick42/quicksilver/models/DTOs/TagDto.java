@@ -1,19 +1,19 @@
-package com.tick42.quicksilver.models.DTOs;
+package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.Tag;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TagDTO {
+public class TagDto {
     private String tag;
     private int totalExtensions;
-    private List<ExtensionDTO> extensions = new ArrayList<>();
+    private List<ExtensionDto> extensions = new ArrayList<>();
 
-    public TagDTO() {
+    public TagDto() {
 
     }
 
-    public TagDTO(Tag tag) {
+    public TagDto(Tag tag) {
         this.tag = tag.getName();
         this.totalExtensions = tag.getExtensions().size();
     }
@@ -34,11 +34,11 @@ public class TagDTO {
         this.totalExtensions = totalExtensions;
     }
 
-    public List<ExtensionDTO> getExtensions() {
+    public List<ExtensionDto> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(List<ExtensionDTO> extensions) {
+    public void setExtensions(List<ExtensionDto> extensions) {
         this.extensions = extensions;
     }
 }

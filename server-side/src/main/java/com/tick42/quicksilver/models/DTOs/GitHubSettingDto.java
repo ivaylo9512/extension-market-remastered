@@ -1,8 +1,8 @@
-package com.tick42.quicksilver.models.DTOs;
+package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.Settings;
 
-public class GitHubSettingDTO {
+public class GitHubSettingDto {
 
     private String username;
 
@@ -12,11 +12,11 @@ public class GitHubSettingDTO {
 
     private int wait;
 
-    public GitHubSettingDTO() {
+    public GitHubSettingDto() {
 
     }
 
-    public GitHubSettingDTO(Settings settings) {
+    public GitHubSettingDto(Settings settings) {
         this.username = settings.getUsername();
         this.token = settings.getToken();
         this.rate = settings.getRate();

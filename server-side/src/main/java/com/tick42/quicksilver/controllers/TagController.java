@@ -1,7 +1,7 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.models.DTOs.ExtensionDTO;
-import com.tick42.quicksilver.models.DTOs.TagDTO;
+import com.tick42.quicksilver.models.Dtos.ExtensionDto;
+import com.tick42.quicksilver.models.Dtos.TagDto;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -25,46 +25,46 @@ public class TagController {
     }
 
     @GetMapping(value = "/{tag}")
-    public TagDTO findByName(@PathVariable(name = "tag") String tagName) {
+    public TagDto findByName(@PathVariable(name = "tag") String tagName) {
         Tag tag = tagService.findByName(tagName);
-        TagDTO tagDTO = new TagDTO(tag);
-        tagDTO.setExtensions(tag.getExtensions()
+        TagDto tagDto = new TagDto(tag);
+        tagDto.setExtensions(tag.getExtensions()
                 .stream()
                 .map(this::generateExtensionDTO)
                 .collect(Collectors.toList()));
-        return tagDTO;
+        return tagDto;
     }
 
-    private ExtensionDTO generateExtensionDTO(Extension extension) {
-        ExtensionDTO extensionDTO = new ExtensionDTO(extension);
+    private ExtensionDto generateExtensionDTO(Extension extension) {
+        ExtensionDto extensionDto = new ExtensionDto(extension);
         if (extension.getGithub() != null) {
-            extensionDTO.setGitHubLink(extension.getGithub().getLink());
-            extensionDTO.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDTO.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDTO.setGithubId(extension.getGithub().getId());
+            extensionDto.setGitHubLink(extension.getGithub().getLink());
+            extensionDto.setOpenIssues(extension.getGithub().getOpenIssues());
+            extensionDto.setPullRequests(extension.getGithub().getPullRequests());
+            extensionDto.setGithubId(extension.getGithub().getId());
 
             if (extension.getGithub().getLastCommit() != null)
-                extensionDTO.setLastCommit(extension.getGithub().getLastCommit());
+                extensionDto.setLastCommit(extension.getGithub().getLastCommit());
 
             if (extension.getGithub().getLastSuccess() != null)
-                extensionDTO.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
+                extensionDto.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
 
             if (extension.getGithub().getLastFail() != null) {
-                extensionDTO.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDTO.setLastErrorMessage(extension.getGithub().getFailMessage());
+                extensionDto.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
+                extensionDto.setLastErrorMessage(extension.getGithub().getFailMessage());
             }
         }
 
         String base = "http://localhost:8090/api/download/";
         if (extension.getImage() != null)
-            extensionDTO.setImageLocation(base + extension.getImage().getName());
+            extensionDto.setImageLocation(extension.getImage());
 
         if (extension.getFile() != null)
-            extensionDTO.setFileLocation(base + extension.getFile().getName());
+            extensionDto.setFileLocation(extension.getFile());
 
         if (extension.getCover() != null)
-            extensionDTO.setCoverLocation(base + extension.getCover().getName());
+            extensionDto.setCoverLocation(extension.getCover());
 
-        return extensionDTO;
+        return extensionDto;
     }
 }
