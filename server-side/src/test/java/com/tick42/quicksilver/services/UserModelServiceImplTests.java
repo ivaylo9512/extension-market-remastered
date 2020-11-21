@@ -4,6 +4,7 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -258,50 +259,48 @@ public class UserModelServiceImplTests {
 
     @Test(expected = UsernameExistsException.class)
     public void RegisterUser_WithAlreadyTakenUsername_shouldThrow() {
-
         //Arrange
-        UserModel registeredUserModel = new UserModel();
-        registeredUserModel.setUsername("Test");
-
-        UserSpec newRegistration = new UserSpec();
+        RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
-        newRegistration.setPassword("TestPassword");
-        newRegistration.setRepeatPassword("TestPassword");
+        UserModel registeredUserModel = new UserModel(newRegistration, "ROLE_USER");
 
         when(userRepository.findByUsername("Test")).thenReturn(registeredUserModel);
 
         //Act
-        userService.register(newRegistration, "ROLE_USER");
+        userService.create(registeredUserModel);
     }
 
     @Test(expected = PasswordsMissMatchException.class)
     public void RegisterUser_WithNotMatchingPasswords_shouldThrow() {
 
         //Arrange
-        UserSpec newRegistration = new UserSpec();
+        RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
         newRegistration.setPassword("TestPassword");
         newRegistration.setRepeatPassword("TestPasswordMissMatch");
 
+        UserModel userModel = new UserModel(newRegistration, "ROLE_USER");
+
         when(userRepository.findByUsername("Test")).thenReturn(null);
 
         //Act
-        userService.register(newRegistration, "ROLE_USER");
+        userService.create(userModel);
     }
 
     @Test()
     public void SuccessfulRegistration_withAvailable() {
-
         //Arrange
-
-        UserSpec newRegistration = new UserSpec();
+        RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
         newRegistration.setPassword("testPassword");
         newRegistration.setRepeatPassword("testPassword");
+
+        UserModel userModel = new UserModel(newRegistration, "ROLE_USER");
+
         when(userRepository.findByUsername("Test")).thenReturn(null);
 
         //Act
-        userService.register(newRegistration, "ROLE_USER");
+        userService.create(userModel);
     }
 
     @Test()
