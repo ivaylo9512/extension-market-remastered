@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models.DTOs;
 
 import com.tick42.quicksilver.models.Extension;
+import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.Tag;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ public class ExtensionDTO {
         this.rating = extension.getRating();
         this.timesRated = extension.getTimesRated();
 
+        setImageLocation(extension.getImage());
+        setCoverLocation(extension.getCover());
         setUploadDate(extension.getUploadDate());
     }
     @Override
@@ -184,16 +187,20 @@ public class ExtensionDTO {
         return fileLocation;
     }
 
-    public void setFileLocation(String fileLocation) {
-        this.fileLocation = fileLocation;
+    public void setFileLocation(File file) {
+        if(file != null) {
+            this.fileLocation = file.getName();
+        }
     }
 
     public String getImageLocation() {
         return imageLocation;
     }
 
-    public void setImageLocation(String imageLocation) {
-        this.imageLocation = imageLocation;
+    public void setImageLocation(File image) {
+        if(image != null){
+            this.imageLocation = image.getName();
+        }
     }
 
     public List<String> getTags() {
@@ -256,8 +263,10 @@ public class ExtensionDTO {
         return coverLocation;
     }
 
-    public void setCoverLocation(String coverLocation) {
-        this.coverLocation = coverLocation;
+    public void setCoverLocation(File coverLocation) {
+        if(coverLocation != null){
+            this.coverLocation = coverLocation.getName();
+        }
     }
 
     public long getGithubId() {
