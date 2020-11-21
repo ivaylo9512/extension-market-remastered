@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.ExtensionNotFoundException;
 import com.tick42.quicksilver.exceptions.InvalidRatingException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
@@ -14,9 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import java.util.Optional;
-
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,20 +37,11 @@ public class RatingServiceImplTests {
         int rating = 40;
         int userId = 5;
 
-        //Act
-        ratingService.rate(extensionId, rating, userId);
-    }
+        Extension extension = new Extension();
+        extension.setId(extensionId);
 
-    @Test(expected = NullPointerException.class)
-    public void rateExtension_WhitNonExistingExtension_ShouldThrow() {
-        //Arrange
-        int extensionId = 1;
-        int rating = 4;
-        int userId = 5;
-
-        when(extensionRepository.findById(1)).thenReturn(null);
         //Act
-        ratingService.rate(extensionId, rating, userId);
+        ratingService.rate(extension, rating, userId);
     }
 
     @Test()
@@ -91,12 +79,13 @@ public class RatingServiceImplTests {
 
     @Test(expected = NullPointerException.class)
     public void userRatingOnExtensionDelete_whitNonexistentExtension_ShouldThrow(){
-
         //Arrange
+        Extension extension = new Extension();
+        extension.setId(2);
 
-        when(extensionRepository.findById(2)).thenReturn(null);
+        when(extensionRepository.findById(2L)).thenReturn(null);
         //Act
-        ratingService.updateRatingOnExtensionDelete(2);
+        ratingService.updateRatingOnExtensionDelete(extension);
 
     }
 
@@ -114,9 +103,9 @@ public class RatingServiceImplTests {
         extension.setTimesRated(2);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.updateRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension);
         //Assert
 
         Assert.assertEquals(4, userModel.getRating(),0);
@@ -137,9 +126,9 @@ public class RatingServiceImplTests {
         extension.setTimesRated(2);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.updateRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension);
         //Assert
 
         Assert.assertEquals(0, userModel.getRating(),0);
@@ -160,9 +149,9 @@ public class RatingServiceImplTests {
         extension.setTimesRated(0);
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
         //Act
-        ratingService.updateRatingOnExtensionDelete(extension.getId());
+        ratingService.updateRatingOnExtensionDelete(extension);
         //Assert
 
         Assert.assertEquals(4, userModel.getRating(),0);
