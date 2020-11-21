@@ -1,15 +1,11 @@
 package com.tick42.quicksilver.services;
 
-
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.Dtos.UserDto;
-import com.tick42.quicksilver.models.specs.ChangeUserPasswordSpec;
+import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
-import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import org.h2.engine.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -306,72 +301,71 @@ public class UserModelServiceImplTests {
     @Test()
     public void SuccessfulRegistration_Role_User() {
         //Arrange
-        UserSpec newRegistration = new UserSpec();
+        RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
         newRegistration.setPassword("testPassword");
         newRegistration.setRepeatPassword("testPassword");
 
-        UserModel newUserModel = new UserModel();
-        newUserModel.setUsername("Test");
-        newUserModel.setPassword("testPassword");
-        newUserModel.setRole("USER_ROLE");
+        UserModel userModel = new UserModel(newRegistration, "ROLE_USER");
 
         when(userRepository.findByUsername("Test")).thenReturn(null);
-        when(userRepository.save(any(UserModel.class))).thenReturn(newUserModel);
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
         //Act
-        UserModel userModel = userService.register(newRegistration, "ROLE_USER");
+
+        UserModel registeredUser = userService.create(userModel);
 
         //Assert
-        Assert.assertEquals(userModel.getRole(),"USER_ROLE");
+        Assert.assertEquals(registeredUser.getRole(),"ROLE_USER");
     }
 
     @Test()
     public void SuccessfulRegistration_Role_Admin_ShouldReturnAdminUser() {
         //Arrange
-        UserSpec newRegistration = new UserSpec();
+        RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
         newRegistration.setPassword("testPassword");
         newRegistration.setRepeatPassword("testPassword");
 
-        UserModel newUserModel = new UserModel();
-        newUserModel.setUsername("Test");
-        newUserModel.setPassword("testPassword");
-        newUserModel.setRole("ADMIN_ROLE");
+        UserModel userModel = new UserModel(newRegistration, "ROLE_ADMIN");
 
         when(userRepository.findByUsername("Test")).thenReturn(null);
-        when(userRepository.save(any(UserModel.class))).thenReturn(newUserModel);
+        when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
+
         //Act
-        UserModel userModel = userService.register(newRegistration, "ADMIN_ROLE");
+        UserModel registeredUser = userService.create(userModel);
 
         //Assert
-        Assert.assertEquals(userModel.getRole(),"ADMIN_ROLE");
+        Assert.assertEquals(registeredUser.getRole(),"ROLE_ADMIN");
     }
 
     @Test
     public void ChangePasswordState(){
+        String password = "currentPassword";
+        String newPassword = "newTestPassword1";
 
-        ChangeUserPasswordSpec passwordSpec = new ChangeUserPasswordSpec();
-        passwordSpec.setCurrentPassword("currentPassword");
-        passwordSpec.setNewPassword("newTestPassword1");
-        passwordSpec.setRepeatNewPassword("newTestPassword1");
+        NewPasswordSpec passwordSpec = new NewPasswordSpec();
+        passwordSpec.setUsername("user");
+        passwordSpec.setCurrentPassword(password);
+        passwordSpec.setNewPassword(newPassword);
+        passwordSpec.setRepeatNewPassword(newPassword);
 
         UserModel userModel = new UserModel();
-        userModel.setPassword("currentPassword");
+        userModel.setPassword(password);
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(userRepository.findByUsername("user")).thenReturn(userModel);
 
-        userService.changePassword(1,passwordSpec);
-
+        userService.changePassword(passwordSpec);
 
         //Assert
-        Assert.assertEquals(userModel.getPassword(),"newTestPassword1");
+        Assert.assertEquals(userModel.getPassword(),newPassword);
 
     }
 
-    @Test(expected = InvalidCredentialsException.class)
+    @Test(expected = BadCredentialsException.class)
     public void ChangePasswordState_WithWrongPassword_ShouldThrow(){
 
-        ChangeUserPasswordSpec passwordSpec = new ChangeUserPasswordSpec();
+        NewPasswordSpec passwordSpec = new NewPasswordSpec();
+        passwordSpec.setUsername("user");
         passwordSpec.setCurrentPassword("InvalidPassword");
         passwordSpec.setNewPassword("newTestPassword1");
         passwordSpec.setRepeatNewPassword("newTestPassword1");
@@ -379,15 +373,17 @@ public class UserModelServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(userRepository.findByUsername("user")).thenReturn(userModel);
 
-        userService.changePassword(1,passwordSpec);
+        userService.changePassword(passwordSpec);
     }
 
     @Test(expected = PasswordsMissMatchException.class)
     public void ChangePasswordState_WithNotMatchingPasswords_ShouldThrow(){
+        String name = "name";
 
-        ChangeUserPasswordSpec passwordSpec = new ChangeUserPasswordSpec();
+        NewPasswordSpec passwordSpec = new NewPasswordSpec();
+        passwordSpec.setUsername(name);
         passwordSpec.setCurrentPassword("Current");
         passwordSpec.setNewPassword("newTestPassword1");
         passwordSpec.setRepeatNewPassword("InvalidPassword");
@@ -395,9 +391,9 @@ public class UserModelServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setPassword("current");
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(userRepository.findByUsername(name)).thenReturn(userModel);
 
-        userService.changePassword(1,passwordSpec);
+        userService.changePassword(passwordSpec);
     }
 
 
