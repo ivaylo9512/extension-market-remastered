@@ -58,7 +58,7 @@ public class ExtensionController {
             @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
 
         List<ExtensionDto> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
-        List<ExtensionDto> featured = generateExtensionDTOList(extensionService.getFeatured());
+        List<ExtensionDto> featured = generateExtensionDTOList(extensionService.findFeatured());
         List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findMostDownloaded(mostDownloadedCount));
         return new HomePageDto(mostRecent, featured, mostDownloaded);
     }
@@ -185,7 +185,7 @@ public class ExtensionController {
 
     @GetMapping("/featured")
     public List<ExtensionDto> featured() {
-        return generateExtensionDTOList(extensionService.getFeatured());
+        return generateExtensionDTOList(extensionService.findFeatured());
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")

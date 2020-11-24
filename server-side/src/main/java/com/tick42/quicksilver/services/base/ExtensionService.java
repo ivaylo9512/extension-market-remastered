@@ -16,7 +16,7 @@ public interface ExtensionService {
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 
-    List<Extension> getFeatured();
+    List<Extension> findFeatured();
 
     List<Extension> findMostDownloaded(Integer mostDownloadedCount);
 

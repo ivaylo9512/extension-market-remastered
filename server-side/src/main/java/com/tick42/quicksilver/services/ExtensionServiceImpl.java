@@ -89,7 +89,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public List<Extension> getFeatured(){
+    public List<Extension> findFeatured(){
         return new ArrayList<>(featured.values());
     }
 
