@@ -585,7 +585,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
 
         //Act
-        extensionService.findAll(name, orderBy, page, perPage);
+        extensionService.findPageWithCriteria(name, orderBy, page, perPage);
     }
 
 
@@ -596,17 +596,19 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(userModel);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        UserDetails userDetails = new UserDetails(userModel, new ArrayList<>());
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
         doNothing().when(extensionRepository).delete(isA(Extension.class));
 
-        extensionService.delete(1, 1);
+        extensionService.delete(1, userDetails);
         verify(extensionRepository, times(1)).delete(extension);
     }
 
     @Test(expected = NullPointerException.class)
     public void increaseDownloadCount_whenExtensionDoesntExist_shouldThrow() {
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
         extensionService.increaseDownloadCount(1);
@@ -617,7 +619,7 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setIsPending(true);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.increaseDownloadCount(1);
@@ -631,7 +633,7 @@ public class ExtensionServiceImplTests {
         extension.setOwner(owner);
         extension.setIsPending(false);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.increaseDownloadCount(1);
@@ -647,7 +649,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(false);
         extension.setTimesDownloaded(times);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         when(extensionRepository.save(extension)).thenReturn(extension);
 
@@ -661,7 +663,7 @@ public class ExtensionServiceImplTests {
     @Test(expected = NullPointerException.class)
     public void fetchGitHub_whenExtensionDoesntExist_ShouldThrow() {
         //Arrange
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
         extensionService.fetchGitHub(1, 1);
@@ -688,8 +690,8 @@ public class ExtensionServiceImplTests {
         UserModel userModel = new UserModel();
         userModel.setRole("USER");
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
         extensionService.fetchGitHub(1, 1);
