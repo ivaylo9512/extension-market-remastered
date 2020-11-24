@@ -464,24 +464,28 @@ public class ExtensionServiceImplTests {
     }
 
     @Test(expected = NullPointerException.class)
-    public void delete_whenExtensionDoesntExist_ShouldThrow() {
+    public void delete_whenExtensionNonExistent_ShouldThrow() {
+        UserDetails userDetails = new UserDetails(new UserModel(), new ArrayList<>());
+
         //Assert
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
-        extensionService.delete(1, 1);
+        extensionService.delete(1, userDetails);
     }
 
     @Test(expected = NullPointerException.class)
-    public void delete_whenUserDoesntExist_ShouldThrow() {
+    public void delete_whenUserNonExistent_ShouldThrow() {
         //Assert
         Extension extension = new Extension();
+        UserDetails userDetails = new UserDetails(new UserModel(), new ArrayList<>());
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(null);
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(null);
 
         //Act
-        extensionService.delete(1, 1);
+        extensionService.delete(1, userDetails);
     }
 
     @Test
@@ -497,8 +501,8 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
         try {
@@ -516,18 +520,20 @@ public class ExtensionServiceImplTests {
         userModel.setId(1);
         userModel.setRole("ROLE_ADMIN");
 
+        UserDetails userDetails = new UserDetails(userModel, new ArrayList<>());
+
         UserModel owner = new UserModel();
         owner.setId(2);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
         try {
-            extensionService.delete(1, 1);
+            extensionService.delete(1, userDetails);
             Assert.assertTrue(Boolean.TRUE);
         } catch (Exception ex) {
             Assert.fail(ex.getMessage());
@@ -545,7 +551,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
 
         //Act
-        extensionService.findAll(name, "date", page, perPage);
+        extensionService.findPageWithCriteria(name, "date", page, perPage);
     }
 
     @Test
@@ -560,7 +566,7 @@ public class ExtensionServiceImplTests {
 
         //Act
         try {
-            extensionService.findAll(name, "date", page, perPage);
+            extensionService.findPageWithCriteria(name, "date", page, perPage);
             Assert.assertTrue(Boolean.TRUE);
         } catch (Exception e) {
             Assert.fail(e.getMessage());
