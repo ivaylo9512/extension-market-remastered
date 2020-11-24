@@ -118,12 +118,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldThrow = extensionService.setPublishedState(1, "wrongString");
-
-        //Assert
+        extensionService.setPublishedState(1, "wrongString");
     }
 
     @Test
@@ -138,7 +136,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findByPending(true)).thenReturn(extensions);
 
         //Act
-        List<ExtensionDto> pendingExtensionDtos = extensionService.findPending();
+        List<Extension> pendingExtensionDtos = extensionService.findPending();
 
         //Assert
         Assert.assertEquals(2, pendingExtensionDtos.size());
@@ -158,7 +156,7 @@ public class ExtensionServiceImplTests {
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
 
         //Act
-        List<ExtensionDto> featuredExtensionDtos = extensionService.findFeatured();
+        List<Extension> featuredExtensionDtos = extensionService.findFeatured();
 
         //Assert
         Assert.assertEquals(2, featuredExtensionDtos.size());
@@ -170,14 +168,14 @@ public class ExtensionServiceImplTests {
     public void findById_whenExtensionDoesntExist_shouldThrow() {
         //Arrange
         UserDetails user = new UserDetails("text", "test", new ArrayList<>(), 1);
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
         extensionService.findById(1, user);
     }
 
     @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenOwnerIsInactiveaAndUserIsNull_shouldThrow() {
+    public void findById_whenOwnerIsInactiveAndUserIsNull_shouldThrow() {
         //Arrange
 
         UserModel owner = new UserModel();
@@ -186,7 +184,7 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, null);
@@ -205,7 +203,7 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, user);
@@ -221,7 +219,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, null);
@@ -242,7 +240,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         extensionService.findById(1, user);
