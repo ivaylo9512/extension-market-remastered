@@ -261,7 +261,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         Extension expectedExtension = extensionService.findById(1, user);
@@ -286,7 +286,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(true);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         Extension expectedExtension = extensionService.findById(1, user);
@@ -311,7 +311,7 @@ public class ExtensionServiceImplTests {
         extension.setIsPending(false);
         extension.setOwner(owner);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
         Extension expectedExtension = extensionService.findById(1, user);
@@ -321,24 +321,28 @@ public class ExtensionServiceImplTests {
     }
 
     @Test(expected = NullPointerException.class)
-    public void update_whenExtensionDoesntExist_ShouldThrow() {
+    public void update_whenExtensionNonExist_ShouldThrow() {
+        Extension extension = new Extension();
+        extension.setId(1);
+
         //Assert
-        when(extensionRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(null);
 
         //Act
-        extensionService.update(1, new ExtensionSpec(), 1);
+        extensionService.update(extension);
     }
 
     @Test(expected = NullPointerException.class)
-    public void update_whenUserDoesntExist_ShouldThrow() {
+    public void update_whenUserNonExist_ShouldThrow() {
         //Assert
         Extension extension = new Extension();
+        extension.setId(1);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(null);
 
         //Act
-        extensionService.update(1, new ExtensionSpec(), 1);
+        extensionService.update(extension);
     }
 
     @Test(expected = UnauthorizedExtensionModificationException.class)
@@ -353,12 +357,13 @@ public class ExtensionServiceImplTests {
 
         Extension extension = new Extension();
         extension.setOwner(owner);
+        extension.setId(1);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
-        extensionService.update(1, new ExtensionSpec(), 1);
+        extensionService.update(extension);
     }
 
     @Test
