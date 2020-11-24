@@ -46,10 +46,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.isFeatured(false);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
+        Extension extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
 
         //Assert
         Assert.assertTrue(extensionShouldBeFeatured.isFeatured());
@@ -61,10 +61,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1l)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
+        Extension extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
 
         //Assert
         Assert.assertFalse(extensionShouldBeUnfeatured.isFeatured());
@@ -76,12 +76,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.isFeatured(true);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldThrow = extensionService.setFeaturedState(1, "wrongString");
-
-        //Assert
+        extensionService.setFeaturedState(1, "wrongString");
     }
 
     @Test
@@ -90,10 +88,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setIsPending(true);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldBePending = extensionService.setPublishedState(1, "publish");
+        Extension extensionShouldBePending = extensionService.setPublishedState(1, "publish");
 
         //Assert
         Assert.assertFalse(extensionShouldBePending.getIsPending());
@@ -105,10 +103,10 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension();
         extension.setIsPending(false);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         //Act
-        ExtensionDto extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
+        Extension extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
 
         //Assert
         Assert.assertTrue(extensionShouldBeUnpublished.getIsPending());
