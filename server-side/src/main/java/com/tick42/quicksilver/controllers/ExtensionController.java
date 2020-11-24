@@ -87,7 +87,7 @@ public class ExtensionController {
             rating = ratingService.userRatingForExtension(extensionId, loggedUser.getId());
         }
 
-        ExtensionDto extensionDto = generateExtensionDTO(extensionService.findById(extensionId, loggedUser));
+        ExtensionDto extensionDto = new ExtensionDto(extensionService.findById(extensionId, loggedUser));
         extensionDto.setCurrentUserRatingValue(rating);
         return extensionDto;
     }
@@ -118,7 +118,7 @@ public class ExtensionController {
 
         setFiles(extensionImage, extensionFile, extensionCover, extension);
 
-        return generateExtensionDTO(extensionService.save(extension));
+        return new ExtensionDto(extensionService.save(extension));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -145,7 +145,7 @@ public class ExtensionController {
 
         setFiles(extensionImage, extensionFile, extensionCover, extension);
 
-        ExtensionDto extensionDto = generateExtensionDTO(extensionService.save(extension));
+        ExtensionDto extensionDto = new ExtensionDto(extensionService.save(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
         extensionDto.setCurrentUserRatingValue(rating);
 
@@ -207,13 +207,13 @@ public class ExtensionController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/status/{state}")
     public ExtensionDto setPublishedState(@PathVariable(name = "id") long id, @PathVariable("state") String state) {
-        return generateExtensionDTO(extensionService.setPublishedState(id, state));
+        return new ExtensionDto(extensionService.setPublishedState(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/{id}/featured/{state}")
     public ExtensionDto setFeaturedState(@PathVariable("id") long id, @PathVariable("state") String state) {
-        return generateExtensionDTO(extensionService.setFeaturedState(id, state));
+        return new ExtensionDto(extensionService.setFeaturedState(id, state));
     }
 
     @GetMapping(value = "/checkName")
@@ -324,39 +324,4 @@ public class ExtensionController {
                 .map(this::generateExtensionDTO)
                 .collect(Collectors.toList());
     }
-
-    private ExtensionDto generateExtensionDTO(Extension extension) {
-        ExtensionDto extensionDto = new ExtensionDto(extension);
-        if (extension.getGithub() != null) {
-            extensionDto.setGitHubLink(extension.getGithub().getLink());
-            extensionDto.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDto.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDto.setGithubId(extension.getGithub().getId());
-
-            if (extension.getGithub().getLastCommit() != null)
-                extensionDto.setLastCommit(extension.getGithub().getLastCommit());
-
-            if (extension.getGithub().getLastSuccess() != null)
-                extensionDto.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDto.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDto.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-
-        String base = "http://localhost:8090/api/download/";
-        if (extension.getImage() != null)
-            extensionDto.setImageLocation(extension.getImage());
-
-        if (extension.getFile() != null)
-            extensionDto.setFileLocation(extension.getFile());
-
-        if (extension.getCover() != null)
-            extensionDto.setCoverLocation(extension.getCover());
-
-        return extensionDto;
-    }
-
-
 }
