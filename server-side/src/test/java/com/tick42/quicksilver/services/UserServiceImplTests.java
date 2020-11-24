@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserModelServiceImplTests {
+public class UserServiceImplTests {
 
     @Mock
     private UserRepository userRepository;
