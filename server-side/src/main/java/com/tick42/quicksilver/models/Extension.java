@@ -53,6 +53,8 @@ public class Extension {
     }
 
     public Extension(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
+        this.owner = user;
+        this.tags = tags;
         this.name = extensionSpec.getName();
         this.version = extensionSpec.getVersion();
         this.description = extensionSpec.getDescription();
