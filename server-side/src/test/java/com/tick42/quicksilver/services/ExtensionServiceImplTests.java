@@ -17,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -369,7 +370,7 @@ public class ExtensionServiceImplTests {
     @Test
     public void update_whenUserIsOwner_returnUpdatedExtensionDTO() {
         //Assert
-        Date commitTime = new Date();
+        LocalDateTime commitTime = LocalDateTime.now();
 
         UserModel userModel = new UserModel();
         userModel.setId(1);
@@ -396,6 +397,7 @@ public class ExtensionServiceImplTests {
         when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(github);
 
         Extension extension = new Extension();
+        extension.setId(1);
         extension.setOwner(owner);
         extension.setName("oldName");
         extension.setVersion("1.0");
@@ -403,11 +405,11 @@ public class ExtensionServiceImplTests {
         extension.setGithub(github);
         extension.setTags(tags);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
-        Extension actualExtension = extensionService.update(1, extensionSpec, 1);
+        Extension actualExtension = extensionService.update(extension);
 
         //Assert
         Assert.assertEquals(actualExtension.getName(), "newName");
@@ -416,7 +418,7 @@ public class ExtensionServiceImplTests {
     @Test
     public void update_whenUserIsAdmin_returnUpdatedExtensionDTO() {
         //Assert
-        Date commitTime = new Date();
+        LocalDateTime commitTime = LocalDateTime.now();
 
         UserModel userModel = new UserModel();
         userModel.setId(2);
@@ -443,6 +445,7 @@ public class ExtensionServiceImplTests {
         when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(github);
 
         Extension extension = new Extension();
+        extension.setId(1);
         extension.setOwner(owner);
         extension.setName("oldName");
         extension.setVersion("1.0");
@@ -450,11 +453,11 @@ public class ExtensionServiceImplTests {
         extension.setGithub(github);
         extension.setTags(tags);
 
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
         //Act
-        Extension actualExtension = extensionService.update(1, extensionSpec, 1);
+        Extension actualExtension = extensionService.update(extension);
 
         //Assert
         Assert.assertEquals(actualExtension.getName(), "newName");
