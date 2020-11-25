@@ -606,116 +606,6 @@ public class ExtensionServiceImplTests {
         verify(extensionRepository, times(1)).delete(extension);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void increaseDownloadCount_whenExtensionDoesntExist_shouldThrow() {
-        when(extensionRepository.findById(1L)).thenReturn(null);
-
-        //Act
-        extensionService.increaseDownloadCount(1);
-    }
-
-    @Test(expected = ExtensionUnavailableException.class)
-    public void increaseDownloadCount_whenExtensionIsPending_shouldThrow() {
-        Extension extension = new Extension();
-        extension.setIsPending(true);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        //Act
-        extensionService.increaseDownloadCount(1);
-    }
-
-    @Test(expected = ExtensionUnavailableException.class)
-    public void increaseDownloadCount_whenOwnerIsDeactivated_shouldThrow() {
-        UserModel owner = new UserModel();
-        owner.setIsActive(false);
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-        extension.setIsPending(false);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        //Act
-        extensionService.increaseDownloadCount(1);
-    }
-
-    @Test
-    public void increaseDownloadCount_whenExtensionAvailable_shouldIncreasseTimesDownlaoded() {
-        int times = 1;
-        UserModel owner = new UserModel();
-        owner.setIsActive(true);
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-        extension.setIsPending(false);
-        extension.setTimesDownloaded(times);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        when(extensionRepository.save(extension)).thenReturn(extension);
-
-        //Act
-        ExtensionDto result = extensionService.increaseDownloadCount(1);
-
-        //Assert
-        Assert.assertEquals(result.getTimesDownloaded(), times + 1);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void fetchGitHub_whenExtensionDoesntExist_ShouldThrow() {
-        //Arrange
-        when(extensionRepository.findById(1L)).thenReturn(null);
-
-        //Act
-        extensionService.fetchGitHub(1, 1);
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void fetchGitHub_whenUserDoesntExist_ShouldThrow() {
-        //Arrange
-        Extension extension = new Extension();
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(null);
-
-        //Act
-        extensionService.fetchGitHub(1, 1);
-
-    }
-
-    @Test(expected = UnauthorizedExtensionModificationException.class)
-    public void fetchGitHub_whenUserIsNotAdmin_ShouldThrow() {
-        //Arrange
-        Extension extension = new Extension();
-        extension.setId(1);
-        UserModel userModel = new UserModel();
-        userModel.setRole("USER");
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
-
-        //Act
-        extensionService.fetchGitHub(1, 1);
-
-    }
-
-    @Test
-    public void fetchGitHub_whenEtensionIsAvailableAndUserIsAdmin_ShouldNotThrow() {
-        //Arrange
-        Extension extension = new Extension();
-        UserModel userModel = new UserModel();
-        userModel.setRole("ROLE_ADMIN");
-
-        when(extensionRepository.findById(1)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1)).thenReturn(Optional.of(userModel));
-
-        try {
-            extensionService.fetchGitHub(1, 1);
-            Assert.assertTrue(Boolean.TRUE);
-        } catch (Error e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
     @Test
     public void generateExtensionDTOList_whenGivenListOfExtension_returnListOfExtensionDTO() {
         //Arrange
@@ -724,7 +614,7 @@ public class ExtensionServiceImplTests {
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
         //Act
-        List<ExtensionDto> extensionDtos = extensionService.generateExtensionDTOList(extensions);
+        List<ExtensionDto> extensionDTOs = extensionService.generateExtensionDTOList(extensions);
 
         //Assert
         Assert.assertEquals(extensions.size(), extensionDtos.size());
