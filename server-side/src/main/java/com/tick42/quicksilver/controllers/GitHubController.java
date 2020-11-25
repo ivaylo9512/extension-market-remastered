@@ -62,7 +62,7 @@ public class GitHubController {
         if(gitHubModel.getFailMessage() != null){
             throw new GitHubRepositoryException("Couldn't connect to GitHubModel check the URL.");
         }
-        return generateGithubDTO(gitHubService.generateGitHub(link));
+        return new GitHubDto(gitHubService.generateGitHub(link));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -76,25 +76,7 @@ public class GitHubController {
 
         UserModel user = userService.findById(userId, null);
 
-        return generateGithubDTO(gitHubService.fetchGitHub(extension.getGithub(), user));
-    }
-
-    private GitHubDto generateGithubDTO(GitHubModel gitHubModel){
-        GitHubDto gitHubDto = new GitHubDto(gitHubModel);
-        if(gitHubModel.getLastSuccess() != null) {
-            gitHubDto.setLastSuccess(gitHubModel.getLastSuccess());
-        }
-        if(gitHubModel.getLastFail() != null){
-            gitHubDto.setLastFail(gitHubModel.getLastFail());
-        }
-        if(gitHubModel.getLastCommit() != null){
-            gitHubDto.setLastCommit(gitHubModel.getLastCommit());
-        }
-        if(gitHubModel.getFailMessage() != null){
-            gitHubDto.setFailMessage(gitHubModel.getFailMessage());
-        }
-
-        return gitHubDto;
+        return new GitHubDto(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
     @ExceptionHandler
