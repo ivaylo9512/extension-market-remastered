@@ -26,6 +26,10 @@ public class GitHubDto {
         this.user = gitHubModel.getUser();
         this.pullRequests = gitHubModel.getPullRequests();
         this.openIssues = gitHubModel.getOpenIssues();
+        setLastCommit(gitHubModel.getLastCommit());
+        setLastFail(gitHubModel.getLastFail());
+        setLastSuccess(gitHubModel.getLastSuccess());
+        setFailMessage(gitHubModel.getFailMessage());
     }
 
     public long getId() {
@@ -81,7 +85,9 @@ public class GitHubDto {
     }
 
     public void setFailMessage(String failMessage) {
-        this.failMessage = failMessage;
+        if(failMessage != null){
+            this.failMessage = failMessage;
+        }
     }
 
     public String getLastCommit() {
@@ -89,7 +95,9 @@ public class GitHubDto {
     }
 
     public void setLastCommit(LocalDateTime lastCommit) {
-        this.lastCommit = lastCommit.toString();
+        if(lastCommit != null){
+            this.lastCommit = lastCommit.toString();
+        }
     }
 
     public String getLastSuccess() {
@@ -97,7 +105,9 @@ public class GitHubDto {
     }
 
     public void setLastSuccess(LocalDateTime lastSuccess) {
-        this.lastSuccess = lastSuccess.toString();
+        if(lastSuccess != null){
+            this.lastSuccess = lastSuccess.toString();
+        }
     }
 
     public String getLastFail() {
@@ -105,6 +115,8 @@ public class GitHubDto {
     }
 
     public void setLastFail(LocalDateTime lastFail) {
-        this.lastFail = lastFail.toString();
+        if(lastFail != null){
+            this.lastFail = lastFail.toString();
+        }
     }
 }
