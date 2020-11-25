@@ -118,39 +118,6 @@ public class UserController {
         return new UserDto(userService.changePassword(newPasswordSpec));
     }
 
-    private ExtensionDto generateExtensionDTO(Extension extension) {
-        ExtensionDto extensionDto = new ExtensionDto(extension);
-        if (extension.getGithub() != null) {
-            extensionDto.setGitHubLink(extension.getGithub().getLink());
-            extensionDto.setOpenIssues(extension.getGithub().getOpenIssues());
-            extensionDto.setPullRequests(extension.getGithub().getPullRequests());
-            extensionDto.setGithubId(extension.getGithub().getId());
-
-            if (extension.getGithub().getLastCommit() != null)
-                extensionDto.setLastCommit(extension.getGithub().getLastCommit());
-
-            if (extension.getGithub().getLastSuccess() != null)
-                extensionDto.setLastSuccessfulPullOfData(extension.getGithub().getLastSuccess());
-
-            if (extension.getGithub().getLastFail() != null) {
-                extensionDto.setLastFailedAttemptToCollectData(extension.getGithub().getLastFail());
-                extensionDto.setLastErrorMessage(extension.getGithub().getFailMessage());
-            }
-        }
-
-        if (extension.getImage() != null)
-            extensionDto.setImageLocation(extension.getImage());
-
-        if (extension.getFile() != null)
-            extensionDto.setFileLocation(extension.getFile());
-
-        if (extension.getCover() != null)
-            extensionDto.setCoverLocation(extension.getCover());
-
-
-        return extensionDto;
-    }
-
     @ExceptionHandler
     ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
         e.printStackTrace();
