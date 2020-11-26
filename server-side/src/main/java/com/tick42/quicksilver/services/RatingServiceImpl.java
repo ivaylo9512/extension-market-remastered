@@ -10,7 +10,6 @@ import com.tick42.quicksilver.repositories.base.RatingRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.RatingService;
 import org.springframework.stereotype.Service;
-import javax.persistence.EntityNotFoundException;
 
 @Service
 public class RatingServiceImpl implements RatingService {

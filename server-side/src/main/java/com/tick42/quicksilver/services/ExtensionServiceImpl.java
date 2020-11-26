@@ -16,14 +16,12 @@ import java.util.*;
 
 @Service
 public class ExtensionServiceImpl implements ExtensionService {
-
     private final ExtensionRepository extensionRepository;
     private Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
-    @Autowired
     public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
         this.extensionRepository = extensionRepository;
     }

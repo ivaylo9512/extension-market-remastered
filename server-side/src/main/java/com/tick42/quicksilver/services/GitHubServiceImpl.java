@@ -9,10 +9,8 @@ import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
-import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
 import org.kohsuke.github.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
@@ -183,6 +181,7 @@ public class GitHubServiceImpl implements GitHubService {
     @Override
     public Settings getSettings(UserModel user) {
         Settings userSettings = settingsRepository.findByUser(user);
+
         if(userSettings == null) userSettings = new Settings();
 
         return userSettings;

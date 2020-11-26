@@ -5,16 +5,13 @@ import com.tick42.quicksilver.repositories.base.TagRepository;
 import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class TagServiceImpl implements TagService {
-
     private final TagRepository tagRepository;
 
-    @Autowired
     public TagServiceImpl(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
     }
