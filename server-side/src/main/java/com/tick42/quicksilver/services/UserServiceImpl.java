@@ -3,7 +3,6 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
-import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<UserModel> user;
 
         if (state == null) {
-            throw new InvalidStateException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
+            throw new InvalidStateException("State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
         switch (state) {
