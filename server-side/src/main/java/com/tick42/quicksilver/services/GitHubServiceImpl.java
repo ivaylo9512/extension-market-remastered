@@ -25,20 +25,14 @@ import java.util.concurrent.*;
 
 @Service
 public class GitHubServiceImpl implements GitHubService {
-
     private final GitHubRepository gitHubRepository;
     private final Scheduler scheduler;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private SettingsRepository settingsRepository;
-    private UserRepository userRepository;
     private Settings settings;
     private GitHub gitHub;
 
-
-
-    @Autowired
-    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepository settingsRepository, UserRepository userRepository) throws IOException {
-        this.userRepository = userRepository;
+    public GitHubServiceImpl(GitHubRepository gitHubRepository, Scheduler scheduler, ThreadPoolTaskScheduler threadPoolTaskScheduler, SettingsRepository settingsRepository) {
         this.settingsRepository = settingsRepository;
         this.gitHubRepository = gitHubRepository;
         this.scheduler = scheduler;
@@ -153,7 +147,6 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public Settings createScheduledTask(UserModel user, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
-
         settings = settingsRepository.findByUser(user);
 
         if(settings == null) settings = new Settings();
@@ -198,7 +191,6 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public GitHubModel fetchGitHub(GitHubModel gitHubModel, UserModel loggedUser) {
-
         if (!loggedUser.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedExtensionModificationException("You are not authorized to trigger a github refresh.");
         }
