@@ -12,7 +12,7 @@ import com.tick42.quicksilver.services.base.*;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import com.tick42.quicksilver.validators.ExtensionValidator;
+
 import io.jsonwebtoken.JwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -105,20 +105,20 @@ public class ExtensionController {
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, null);
-        ExtensionSpec extensionSpec = validateExtension(extensionJson);
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+//        ExtensionSpec extensionSpec = validateExtension(extensionJson);
+//        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+//
+//        Extension extension = new Extension(extensionSpec, user, tags);
+//
+//        if(extensionSpec.getGithub() != null)
+//            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
-        Extension extension = new Extension(extensionSpec, user, tags);
-
-        if(extensionSpec.getGithub() != null)
-            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-
-
-        extensionService.save(extension);
-
-        setFiles(extensionImage, extensionFile, extensionCover, extension);
-
-        return new ExtensionDto(extensionService.save(extension));
+//
+//        extensionService.save(extension);
+//
+//        setFiles(extensionImage, extensionFile, extensionCover, extension);
+//
+        return new ExtensionDto();
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -133,38 +133,25 @@ public class ExtensionController {
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
-        UserModel user = userService.findById(userId, null);
-        ExtensionSpec extensionSpec = validateExtension(extensionJson);
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+//        UserModel user = userService.findById(userId, null);
+//        ExtensionSpec extensionSpec = validateExtension(extensionJson);
+//        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+//
+//        Extension extension = extensionService.update(new Extension(extensionSpec, user, tags));
+//
+//        if(extensionSpec.getGithub() != null)
+//            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
+//
+//
+//        setFiles(extensionImage, extensionFile, extensionCover, extension);
+//
+//        ExtensionDto extensionDto = new ExtensionDto(extensionService.save(extension));
+//        int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
+//        extensionDto.setCurrentUserRatingValue(rating);
 
-        Extension extension = extensionService.update(new Extension(extensionSpec, user, tags));
-
-        if(extensionSpec.getGithub() != null)
-            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
-
-
-        setFiles(extensionImage, extensionFile, extensionCover, extension);
-
-        ExtensionDto extensionDto = new ExtensionDto(extensionService.save(extension));
-        int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
-        extensionDto.setCurrentUserRatingValue(rating);
-
-        return extensionDto;
+        return new ExtensionDto();
     }
 
-    private ExtensionSpec validateExtension(String extensionJson) throws BindException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ExtensionSpec extensionSpec = mapper.readValue(extensionJson, ExtensionSpec.class);
-
-        Validator validator = new ExtensionValidator();
-        BindingResult bindingResult = new DataBinder(extensionSpec).getBindingResult();
-        validator.validate(extensionSpec, bindingResult);
-
-        if(bindingResult.hasErrors())
-            throw new BindException(bindingResult);
-
-        return extensionSpec;
-    }
 
     private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension) {
         long extensionId = extension.getId();
@@ -321,7 +308,7 @@ public class ExtensionController {
     }
     private List<ExtensionDto> generateExtensionDTOList(List<Extension> extensions) {
         return extensions.stream()
-                .map(this::generateExtensionDTO)
+                .map(ExtensionDto::new)
                 .collect(Collectors.toList());
     }
 }
