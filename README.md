@@ -1,6 +1,5 @@
 # Tick42-ExtensionRepository
 
-[![codecov](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository/branch/master/graph/badge.svg)](https://codecov.io/gh/Smytt/Tick42-ExtensionRepository)
 [![Build Status](https://travis-ci.org/Smytt/Tick42-ExtensionRepository.svg?branch=master)](https://travis-ci.org/Smytt/Tick42-ExtensionRepository)
 
 IMPORTANT: If you want to test the github api you must generate your own github token from https://github.com/settings/tokens and set it from the admin section or directly in your database in the settings table.

@@ -13,7 +13,7 @@ public class UserDetails extends User {
         this.id = userModel.getId();
         this.userModel = userModel;
     }
-    public UserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities, int id){
+    public UserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities, long id){
         super(username,password,authorities);
         this.id = id;
     }

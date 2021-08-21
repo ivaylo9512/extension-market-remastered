@@ -200,19 +200,6 @@ public class UserServiceImplTests {
         userService.setState(1,"Active");
     }
 
-    @Test(expected = BadCredentialsException.class)
-    public void LoginUserWithWrongUsername_BadCredentialsException_shouldThrow() {
-
-        //Arrange
-        UserModel userModelInvalid = new UserModel();
-        userModelInvalid.setUsername("test");
-
-        when(userRepository.findByUsername("test")).thenReturn(null);
-
-        //Act
-        userService.loadUserByUsername("test");
-    }
-
     @Test(expected = BlockedUserException.class)
     public void LoginUserWithBlockedUser_shouldThrow() {
 
@@ -267,7 +254,6 @@ public class UserServiceImplTests {
 
     @Test(expected = PasswordsMissMatchException.class)
     public void RegisterUser_WithNotMatchingPasswords_shouldThrow() {
-
         //Arrange
         RegisterSpec newRegistration = new RegisterSpec();
         newRegistration.setUsername("Test");
@@ -395,7 +381,6 @@ public class UserServiceImplTests {
 
         userService.changePassword(passwordSpec);
     }
-
 
 }
 

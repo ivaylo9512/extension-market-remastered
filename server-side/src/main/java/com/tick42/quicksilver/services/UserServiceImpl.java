@@ -123,8 +123,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (!user.getPassword().equals(passwordSpec.getCurrentPassword())){
             throw new BadCredentialsException("Invalid current password.");
         }
+
         user.setPassword(passwordSpec.getNewPassword());
         return userRepository.save(user);
-
     }
 }

@@ -49,7 +49,7 @@ public class Jwt {
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
 
-            user = new UserDetails(body.getSubject(), token, authorities, Integer.parseInt(body.getId()));
+            user = new UserDetails(body.getSubject(), token, authorities, Long.parseLong(body.getId()));
         } catch (ExpiredJwtException e) {
             throw new BadCredentialsException("Jwt token has expired.");
         } catch (Exception e) {
