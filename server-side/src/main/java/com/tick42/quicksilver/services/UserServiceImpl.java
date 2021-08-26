@@ -5,7 +5,6 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,13 +19,10 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
-
     private final UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -91,7 +87,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         if (!user.getIsActive() && (loggedUser == null ||
                 !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN"))) {
-            throw new UserProfileUnavailableException("User is unavailable.");
+            throw new EntityNotFoundException("User is unavailable.");
         }
 
         return user;

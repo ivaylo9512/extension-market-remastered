@@ -32,7 +32,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         UserModel owner = extension.getOwner();
         if(extension.getIsPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
                 (loggedUser.getId() != owner.getId() || owner.getIsActive())))){
-            throw new ExtensionUnavailableException("Extension is unavailable.");
+            throw new EntityUnavailableException("Extension is unavailable.");
         }
 
         return extension;
@@ -63,7 +63,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         UserModel owner = extension.getOwner();
         if(!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
                 loggedUser.getId() != owner.getId() && owner.getIsActive()){
-            throw new ExtensionUnavailableException("You are not authorized to delete this extension.");
+            throw new EntityUnavailableException("You are not authorized to delete this extension.");
         }
         extensionRepository.delete(extension);
 

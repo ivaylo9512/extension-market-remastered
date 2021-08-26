@@ -9,6 +9,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -65,10 +67,10 @@ public class FileServiceImpl implements FileService {
             if (resource.exists()) {
                 return resource;
             } else {
-                throw new FileNotFoundUncheckedException("File not found");
+                throw new EntityNotFoundException("File not found");
             }
         } catch (MalformedURLException e) {
-            throw new FileNotFoundUncheckedException("File not found " + e);
+            throw new FileFormatException(e.getMessage());
         }
     }
 

@@ -2,6 +2,7 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.config.Scheduler;
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
+import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
@@ -194,7 +195,7 @@ public class GitHubServiceImpl implements GitHubService {
     @Override
     public GitHubModel fetchGitHub(GitHubModel gitHubModel, UserModel loggedUser) {
         if (!loggedUser.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to trigger a github refresh.");
+            throw new UnauthorizedException("You are not authorized to trigger a github refresh.");
         }
         setRemoteDetails(gitHubModel);
 
