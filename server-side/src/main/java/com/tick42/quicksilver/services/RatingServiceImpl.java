@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.InvalidRatingException;
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
 import com.tick42.quicksilver.models.RatingPK;
@@ -27,7 +27,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public Extension rate(Extension extension, int rating, long userId) {
         if (rating > 5) {
-            throw new InvalidRatingException("Rating must be between 1 and 5");
+            throw new InvalidInputException("Rating must be between 1 and 5");
         }
 
         Rating newRating = new Rating(rating, extension.getId(), userId);

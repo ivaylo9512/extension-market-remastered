@@ -184,14 +184,6 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity<String> handleInvalidParameterException(InvalidParameterException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
     ResponseEntity<String> handleFeaturedLimitException(FeaturedLimitException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

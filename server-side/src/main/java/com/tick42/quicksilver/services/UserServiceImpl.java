@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user.setIsActive(false);
                 break;
             default:
-                throw new InvalidStateException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
+                throw new InvalidInputException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
         return userRepository.save(user);
     }
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<UserModel> user;
 
         if (state == null) {
-            throw new InvalidStateException("State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
+            throw new InvalidInputException("State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
         switch (state) {
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user = userRepository.findAll();
                 break;
             default:
-                throw new InvalidStateException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
+                throw new InvalidInputException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
         return user;

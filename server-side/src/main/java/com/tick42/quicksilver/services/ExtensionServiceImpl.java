@@ -15,9 +15,9 @@ import java.util.*;
 @Service
 public class ExtensionServiceImpl implements ExtensionService {
     private final ExtensionRepository extensionRepository;
-    private Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
-    private List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
-    private int mostRecentQueueLimit = 5;
+    private final Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
+    private final int mostRecentQueueLimit = 5;
     private int featuredLimit = 4;
 
     public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
@@ -121,7 +121,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         int totalPages = (int) Math.ceil(totalResults * 1.0 / pageSize);
 
         if (page > totalPages && totalResults != 0) {
-            throw new InvalidParameterException("Page" + totalPages + " is the last page. Page " + page + " is invalid.");
+            throw new InvalidInputException("Page" + totalPages + " is the last page. Page " + page + " is invalid.");
         }
 
         List<Extension> extensions;
@@ -139,7 +139,7 @@ public class ExtensionServiceImpl implements ExtensionService {
                 extensions = extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "timesDownloaded"));
                 break;
             default:
-                throw new InvalidParameterException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
+                throw new InvalidInputException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
         }
 
         return new PageDto<>(extensions, page, totalPages, totalResults);
@@ -161,7 +161,7 @@ public class ExtensionServiceImpl implements ExtensionService {
                 extension.setIsPending(true);
                 break;
             default:
-                throw new InvalidStateException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
+                throw new InvalidInputException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
         }
 
         extensionRepository.save(extension);
@@ -171,7 +171,6 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public Extension setFeaturedState(long extensionId, String state) {
-
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
@@ -187,15 +186,10 @@ public class ExtensionServiceImpl implements ExtensionService {
                 extension.isFeatured(false);
                 break;
             default:
-                throw new InvalidStateException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
+                throw new InvalidInputException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
 
-        if(extension.isFeatured()){
-            featured.put(extension.getId(), extension);
-        }else{
-            featured.remove(extensionId);
-        }
-        reloadExtension(extension);
+        updateData(extension);
 
         return extension;
     }
@@ -217,6 +211,14 @@ public class ExtensionServiceImpl implements ExtensionService {
         mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate")));
     }
 
+    private void updateData(Extension extension) {
+        if(extension.isFeatured()){
+            featured.put(extension.getId(), extension);
+        }else{
+            featured.remove(extension.getId());
+        }
+        reloadExtension(extension);
+    }
 
     @Override
     public Extension reloadExtension(Extension extension){
