@@ -75,7 +75,6 @@ public class GitHubController {
         return new GitHubDto(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
-
     @ExceptionHandler
     ResponseEntity<String> handleGitHubRepositoryExceptionException(GitHubRepositoryException e){
         return ResponseEntity

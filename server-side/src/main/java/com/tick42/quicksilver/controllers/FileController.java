@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.FileNotFoundUncheckedException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -66,13 +65,4 @@ public class FileController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
-
-    @ExceptionHandler
-    ResponseEntity<String> handleFileNotFoundUncheckedException(FileNotFoundUncheckedException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
 }

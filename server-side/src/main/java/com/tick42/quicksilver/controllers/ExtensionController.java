@@ -10,7 +10,6 @@ import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,13 +25,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/extensions")
 public class ExtensionController {
-
     private final ExtensionService extensionService;
     private final FileService fileService;
-    private RatingService ratingService;
-    private UserService userService;
-    private TagService tagService;
-    private GitHubService gitHubService;
+    private final RatingService ratingService;
+    private final UserService userService;
+    private final TagService tagService;
+    private final GitHubService gitHubService;
 
     public ExtensionController(ExtensionService extensionService, FileService fileService, RatingService ratingService, UserService userService, TagService tagService, GitHubService gitHubService) {
         this.extensionService = extensionService;
@@ -186,37 +184,11 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity<String> handleExtensionUnavailable(ExtensionUnavailableException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
     ResponseEntity<String> handleInvalidParameterException(InvalidParameterException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity<String> handleGitHubRepositoryException(GitHubRepositoryException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity<Object> handleBindException(BindException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getBindingResult().getAllErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getCode)
-                        .toArray());
     }
 
     @ExceptionHandler

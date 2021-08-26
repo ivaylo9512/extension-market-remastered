@@ -133,11 +133,4 @@ public class UserController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
-
-    @ExceptionHandler
-    ResponseEntity<String>  handleUserProfileUnavailableException(UserProfileUnavailableException e){
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
 }

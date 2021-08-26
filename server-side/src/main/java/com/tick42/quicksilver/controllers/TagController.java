@@ -6,7 +6,6 @@ import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.services.base.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.stream.Collectors;
 
 @RestController

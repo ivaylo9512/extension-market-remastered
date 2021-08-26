@@ -3,8 +3,6 @@ package com.tick42.quicksilver.services.base;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
-import com.tick42.quicksilver.models.specs.RegisterSpec;
-
 import java.util.List;
 
 public interface UserService {

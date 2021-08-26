@@ -1,13 +1,10 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.ExtensionUnavailableException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,13 +38,5 @@ public class RatingController {
         long userId = loggedUser.getId();
 
         return ratingService.userRatingForExtension(id, userId);
-    }
-
-    @ExceptionHandler
-    ResponseEntity<String> handleExtensionUnavailable(ExtensionUnavailableException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
     }
 }

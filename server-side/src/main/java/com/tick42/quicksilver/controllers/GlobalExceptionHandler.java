@@ -1,8 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.FileFormatException;
-import com.tick42.quicksilver.exceptions.InvalidStateException;
-import com.tick42.quicksilver.exceptions.UnauthorizedException;
+import com.tick42.quicksilver.exceptions.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
 import javax.persistence.EntityNotFoundException;
 
 @ControllerAdvice
@@ -66,5 +63,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getCode)
                         .toArray());
+    }
+
+    @ExceptionHandler
+    ResponseEntity<String> handleEntityUnavailable(EntityUnavailableException e) {
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity<String> handleGitHubRepositoryException(GitHubRepositoryException e) {
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
     }
 }

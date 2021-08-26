@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.models.specs;
 
-import com.tick42.quicksilver.models.File;
+import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -25,9 +25,10 @@ public class ExtensionSpec {
     private int githubId;
 
     private String tags;
-    private File file;
-    private File image;
-    private File cover;
+
+    private MultipartFile image;
+    private MultipartFile file;
+    private MultipartFile cover;
 
     public ExtensionSpec() {
     }
@@ -72,30 +73,6 @@ public class ExtensionSpec {
         this.tags = tags;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public File getImage() {
-        return image;
-    }
-
-    public void setImage(File image) {
-        this.image = image;
-    }
-
-    public File getCover() {
-        return cover;
-    }
-
-    public void setCover(File cover) {
-        this.cover = cover;
-    }
-
     public long getId() {
         return id;
     }
@@ -110,5 +87,29 @@ public class ExtensionSpec {
 
     public void setGithubId(int githubId) {
         this.githubId = githubId;
+    }
+
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
+
+    public MultipartFile getCover() {
+        return cover;
+    }
+
+    public void setCover(MultipartFile cover) {
+        this.cover = cover;
     }
 }
