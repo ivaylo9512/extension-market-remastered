@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.ExtensionDto;
@@ -9,21 +8,14 @@ import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import io.jsonwebtoken.JwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.validation.Validator;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -187,21 +179,14 @@ public class ExtensionController {
         return extensionService.checkName(name);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseBody
-    public ResponseEntity handleInvalidExtensionSpecException(MethodArgumentNotValidException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getBindingResult()
-                        .getFieldErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .toArray());
+    private List<ExtensionDto> generateExtensionDTOList(List<Extension> extensions) {
+        return extensions.stream()
+                .map(ExtensionDto::new)
+                .collect(Collectors.toList());
     }
 
     @ExceptionHandler
-    ResponseEntity handleBadCredentialsException(BadCredentialsException e){
+    ResponseEntity<String> handleExtensionUnavailable(ExtensionUnavailableException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -209,7 +194,7 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
+    ResponseEntity<String> handleInvalidParameterException(InvalidParameterException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -217,15 +202,7 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleExtensionUnavailable(ExtensionUnavailableException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleInvalidStateException(InvalidStateException e) {
+    ResponseEntity<String> handleGitHubRepositoryException(GitHubRepositoryException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -233,38 +210,7 @@ public class ExtensionController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleInvalidParameterException(InvalidParameterException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleGitHubRepositoryException(GitHubRepositoryException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleUnauthorizedExtensionModificationException(UnauthorizedExtensionModificationException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleJwtException(JwtException e){
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleBindException(BindException e){
+    ResponseEntity<Object> handleBindException(BindException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getBindingResult().getAllErrors()
@@ -272,22 +218,11 @@ public class ExtensionController {
                         .map(DefaultMessageSourceResolvable::getCode)
                         .toArray());
     }
-    @ExceptionHandler
-    ResponseEntity handleFileFormatException(FileFormatException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
 
     @ExceptionHandler
-    ResponseEntity handleFeaturedLimitException(FeaturedLimitException e){
+    ResponseEntity<String> handleFeaturedLimitException(FeaturedLimitException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
-    }
-    private List<ExtensionDto> generateExtensionDTOList(List<Extension> extensions) {
-        return extensions.stream()
-                .map(ExtensionDto::new)
-                .collect(Collectors.toList());
     }
 }

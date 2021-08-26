@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.ExtensionUnavailableException;
-import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -11,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "/api/rating")
@@ -47,26 +44,10 @@ public class RatingController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleUnauthorizedExtensionModificationException(UnauthorizedExtensionModificationException e) {
+    ResponseEntity<String> handleExtensionUnavailable(ExtensionUnavailableException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleExtensionUnavailable(ExtensionUnavailableException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 }

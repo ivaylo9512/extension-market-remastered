@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.config.Scheduler;
 import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
-import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
@@ -119,6 +118,10 @@ public class GitHubServiceImpl implements GitHubService {
     }
     @Override
     public GitHubModel generateGitHub(String link) {
+        if(link == null){
+            return null;
+        }
+
         String[] githubCred = link.replaceAll("https://github.com/", "").split("/");
         String user = githubCred[0];
         String repo = githubCred[1];

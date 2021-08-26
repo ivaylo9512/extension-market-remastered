@@ -1,9 +1,7 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.*;
-import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
-import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
@@ -12,15 +10,12 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -119,59 +114,30 @@ public class UserController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
-        e.printStackTrace();
+    ResponseEntity<String> handleUsernameExistsException(UsernameExistsException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 
     @ExceptionHandler
-    ResponseEntity handleUsernameExistsException(UsernameExistsException e) {
+    ResponseEntity<String> handlePasswordsMissMatchException(PasswordsMissMatchException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 
     @ExceptionHandler
-    ResponseEntity handlePasswordsMissMatchException(PasswordsMissMatchException e) {
+    ResponseEntity<String> handleDisabledUserException(BlockedUserException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 
     @ExceptionHandler
-    ResponseEntity handleInvalidStateException(InvalidStateException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleDisabledUserException(BlockedUserException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-
-    @ExceptionHandler
-    ResponseEntity handleUserProfileUnavailableException(UserProfileUnavailableException e){
+    ResponseEntity<String>  handleUserProfileUnavailableException(UserProfileUnavailableException e){
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(e.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseBody
-    public ResponseEntity handleInvalidUserSpecException(MethodArgumentNotValidException e)
-    {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getBindingResult().
-                        getFieldErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .toArray());
     }
 }

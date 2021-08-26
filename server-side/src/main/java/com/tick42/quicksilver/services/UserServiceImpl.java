@@ -93,6 +93,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN"))) {
             throw new UserProfileUnavailableException("User is unavailable.");
         }
+
         return user;
     }
 

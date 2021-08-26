@@ -1,25 +1,19 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.FileFormatException;
 import com.tick42.quicksilver.exceptions.FileNotFoundUncheckedException;
 import com.tick42.quicksilver.exceptions.FileStorageException;
-import com.tick42.quicksilver.exceptions.UnauthorizedExtensionModificationException;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
@@ -64,8 +58,9 @@ public class FileController {
                 .body(resource);
     }
 
+
     @ExceptionHandler
-    ResponseEntity handleFileFormatException(FileFormatException e) {
+    ResponseEntity<String> handleFileStorageException(FileStorageException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -73,43 +68,11 @@ public class FileController {
     }
 
     @ExceptionHandler
-    ResponseEntity handleFileStorageException(FileStorageException e) {
+    ResponseEntity<String> handleFileNotFoundUncheckedException(FileNotFoundUncheckedException e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 
-    @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(FileNotFoundUncheckedException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity handleUnauthorizedExtensionModificationException(UnauthorizedExtensionModificationException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
-    @ExceptionHandler
-    ResponseEntity handleBindException(BindException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getBindingResult().getAllErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getCode)
-                        .toArray());
-    }
 }

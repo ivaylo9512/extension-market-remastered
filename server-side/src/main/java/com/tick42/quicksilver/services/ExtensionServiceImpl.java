@@ -5,12 +5,10 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityNotFoundException;
 import java.util.*;
 
@@ -41,13 +39,12 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-        public Extension update(Extension newExtension) {
-
+    public Extension update(Extension newExtension) {
         Extension extension = extensionRepository.findById(newExtension.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         if (newExtension.getOwner().getId() != extension.getOwner().getId() && !newExtension.getOwner().getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedExtensionModificationException("You are not authorized to edit this extension.");
+            throw new UnauthorizedException("You are not authorized to edit this extension.");
         }
 
         return extensionRepository.save(newExtension);

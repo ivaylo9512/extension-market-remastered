@@ -8,16 +8,12 @@ import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
 @RestController
@@ -79,28 +75,9 @@ public class GitHubController {
         return new GitHubDto(gitHubService.fetchGitHub(extension.getGithub(), user));
     }
 
-    @ExceptionHandler
-    ResponseEntity handleExtensionNotFoundException(EntityNotFoundException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseBody
-    public ResponseEntity handleInvalidGitHubSettingSpecException(MethodArgumentNotValidException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getBindingResult()
-                        .getFieldErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .toArray());
-    }
     @ExceptionHandler
-    ResponseEntity handleFeaturedLimitException(GitHubRepositoryException e){
+    ResponseEntity<String> handleGitHubRepositoryExceptionException(GitHubRepositoryException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
