@@ -12,7 +12,6 @@ import com.tick42.quicksilver.services.base.*;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-
 import io.jsonwebtoken.JwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -92,81 +91,61 @@ public class ExtensionController {
         return extensionDto;
     }
 
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDto createExtension(
-            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
-            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
-            @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
-            @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
+    public ExtensionDto createExtension(@ModelAttribute ExtensionSpec extensionSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
-        UserModel user = userService.findById(userId, null);
-//        ExtensionSpec extensionSpec = validateExtension(extensionJson);
-//        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
-//
-//        Extension extension = new Extension(extensionSpec, user, tags);
-//
-//        if(extensionSpec.getGithub() != null)
-//            extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+        UserModel user = userService.findById(userId, loggedUser);
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
-//
-//        extensionService.save(extension);
-//
-//        setFiles(extensionImage, extensionFile, extensionCover, extension);
-//
-        return new ExtensionDto();
+        Extension extension = extensionService.save(new Extension(extensionSpec, user, tags));
+        extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+        setFiles(extensionSpec, extension);
+
+        return new ExtensionDto(extensionService.save(extension));
     }
 
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDto editExtension(
-            @RequestParam(name = "image", required = false) MultipartFile extensionImage ,
-            @RequestParam(name = "file", required = false) MultipartFile extensionFile,
-            @RequestParam(name = "cover", required = false) MultipartFile extensionCover,
-            @RequestParam(name = "extension") String extensionJson) throws IOException, BindException {
+    public ExtensionDto editExtension(@ModelAttribute ExtensionSpec extensionSpec) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
-//        UserModel user = userService.findById(userId, null);
-//        ExtensionSpec extensionSpec = validateExtension(extensionJson);
-//        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
-//
-//        Extension extension = extensionService.update(new Extension(extensionSpec, user, tags));
-//
-//        if(extensionSpec.getGithub() != null)
-//            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
-//
-//
-//        setFiles(extensionImage, extensionFile, extensionCover, extension);
-//
-//        ExtensionDto extensionDto = new ExtensionDto(extensionService.save(extension));
-//        int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
-//        extensionDto.setCurrentUserRatingValue(rating);
+        UserModel user = userService.findById(userId, loggedUser);
+        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
 
-        return new ExtensionDto();
+        Extension extension = new Extension(extensionSpec, user, tags);
+        extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+        setFiles(extensionSpec, extension);
+        if(extensionSpec.getGithub() != null)
+            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
+
+        ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension));
+        int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
+        extensionDto.setCurrentUserRatingValue(rating);
+
+        return extensionDto;
     }
 
 
-    private void setFiles(MultipartFile extensionImage, MultipartFile extensionFile, MultipartFile extensionCover, Extension extension) {
-        long extensionId = extension.getId();
+    private void setFiles(ExtensionSpec extensionSpec, Extension extension) {
+        long id = extension.getId();
+        MultipartFile image = extensionSpec.getImage();
+        MultipartFile file = extensionSpec.getFile();
+        MultipartFile cover = extensionSpec.getCover();
 
-        if(extensionImage != null){
-            File image = fileService.create(extensionImage, extensionId + "image");
-            extension.setImage(image);
+        if(image != null){
+            extension.setImage(fileService.create(image, id + "image"));
         }
-        if(extensionFile != null){
-            File file = fileService.create(extensionFile, String.valueOf(extensionId));
-            extension.setFile(file);
+        if(file != null){
+            extension.setFile(fileService.create(file, String.valueOf(id)));
         }
-        if(extensionCover != null){
-            File cover = fileService.create(extensionCover, extensionId +"cover");
-            extension.setCover(cover);
+        if(cover != null){
+            extension.setCover(fileService.create(cover, id +"cover"));
         }
     }
 
