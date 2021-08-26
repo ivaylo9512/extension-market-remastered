@@ -1,22 +1,24 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.InvalidRatingException;
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.Rating;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.RatingRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RatingServiceImplTests {
 
     @Mock
@@ -30,8 +32,8 @@ public class RatingServiceImplTests {
     @InjectMocks
     private RatingServiceImpl ratingService;
 
-    @Test(expected = InvalidRatingException.class)
-    public void rateExtension_withInvalidInput_ShouldThrow() {
+    @Test
+    public void rateExtension_withInvalidInput() {
         //Arrange
         int extensionId = 1;
         int rating = 40;
@@ -40,59 +42,44 @@ public class RatingServiceImplTests {
         Extension extension = new Extension();
         extension.setId(extensionId);
 
-        //Act
-        ratingService.rate(extension, rating, userId);
+        InvalidInputException thrown = assertThrows(
+                InvalidInputException.class,
+                () -> ratingService.rate(extension, rating, userId));
+
+        assertEquals(thrown.getMessage(), "Rating must be between 1 and 5.");
     }
 
     @Test()
-    public void rateExtension_WhenUserHasCurrentRattingForExtension_ShouldReturnChanged() {
-        //Arrange
+    public void rateExtension_WhenUserHasCurrentRattingForExtension() {
         Extension extension = new Extension();
         extension.setId(1);
         extension.setRating(2);
         extension.setTimesRated(2);
+
         int currentUserRatingForExtension = 2;
         Rating newRating = new Rating(3, 1, 1);
 
-        //Act
         extension = ratingService.newExtensionRating( currentUserRatingForExtension, newRating, extension);
 
-        //Assert
-        Assert.assertEquals(2.50, extension.getRating(), 0);
+        assertEquals(2.50, extension.getRating(), 0);
     }
 
     @Test
     public void rateExtension_WhenUserNoRatingForExtension_ShouldReturnChanged() {
-        //Arrange
         Extension extension = new Extension();
         extension.setRating(2);
         extension.setTimesRated(2);
+
         int currentUserRatingForExtension = 0;
         Rating newRating = new Rating(5, 1, 1);
 
-        //Act
         extension = ratingService.newExtensionRating(currentUserRatingForExtension, newRating, extension);
 
-        //Assert
-        Assert.assertEquals(3, extension.getRating(), 0);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void userRatingOnExtensionDelete_whitNonexistentExtension_ShouldThrow(){
-        //Arrange
-        Extension extension = new Extension();
-        extension.setId(2);
-
-        when(extensionRepository.findById(2L)).thenReturn(null);
-        //Act
-        ratingService.updateRatingOnExtensionDelete(extension);
-
+        assertEquals(3, extension.getRating(), 0);
     }
 
     @Test
     public void userRatingOnExtensionDelete(){
-
-        //Arrange
         UserModel userModel = new UserModel();
         userModel.setRating(4);
         userModel.setExtensionsRated(2);
@@ -104,18 +91,14 @@ public class RatingServiceImplTests {
         extension.setOwner(userModel);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        //Act
         ratingService.updateRatingOnExtensionDelete(extension);
-        //Assert
 
-        Assert.assertEquals(4, userModel.getRating(),0);
+        assertEquals(4, userModel.getRating(),0);
 
     }
 
     @Test
     public void userRatingOnExtensionDelete_whenUserHasOnlyOneExtension_ShouldReturnZero(){
-
-        //Arrange
         UserModel userModel = new UserModel();
         userModel.setRating(4);
         userModel.setExtensionsRated(1);
@@ -127,18 +110,14 @@ public class RatingServiceImplTests {
         extension.setOwner(userModel);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        //Act
         ratingService.updateRatingOnExtensionDelete(extension);
-        //Assert
 
-        Assert.assertEquals(0, userModel.getRating(),0);
-        Assert.assertEquals(0, userModel.getExtensionsRated(),0);
+        assertEquals(0, userModel.getRating(),0);
+        assertEquals(0, userModel.getExtensionsRated(),0);
     }
 
     @Test
     public void UserRatingOnExtensionDelete_WhenExtensionRatingIsZero_ShouldReturnSame(){
-
-        //Arrange
         UserModel userModel = new UserModel();
         userModel.setRating(4);
         userModel.setExtensionsRated(2);
@@ -150,11 +129,9 @@ public class RatingServiceImplTests {
         extension.setOwner(userModel);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        //Act
         ratingService.updateRatingOnExtensionDelete(extension);
-        //Assert
 
-        Assert.assertEquals(4, userModel.getRating(),0);
-        Assert.assertEquals(2, userModel.getExtensionsRated(),0);
+        assertEquals(4, userModel.getRating(),0);
+        assertEquals(2, userModel.getExtensionsRated(),0);
     }
 }
