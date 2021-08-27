@@ -122,23 +122,13 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new InvalidInputException("Page " + totalPages + " is the last page. Page " + page + " is invalid.");
         }
 
-        List<Extension> extensions;
-        switch (orderBy) {
-            case "date":
-                extensions = extensionRepository.findAllOrderedBy(name,PageRequest.of(page, pageSize, Sort.Direction.DESC, "uploadDate"));
-                break;
-            case "commits":
-                extensions = extensionRepository.findAllOrderedBy(name,PageRequest.of(page, pageSize, Sort.Direction.DESC, "github.lastCommit"));
-                break;
-            case "name":
-                extensions = extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.ASC, "name"));
-                break;
-            case "downloads":
-                extensions = extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "timesDownloaded"));
-                break;
-            default:
-                throw new InvalidInputException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
-        }
+        List<Extension> extensions = switch (orderBy) {
+            case "date" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "uploadDate"));
+            case "commits" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "github.lastCommit"));
+            case "name" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.ASC, "name"));
+            case "downloads" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "timesDownloaded"));
+            default -> throw new InvalidInputException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
+        };
 
         return new PageDto<>(extensions, page, totalPages, totalResults);
     }
@@ -150,16 +140,13 @@ public class ExtensionServiceImpl implements ExtensionService {
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         switch (state) {
-            case "publish":
-                extension.setIsPending(false);
-                break;
-            case "unpublish":
+            case "publish" -> extension.setIsPending(false);
+            case "unpublish" -> {
                 featured.remove(extensionId);
                 extension.isFeatured(false);
                 extension.setIsPending(true);
-                break;
-            default:
-                throw new InvalidInputException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
+            }
+            default -> throw new InvalidInputException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
         }
 
         extensionRepository.save(extension);
@@ -174,17 +161,14 @@ public class ExtensionServiceImpl implements ExtensionService {
 
 
         switch (state) {
-            case "feature":
-                if(!extension.isFeatured() && featured.size() == featuredLimit){
+            case "feature" -> {
+                if (!extension.isFeatured() && featured.size() == featuredLimit) {
                     throw new FeaturedLimitException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
                 }
                 extension.isFeatured(true);
-                break;
-            case "unfeature":
-                extension.isFeatured(false);
-                break;
-            default:
-                throw new InvalidInputException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
+            }
+            case "unfeature" -> extension.isFeatured(false);
+            default -> throw new InvalidInputException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
 
         updateData(extension);

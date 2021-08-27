@@ -31,15 +31,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         switch (state) {
-            case "enable":
-                user.setIsActive(true);
-                break;
-            case "block":
-                user.setIsActive(false);
-                break;
-            default:
-                throw new InvalidInputException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
+            case "enable" -> user.setIsActive(true);
+            case "block" -> user.setIsActive(false);
+            default -> throw new InvalidInputException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
+
         return userRepository.save(user);
     }
 
@@ -63,19 +59,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new InvalidInputException("State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         }
 
-        switch (state) {
-            case "active":
-                user = userRepository.findByActive(true);
-                break;
-            case "blocked":
-                user = userRepository.findByActive(false);
-                break;
-            case "all":
-                user = userRepository.findAll();
-                break;
-            default:
-                throw new InvalidInputException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
-        }
+        user = switch (state) {
+            case "active" -> userRepository.findByActive(true);
+            case "blocked" -> userRepository.findByActive(false);
+            case "all" -> userRepository.findAll();
+            default -> throw new InvalidInputException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
+        };
 
         return user;
     }

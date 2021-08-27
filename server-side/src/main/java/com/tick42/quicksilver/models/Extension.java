@@ -52,16 +52,25 @@ public class Extension {
 
     }
 
-    public Extension(ExtensionSpec extensionSpec, UserModel user, Set<Tag> tags) {
-        this.owner = user;
+    public Extension(ExtensionSpec extensionSpec, UserModel owner, Set<Tag> tags) {
+        this(extensionSpec.getName(), extensionSpec.getDescription(),
+                extensionSpec.getVersion(), owner);
         this.tags = tags;
-        this.name = extensionSpec.getName();
-        this.version = extensionSpec.getVersion();
-        this.description = extensionSpec.getDescription();
+        this.github = getGithub();
     }
-    public Extension(String name, Set<Tag> tags) {
+
+    public Extension(String name, String description, String version, UserModel owner){
         this.name = name;
+        this.version = version;
+        this.description = description;
+        this.owner = owner;
+    }
+
+    public Extension(long id, String name, String description, String version, Set<Tag> tags, GitHubModel github, UserModel owner) {
+        this(name, description, version, owner);
+        this.id = id;
         this.tags = tags;
+        this.github = github;
     }
 
     @Override
