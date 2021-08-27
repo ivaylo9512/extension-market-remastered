@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.services;
 
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.TagRepository;
 import com.tick42.quicksilver.services.base.TagService;
@@ -28,33 +29,21 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<Tag> prepareTags(List<Tag> tags) {
-        for (int i = 0; i < tags.size(); i++) {
-            Tag tag = tags.get(i);
-            Tag existingTag = tagRepository.findById(tag.getName()).orElse(null);
-            if (existingTag != null) {
-                tags.set(i, existingTag);
-            }
+    public Set<Tag> saveTags(String tagString){
+        Set<String> tags = generateTags(tagString);
+
+        if(tagString.equals("")){
+            throw new InvalidInputException("Tags can't be an empty string.");
         }
-        return tags;
+        return tags.stream().map(tagName -> tagRepository.save(new Tag(tagName)))
+                .collect(Collectors.toSet());
     }
 
-    @Override
-    public Set<Tag> generateTags(String tagString) {
-        Set<Tag> tags = new HashSet<>();
+    public Set<String> generateTags(String tagString) {
+        tagString = tagString.replace(" ", "");
 
-        if (tagString == null) {
-            return tags;
-        }
-
-        tagString = tagString.trim();
-        List<String> tagNames =
-                Arrays.stream(tagString.split(","))
-                        .map(String::toLowerCase)
-                        .map(String::trim)
-                        .distinct()
-                        .collect(Collectors.toList());
-        tagNames.forEach(tagName -> tags.add(tagRepository.save(new Tag(tagName))));
-        return tags;
+        return Arrays.stream(tagString.split(","))
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
     }
 }

@@ -9,7 +9,5 @@ public interface TagService {
 
     String normalize(String name);
 
-    List<Tag> prepareTags(List<Tag> tags);
-
-    Set<Tag> generateTags(String tags);
+    Set<Tag> saveTags(String tags);
 }
