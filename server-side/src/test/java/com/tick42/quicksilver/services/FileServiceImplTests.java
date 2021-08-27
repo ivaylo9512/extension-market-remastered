@@ -1,127 +1,86 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.UnauthorizedException;
-import com.tick42.quicksilver.models.Extension;
-import com.tick42.quicksilver.models.UserModel;
-import com.tick42.quicksilver.repositories.base.ExtensionRepository;
-import com.tick42.quicksilver.repositories.base.UserRepository;
+import com.tick42.quicksilver.exceptions.FileFormatException;
+import com.tick42.quicksilver.models.File;
+import com.tick42.quicksilver.repositories.base.FileRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.persistence.EntityNotFoundException;
-import java.util.Optional;
-
+import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class FileServiceImplTests {
     @Mock
-    MultipartFile multipartFile;
+    private FileRepository fileRepository;
 
-    @Mock
-    ExtensionRepository extensionRepository;
-
-    @Mock
-    UserRepository userRepository;
-
+    @Spy
     @InjectMocks
     private FileServiceImpl fileService;
 
     @Test
-    public void storeFile_whenExtensionNotExisting_ShouldThrow() {
-        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
+    public void increaseCount() {
+        File file = new File();
 
-        EntityNotFoundException thrown = assertThrows(
-                EntityNotFoundException.class,
-                () -> fileService.create(multipartFile, "name"));
+        when(fileRepository.save(file)).thenReturn(file);
 
-        assertEquals(thrown.getMessage(), "Extension not found.");
+        File savedFile = fileService.increaseCount(file);
+        assertEquals(savedFile.getDownloadCount(), 1);
     }
 
     @Test
-    public void storeImage_whenExtensionNotExisting_ShouldThrow() {
-        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
+    public void generate() {
+        MockMultipartFile file = new MockMultipartFile(
+                "image132",
+                "image132.png",
+                "image/png",
+                "image132".getBytes());
 
-        EntityNotFoundException thrown = assertThrows(
-                EntityNotFoundException.class,
-                () -> fileService.create(multipartFile, "name"));
+        File savedFile = fileService.generate(file, "savedName");
 
-        assertEquals(thrown.getMessage(), "Extension not found.");
+        assertEquals(savedFile.getName(), "savedName.png");
+        assertEquals(savedFile.getType(), "image/png");
     }
 
     @Test
-    public void storeFile_whenUserNotExisting_ShouldThrow() {
-        Extension extension = new Extension();
-        when(userRepository.findById(1L)).thenReturn(null);
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+    public void create_when() {
+        MockMultipartFile file = new MockMultipartFile(
+                "text132",
+                "text132.txt",
+                "text",
+                "text132".getBytes());
 
-        EntityNotFoundException thrown = assertThrows(
-                EntityNotFoundException.class,
-                () -> fileService.create(multipartFile, "name"));
+        FileFormatException thrown = assertThrows(FileFormatException.class,
+                () -> fileService.create(file, "savedName", "image"));
 
-        assertEquals(thrown.getMessage(), "Extension not found.");
+        assertEquals(thrown.getMessage(), "File should be of type image");
     }
 
     @Test
-    public void storeImage_whenUserNotExisting_ShouldThrow() {
-        //Arrange
-        Extension extension = new Extension();
-        when(userRepository.findById(1L)).thenReturn(null);
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+    public void create() throws Exception{
+        MockMultipartFile file = new MockMultipartFile(
+                "image132",
+                "image132.png",
+                "image/png",
+                "image132".getBytes());
 
-        EntityNotFoundException thrown = assertThrows(
-                EntityNotFoundException.class,
-                () -> fileService.create(multipartFile, "name"));
+        File file1 = new File();
+        doNothing().when(fileService).save(file1, file);
 
-        assertEquals(thrown.getMessage(), "Extension not found.");
+        File savedFile = fileService.create(file, "savedName", "image");
+
+        assertEquals(savedFile.getName(), "savedName.png");
+        assertEquals(savedFile.getType(), "image/png");
     }
 
     @Test
-    public void storeFile_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
-        //Arrange
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("USER");
-        UserModel owner = new UserModel();
-        owner.setId(2);
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        UnauthorizedException thrown = assertThrows(
-                UnauthorizedException.class,
-                () -> fileService.create(multipartFile, "name"));
-
-        assertEquals(thrown.getMessage(), "Unauthorized.");
-    }
-
-    @Test
-    public void storeImage_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("USER");
-        UserModel owner = new UserModel();
-
-        owner.setId(2);
-
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        UnauthorizedException thrown = assertThrows(
-                UnauthorizedException.class,
-                () -> fileService.create(multipartFile, "name"));
-
-        assertEquals(thrown.getMessage(), "Unauthorized.");
+    public void find() throws Exception{
+        fileService.getAsResource("test.txt");
     }
 }
