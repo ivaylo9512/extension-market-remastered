@@ -31,19 +31,19 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         UserModel owner = extension.getOwner();
         if(extension.getIsPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
-                (loggedUser.getId() != owner.getId() || owner.getIsActive())))){
-            throw new EntityUnavailableException("Extension is unavailable.");
+                (loggedUser.getId() != owner.getId() || !owner.getIsActive())))){
+            throw new UnauthorizedException("Extension is not available.");
         }
 
         return extension;
     }
 
     @Override
-    public Extension update(Extension newExtension) {
+    public Extension update(Extension newExtension, UserModel loggedUser) {
         Extension extension = extensionRepository.findById(newExtension.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
-        if (newExtension.getOwner().getId() != extension.getOwner().getId() && !newExtension.getOwner().getRole().equals("ROLE_ADMIN")) {
+        if (loggedUser.getId() != extension.getOwner().getId() && !loggedUser.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedException("You are not authorized to edit this extension.");
         }
 
@@ -56,14 +56,13 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension delete(long extensionId, UserDetails loggedUser) {
+    public Extension delete(long extensionId, UserModel loggedUser) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         UserModel owner = extension.getOwner();
-        if(!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
-                loggedUser.getId() != owner.getId() && owner.getIsActive()){
-            throw new EntityUnavailableException("You are not authorized to delete this extension.");
+        if(loggedUser.getId() != owner.getId() && !loggedUser.getRole().equals("ROLE_ADMIN")){
+            throw new UnauthorizedException("You are not authorized to delete this extension.");
         }
         extensionRepository.delete(extension);
 
@@ -100,7 +99,6 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public PageDto<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer pageSize) {
-
         if (page == null || page < 0) {
             page = 0;
         }
@@ -121,7 +119,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         int totalPages = (int) Math.ceil(totalResults * 1.0 / pageSize);
 
         if (page > totalPages && totalResults != 0) {
-            throw new InvalidInputException("Page" + totalPages + " is the last page. Page " + page + " is invalid.");
+            throw new InvalidInputException("Page " + totalPages + " is the last page. Page " + page + " is invalid.");
         }
 
         List<Extension> extensions;

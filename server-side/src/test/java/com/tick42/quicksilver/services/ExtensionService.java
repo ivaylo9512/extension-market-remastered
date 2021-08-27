@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ExtensionServiceImplTests {
+public class ExtensionService {
     @Mock
     private ExtensionRepository extensionRepository;
 
@@ -134,26 +134,9 @@ public class ExtensionServiceImplTests {
     }
 
     @Test
-    public void findFeatured_shouldReturnListOfFeaturedExtensionDTOs() {
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        extension1.isFeatured(true);
-        extension2.isFeatured(true);
-        List<Extension> extensions = Arrays.asList(extension1, extension2);
-
-        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
-
-        List<Extension> featuredExtensionDtos = extensionService.findFeatured();
-
-        assertEquals(2, featuredExtensionDtos.size());
-        assertTrue(featuredExtensionDtos.get(0).isFeatured());
-        assertTrue(featuredExtensionDtos.get(1).isFeatured());
-    }
-
-    @Test
     public void findById_whenExtensionDoesNotExist_EntityNotFound() {
         UserDetails user = new UserDetails("text", "test", new ArrayList<>(), 1);
-        when(extensionRepository.findById(1L)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(
                 EntityNotFoundException.class,
@@ -171,8 +154,8 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        EntityUnavailableException thrown = assertThrows(
-                EntityUnavailableException.class,
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
                 () -> extensionService.findById(1, null));
 
         assertEquals(thrown.getMessage(), "Extension is not available.");
@@ -192,8 +175,8 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        EntityUnavailableException thrown = assertThrows(
-                EntityUnavailableException.class,
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
                 () -> extensionService.findById(1, user));
 
         assertEquals(thrown.getMessage(), "Extension is not available.");
@@ -210,8 +193,8 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        EntityUnavailableException thrown = assertThrows(
-                EntityUnavailableException.class,
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
                 () -> extensionService.findById(1, null));
 
         assertEquals(thrown.getMessage(), "Extension is not available.");
@@ -233,8 +216,8 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        EntityUnavailableException thrown = assertThrows(
-                EntityUnavailableException.class,
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
                 () -> extensionService.findById(1, user));
 
         assertEquals(thrown.getMessage(), "Extension is not available.");
@@ -353,10 +336,11 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension("name", "description", "version", owner);
         extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
         extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
+        extension.setId(1);
 
         Extension foundExtension = new Extension();
-        extension.setId(1);
-        extension.setOwner(loggedUser);
+        foundExtension.setId(1);
+        foundExtension.setOwner(loggedUser);
 
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
@@ -379,10 +363,11 @@ public class ExtensionServiceImplTests {
         Extension extension = new Extension("name", "description", "version", owner);
         extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
         extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
+        extension.setId(1);
 
         Extension foundExtension = new Extension();
-        extension.setId(1);
-        extension.setOwner(owner);
+        foundExtension.setId(1);
+        foundExtension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
         when(extensionRepository.save(extension)).thenReturn(extension);
@@ -394,7 +379,7 @@ public class ExtensionServiceImplTests {
 
     @Test
     public void delete_whenExtensionDoesNotExist_EntityNotFound() {
-        when(extensionRepository.findById(1L)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
                 () -> extensionService.delete(1, new UserModel()));
@@ -459,16 +444,11 @@ public class ExtensionServiceImplTests {
 
     @Test
     public void findAll_WhenPageMoreThanTotalPages_InvalidInput() {
-        String name = "name";
-        int page = 5;
-        int pageSize = 10;
-        Long totalResults = 21L;
-
-        when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
+        when(extensionRepository.getTotalResults("name")).thenReturn(21L);
 
         InvalidInputException thrown = assertThrows(
                 InvalidInputException.class,
-                () -> extensionService.findPageWithCriteria("", "date", page, pageSize));
+                () -> extensionService.findPageWithCriteria("name", "date", 5, 10));
 
         assertEquals(thrown.getMessage(), "Page 3 is the last page. Page 5 is invalid.");
 
@@ -476,24 +456,23 @@ public class ExtensionServiceImplTests {
 
     @Test
     public void findAll_whenPageMoreThanTotalPagesAndTotalResultsAreZero() {
-        String name = "name";
         int page = 5;
         int pageSize = 2;
         Long totalResults = 20L;
-        Extension extension = new Extension("name", "description", "version", new UserModel());
-        Extension extension1 = new Extension("name", "description", "version", new UserModel());
+        Extension extension = new Extension("extension", "description", "version", new UserModel());
+        Extension extension1 = new Extension("extension", "description", "version", new UserModel());
         List<Extension> extensions = List.of(extension, extension1);
 
-        when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
-        when(extensionRepository.findAllOrderedBy(name, PageRequest.of(page,
+        when(extensionRepository.getTotalResults("extension")).thenReturn(totalResults);
+        when(extensionRepository.findAllOrderedBy("extension", PageRequest.of(page,
                 pageSize, Sort.Direction.ASC, "name"))).thenReturn(extensions);
 
 
-        PageDto<Extension> pageDto = extensionService.findPageWithCriteria(name, "name", page, pageSize);
+        PageDto<Extension> pageDto = extensionService.findPageWithCriteria("extension", "name", page, pageSize);
 
         assertEquals(pageDto.getExtensions(), extensions);
-        assertEquals(pageDto.getTotalResults(), 20);
-        assertEquals(pageDto.getCurrentPage(), 5);
+        assertEquals(pageDto.getTotalResults(), totalResults);
+        assertEquals(pageDto.getCurrentPage(), page);
     }
 
     @Test
@@ -510,7 +489,7 @@ public class ExtensionServiceImplTests {
                 InvalidInputException.class,
                 () -> extensionService.findPageWithCriteria(name, orderBy, page, pageSize));
 
-        assertEquals(thrown.getMessage(), "orderType is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
+        assertEquals(thrown.getMessage(), "\"orderType\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
     }
 
 }

@@ -8,11 +8,11 @@ public interface ExtensionService {
 
     Extension findById(long id, UserDetails loggedUser);
 
-    Extension update(Extension extension);
+    Extension update(Extension extension, UserModel loggedUser);
 
     Extension save(Extension extension);
 
-    Extension delete(long id, UserDetails loggedUser);
+    Extension delete(long id, UserModel loggedUser);
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 
