@@ -2,28 +2,27 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.Dtos.ExtensionDto;
-import com.tick42.quicksilver.models.specs.ExtensionSpec;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.TagService;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.time.LocalDateTime;
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ExtensionServiceImplTests {
     @Mock
     private ExtensionRepository extensionRepository;
@@ -42,78 +41,68 @@ public class ExtensionServiceImplTests {
 
 
     @Test
-    public void setFeaturedState_whenSetToFeatured_returnFeaturedExtensionDTO() {
-        // Arrange
+    public void toggleFeaturedState() {
         Extension extension = new Extension();
         extension.isFeatured(false);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        Extension extensionShouldBeFeatured = extensionService.setFeaturedState(1, "feature");
+        Extension newExtension = extensionService.setFeaturedState(1, "feature");
 
-        //Assert
-        Assert.assertTrue(extensionShouldBeFeatured.isFeatured());
+        assertTrue(newExtension.isFeatured());
     }
 
     @Test
-    public void setFeaturedState_whenSetToUnfeatured_returnUnfeaturedExtensionDTO() {
-        // Arrange
-        Extension extension = new Extension();
-        extension.isFeatured(true);
-
-        when(extensionRepository.findById(1l)).thenReturn(Optional.of(extension));
-
-        //Act
-        Extension extensionShouldBeUnfeatured = extensionService.setFeaturedState(1, "unfeature");
-
-        //Assert
-        Assert.assertFalse(extensionShouldBeUnfeatured.isFeatured());
-    }
-
-    @Test(expected = InvalidStateException.class)
-    public void setFeaturedState_whenGivenInvalidParameter_shouldThrow() {
-        // Arrange
+    public void toggleFeaturedState_WhenFeatured() {
         Extension extension = new Extension();
         extension.isFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.setFeaturedState(1, "wrongString");
+        Extension newExtension = extensionService.setFeaturedState(1, "unfeature");
+
+        assertFalse(extension.isFeatured());
     }
 
     @Test
-    public void setPublishedState_whenSetToPublished_returnPublishedExtensionDTO() {
+    public void setFeaturedState_whenGivenInvalidParameter_shouldThrow() {
+        Extension extension = new Extension();
+        extension.isFeatured(true);
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+
+        InvalidInputException thrown = assertThrows(InvalidInputException.class,
+                () -> extensionService.setFeaturedState(1, "invalidInput"));
+
+        assertEquals(thrown.getMessage(), "\"invalidInput\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
+    }
+
+    @Test
+    public void togglePending_WhenPending() {
         // Arrange
         Extension extension = new Extension();
         extension.setIsPending(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
         Extension extensionShouldBePending = extensionService.setPublishedState(1, "publish");
 
-        //Assert
-        Assert.assertFalse(extensionShouldBePending.getIsPending());
+        assertFalse(extensionShouldBePending.getIsPending());
     }
 
     @Test
-    public void setPublishedState_whenSetToUnpublished_returnUnpublishedExtensionDTO() {
-        // Arrange
+    public void togglePending_WhenNotPending() {
         Extension extension = new Extension();
         extension.setIsPending(false);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
         Extension extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
 
-        //Assert
-        Assert.assertTrue(extensionShouldBeUnpublished.getIsPending());
+        assertTrue(extensionShouldBeUnpublished.getIsPending());
     }
 
-    @Test(expected = InvalidStateException.class)
+    @Test
     public void setPublishedState_whenGivenInvalidParameter_shouldThrow() {
         // Arrange
         Extension extension = new Extension();
@@ -121,13 +110,14 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.setPublishedState(1, "wrongString");
+        InvalidInputException thrown = assertThrows(InvalidInputException.class,
+                () -> extensionService.setPublishedState(1, "invalidInput"));
+
+        assertEquals(thrown.getMessage(), "\"invalidInput\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
     }
 
     @Test
-    public void findPending_shouldReturnListOfPendingExtensionDTOs() {
-        //Arrange
+    public void findPending() {
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
         extension1.setIsPending(true);
@@ -136,18 +126,15 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findByPending(true)).thenReturn(extensions);
 
-        //Act
         List<Extension> pendingExtensionDtos = extensionService.findPending();
 
-        //Assert
-        Assert.assertEquals(2, pendingExtensionDtos.size());
-        Assert.assertTrue(pendingExtensionDtos.get(0).getIsPending());
-        Assert.assertTrue(pendingExtensionDtos.get(1).getIsPending());
+        assertEquals(2, pendingExtensionDtos.size());
+        assertTrue(pendingExtensionDtos.get(0).getIsPending());
+        assertTrue(pendingExtensionDtos.get(1).getIsPending());
     }
 
     @Test
     public void findFeatured_shouldReturnListOfFeaturedExtensionDTOs() {
-        //Arrange
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
         extension1.isFeatured(true);
@@ -156,29 +143,26 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
 
-        //Act
         List<Extension> featuredExtensionDtos = extensionService.findFeatured();
 
-        //Assert
-        Assert.assertEquals(2, featuredExtensionDtos.size());
-        Assert.assertTrue(featuredExtensionDtos.get(0).isFeatured());
-        Assert.assertTrue(featuredExtensionDtos.get(1).isFeatured());
+        assertEquals(2, featuredExtensionDtos.size());
+        assertTrue(featuredExtensionDtos.get(0).isFeatured());
+        assertTrue(featuredExtensionDtos.get(1).isFeatured());
     }
 
-    @Test(expected = NullPointerException.class)
-    public void findById_whenExtensionDoesntExist_shouldThrow() {
-        //Arrange
+    @Test
+    public void findById_whenExtensionDoesNotExist_EntityNotFound() {
         UserDetails user = new UserDetails("text", "test", new ArrayList<>(), 1);
         when(extensionRepository.findById(1L)).thenReturn(null);
 
-        //Act
-        extensionService.findById(1, user);
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
+                () -> extensionService.findById(1, user));
+
+        assertEquals(thrown.getMessage(), "Extension not found.");
     }
 
-    @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenOwnerIsInactiveAndUserIsNull_shouldThrow() {
-        //Arrange
-
+    public void findById_WhenOwnerIsInactiveAndUserIsNull_EntityUnavailable() {
         UserModel owner = new UserModel();
         owner.setIsActive(false);
 
@@ -187,13 +171,15 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.findById(1, null);
+        EntityUnavailableException thrown = assertThrows(
+                EntityUnavailableException.class,
+                () -> extensionService.findById(1, null));
+
+        assertEquals(thrown.getMessage(), "Extension is not available.");
     }
 
-    @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenOwnerIsInactiveAndUserIsNotAdmin_shouldThrow() {
-        //Arrange
+    @Test
+    public void findById_whenOwnerIsInactiveAndUserIsNotAdmin_EntityUnavailable() {
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
@@ -206,13 +192,15 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.findById(1, user);
+        EntityUnavailableException thrown = assertThrows(
+                EntityUnavailableException.class,
+                () -> extensionService.findById(1, user));
+
+        assertEquals(thrown.getMessage(), "Extension is not available.");
     }
 
-    @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNull_shouldThrow() {
-        //Arrange
+    @Test
+    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNull_EntityUnavailable() {
         UserModel owner = new UserModel();
         owner.setIsActive(true);
 
@@ -222,13 +210,15 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.findById(1, null);
+        EntityUnavailableException thrown = assertThrows(
+                EntityUnavailableException.class,
+                () -> extensionService.findById(1, null));
+
+        assertEquals(thrown.getMessage(), "Extension is not available.");
     }
 
-    @Test(expected = ExtensionUnavailableException.class)
-    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldThrow() {
-        //Arrange
+    @Test
+    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_EntityUnavailable() {
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
@@ -243,13 +233,15 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
-        extensionService.findById(1, user);
+        EntityUnavailableException thrown = assertThrows(
+                EntityUnavailableException.class,
+                () -> extensionService.findById(1, user));
+
+        assertEquals(thrown.getMessage(), "Extension is not available.");
     }
 
     @Test
-    public void findById_whenExtensionIsPendingAndOwnerIsInactiveAndUserIsAdmin_shouldReturnExtensionDTO() {
-        //Arrange
+    public void findById_whenExtensionIsPendingAndOwnerIsInactiveAndUserIsAdmin() {
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
@@ -264,16 +256,13 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
         Extension expectedExtension = extensionService.findById(1, user);
 
-        //Assert
-        Assert.assertEquals(extension.getId(), expectedExtension.getId());
+        assertEquals(extension.getId(), expectedExtension.getId());
     }
 
     @Test
-    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotAdmin_shouldReturnExtensionDTO() {
-        //Arrange
+    public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNotAdmin() {
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
@@ -289,16 +278,13 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
         Extension expectedExtension = extensionService.findById(1, user);
 
-        //Assert
-        Assert.assertEquals(extension.getId(), expectedExtension.getId());
+        assertEquals(extension.getId(), expectedExtension.getId());
     }
 
     @Test
-    public void findById_whenExtensionIsNotPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin_shouldReturnExtensionDTO() {
-        //Arrange
+    public void findById_whenExtensionIsNotPendingAndOwnerIsActiveAndUserIsNotOwnerAndNotAdmin() {
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
@@ -314,44 +300,29 @@ public class ExtensionServiceImplTests {
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        //Act
         Extension expectedExtension = extensionService.findById(1, user);
 
-        //Assert
-        Assert.assertEquals(extension.getId(), expectedExtension.getId());
+        assertEquals(extension.getId(), expectedExtension.getId());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void update_whenExtensionNonExist_ShouldThrow() {
         Extension extension = new Extension();
         extension.setId(1);
 
-        //Assert
-        when(extensionRepository.findById(1L)).thenReturn(null);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
 
-        //Act
-        extensionService.update(extension);
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> extensionService.update(extension, new UserModel()));
+
+        assertEquals(thrown.getMessage(), "Extension not found.");
     }
 
-    @Test(expected = NullPointerException.class)
-    public void update_whenUserNonExist_ShouldThrow() {
-        //Assert
-        Extension extension = new Extension();
-        extension.setId(1);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(null);
-
-        //Act
-        extensionService.update(extension);
-    }
-
-    @Test(expected = UnauthorizedExtensionModificationException.class)
-    public void update_whenUserIsNotOwnerAndNotAdmin_ShouldThrow() {
-        //Assert
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+    @Test
+    public void update_whenLoggedUserIsNotOwnerAndNotAdmin_ShouldThrow() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(1);
+        loggedUser.setRole("ROLE_USER");
 
         UserModel owner = new UserModel();
         owner.setId(2);
@@ -361,139 +332,81 @@ public class ExtensionServiceImplTests {
         extension.setId(1);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
-        //Act
-        extensionService.update(extension);
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
+                () -> extensionService.update(extension, loggedUser)
+        );
+
+        assertEquals(thrown.getMessage(), "You are not authorized to edit this extension.");
     }
 
     @Test
-    public void update_whenUserIsOwner_returnUpdatedExtensionDTO() {
-        //Assert
-        LocalDateTime commitTime = LocalDateTime.now();
-
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+    public void update_whenLoggedUserIsOwner() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(1);
+        loggedUser.setRole("ROLE_USER");
 
         UserModel owner = new UserModel();
         owner.setId(1);
 
-        ExtensionSpec extensionSpec = new ExtensionSpec();
-        extensionSpec.setName("newName");
-        extensionSpec.setVersion("1.0");
-        extensionSpec.setDescription("description");
-        extensionSpec.setGithub("gitHubLink");
-        extensionSpec.setTags("tag1, tag2");
+        Extension extension = new Extension("name", "description", "version", owner);
+        extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
+        extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
 
-        Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
-        when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
-
-        GitHubModel github = new GitHubModel();
-        github.setLastCommit(commitTime);
-        github.setPullRequests(10);
-        github.setOpenIssues(20);
-        github.setLink("gitHubLink");
-        when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(github);
-
-        Extension extension = new Extension();
+        Extension foundExtension = new Extension();
         extension.setId(1);
-        extension.setOwner(owner);
-        extension.setName("oldName");
-        extension.setVersion("1.0");
-        extension.setDescription("description");
-        extension.setGithub(github);
-        extension.setTags(tags);
+        extension.setOwner(loggedUser);
 
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
-        //Act
-        Extension actualExtension = extensionService.update(extension);
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
+        when(extensionRepository.save(extension)).thenReturn(extension);
 
-        //Assert
-        Assert.assertEquals(actualExtension.getName(), "newName");
+        Extension actualExtension = extensionService.update(extension, loggedUser);
+
+        assertEquals(extension, actualExtension);
     }
 
     @Test
-    public void update_whenUserIsAdmin_returnUpdatedExtensionDTO() {
-        //Assert
-        LocalDateTime commitTime = LocalDateTime.now();
-
-        UserModel userModel = new UserModel();
-        userModel.setId(2);
-        userModel.setRole("ROLE_ADMIN");
+    public void update_whenLoggedUserIsAdmin() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(2);
+        loggedUser.setRole("ROLE_ADMIN");
 
         UserModel owner = new UserModel();
         owner.setId(1);
 
-        ExtensionSpec extensionSpec = new ExtensionSpec();
-        extensionSpec.setName("newName");
-        extensionSpec.setVersion("1.0");
-        extensionSpec.setDescription("description");
-        extensionSpec.setGithub("gitHubLink");
-        extensionSpec.setTags("tag1, tag2");
+        Extension extension = new Extension("name", "description", "version", owner);
+        extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
+        extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
 
-        Set<Tag> tags = new HashSet<>(Arrays.asList(new Tag("tag1"), new Tag("tag2")));
-        when(tagService.generateTags(extensionSpec.getTags())).thenReturn(tags);
-
-        GitHubModel github = new GitHubModel();
-        github.setLastCommit(commitTime);
-        github.setPullRequests(10);
-        github.setOpenIssues(20);
-        github.setLink("gitHubLink");
-        when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(github);
-
-        Extension extension = new Extension();
+        Extension foundExtension = new Extension();
         extension.setId(1);
         extension.setOwner(owner);
-        extension.setName("oldName");
-        extension.setVersion("1.0");
-        extension.setDescription("description");
-        extension.setGithub(github);
-        extension.setTags(tags);
 
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
+        when(extensionRepository.save(extension)).thenReturn(extension);
 
-        //Act
-        Extension actualExtension = extensionService.update(extension);
+        Extension actualExtension = extensionService.update(extension, loggedUser);
 
-        //Assert
-        Assert.assertEquals(actualExtension.getName(), "newName");
+        assertEquals(extension, actualExtension);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void delete_whenExtensionNonExistent_ShouldThrow() {
-        UserDetails userDetails = new UserDetails(new UserModel(), new ArrayList<>());
-
-        //Assert
+    @Test
+    public void delete_whenExtensionDoesNotExist_EntityNotFound() {
         when(extensionRepository.findById(1L)).thenReturn(null);
 
-        //Act
-        extensionService.delete(1, userDetails);
-    }
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> extensionService.delete(1, new UserModel()));
 
-    @Test(expected = NullPointerException.class)
-    public void delete_whenUserNonExistent_ShouldThrow() {
-        //Assert
-        Extension extension = new Extension();
-        UserDetails userDetails = new UserDetails(new UserModel(), new ArrayList<>());
-
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(null);
-
-        //Act
-        extensionService.delete(1, userDetails);
+        assertEquals(thrown.getMessage(), "Extension not found.");
     }
 
     @Test
-    public void delete_whenUserIsOwner_ShouldNotThrow() {
-        //Assert
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_USER");
+    public void delete_whenLoggedUserIsOwner() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(1);
+        loggedUser.setRole("ROLE_USER");
 
         UserModel owner = new UserModel();
         owner.setId(1);
@@ -502,25 +415,15 @@ public class ExtensionServiceImplTests {
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
-        //Act
-        try {
-            extensionService.delete(1, 1);
-            Assert.assertTrue(Boolean.TRUE);
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
+        extensionService.delete(1, loggedUser);
     }
 
     @Test
-    public void delete_whenUserIsAdmin_ShouldNotThrow() {
-        //Assert
-        UserModel userModel = new UserModel();
-        userModel.setId(1);
-        userModel.setRole("ROLE_ADMIN");
-
-        UserDetails userDetails = new UserDetails(userModel, new ArrayList<>());
+    public void delete_whenLoggedUserIsAdmin() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(1);
+        loggedUser.setRole("ROLE_ADMIN");
 
         UserModel owner = new UserModel();
         owner.setId(2);
@@ -529,95 +432,85 @@ public class ExtensionServiceImplTests {
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
 
-        //Act
-        try {
-            extensionService.delete(1, userDetails);
-            Assert.assertTrue(Boolean.TRUE);
-        } catch (Exception ex) {
-            Assert.fail(ex.getMessage());
-        }
+        extensionService.delete(1, loggedUser);
     }
 
-    @Test(expected = InvalidParameterException.class)
-    public void findAll_whenPageMoreThanTotalPages_shouldThrow() {
-        //Arrange
+    @Test
+    public void delete_WhenLoggedUserIsNotOwnerAndIsNotAdmin_Unauthorized() {
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(1);
+        loggedUser.setRole("ROLE_USER");
+
+        UserModel owner = new UserModel();
+        owner.setId(2);
+
+        Extension extension = new Extension();
+        extension.setOwner(owner);
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+
+        UnauthorizedException thrown = assertThrows(
+                UnauthorizedException.class,
+                () -> extensionService.delete(1, loggedUser));
+
+        assertEquals(thrown.getMessage(), "You are not authorized to delete this extension.");
+    }
+
+    @Test
+    public void findAll_WhenPageMoreThanTotalPages_InvalidInput() {
         String name = "name";
         int page = 5;
-        int perPage = 10;
+        int pageSize = 10;
         Long totalResults = 21L;
 
         when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
 
-        //Act
-        extensionService.findPageWithCriteria(name, "date", page, perPage);
+        InvalidInputException thrown = assertThrows(
+                InvalidInputException.class,
+                () -> extensionService.findPageWithCriteria("", "date", page, pageSize));
+
+        assertEquals(thrown.getMessage(), "Page 3 is the last page. Page 5 is invalid.");
+
     }
 
     @Test
-    public void findAll_whenPageMoreThanTotalPagesAndTotalResultsAreZero_shouldNotThrow() {
-        //Arrange
+    public void findAll_whenPageMoreThanTotalPagesAndTotalResultsAreZero() {
         String name = "name";
         int page = 5;
-        int perPage = 10;
-        Long totalResults = 0L;
+        int pageSize = 2;
+        Long totalResults = 20L;
+        Extension extension = new Extension("name", "description", "version", new UserModel());
+        Extension extension1 = new Extension("name", "description", "version", new UserModel());
+        List<Extension> extensions = List.of(extension, extension1);
 
         when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
+        when(extensionRepository.findAllOrderedBy(name, PageRequest.of(page,
+                pageSize, Sort.Direction.ASC, "name"))).thenReturn(extensions);
 
-        //Act
-        try {
-            extensionService.findPageWithCriteria(name, "date", page, perPage);
-            Assert.assertTrue(Boolean.TRUE);
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
+
+        PageDto<Extension> pageDto = extensionService.findPageWithCriteria(name, "name", page, pageSize);
+
+        assertEquals(pageDto.getExtensions(), extensions);
+        assertEquals(pageDto.getTotalResults(), 20);
+        assertEquals(pageDto.getCurrentPage(), 5);
     }
 
-    @Test(expected = InvalidParameterException.class)
-    public void findAll_whenInvalidParameter_shouldThrow() {
-        //Arrange
+    @Test
+    public void findAll_WhenInvalidParameter_InvalidInput() {
         String name = "name";
         String orderBy = "orderType";
         int page = 5;
-        int perPage = 10;
+        int pageSize = 10;
         Long totalResults = 500L;
 
         when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
 
-        //Act
-        extensionService.findPageWithCriteria(name, orderBy, page, perPage);
+        InvalidInputException thrown = assertThrows(
+                InvalidInputException.class,
+                () -> extensionService.findPageWithCriteria(name, orderBy, page, pageSize));
+
+        assertEquals(thrown.getMessage(), "orderType is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
     }
 
-
-    @Test
-    public void delete_whenExtensionsFound_shouldInvokeDeleteInRepository() {
-        //Arrange
-        UserModel userModel = new UserModel();
-        Extension extension = new Extension();
-        extension.setOwner(userModel);
-
-        UserDetails userDetails = new UserDetails(userModel, new ArrayList<>());
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
-        doNothing().when(extensionRepository).delete(isA(Extension.class));
-
-        extensionService.delete(1, userDetails);
-        verify(extensionRepository, times(1)).delete(extension);
-    }
-
-    @Test
-    public void generateExtensionDTOList_whenGivenListOfExtension_returnListOfExtensionDTO() {
-        //Arrange
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-        List<Extension> extensions = Arrays.asList(extension1, extension2);
-
-        //Act
-        List<ExtensionDto> extensionDTOs = extensionService.generateExtensionDTOList(extensions);
-
-        //Assert
-        Assert.assertEquals(extensions.size(), extensionDtos.size());
-        Assert.assertNotNull(extensionDtos.get(1));
-    }
 }
