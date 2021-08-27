@@ -35,25 +35,33 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File create(MultipartFile receivedFile, String name) {
-
-        File file = generate(receivedFile, name);
+    public File update(MultipartFile receivedFile, String name, long id, String type){
+        File file = generate(receivedFile, name, type);
+        file.setId(id);
 
         try {
-            if (!file.getType().startsWith("image/")) {
-                throw new FileFormatException("File should be of type IMAGE.");
-            }
-
             save(file, receivedFile);
-
-            return file;
-
         } catch (IOException e) {
             throw new FileStorageException("Couldn't store the image.");
         }
+
+        return fileRepository.save(file);
     }
 
-    private void save(File image, MultipartFile receivedFile) throws IOException {
+    @Override
+    public File create(MultipartFile receivedFile, String name, String type) {
+        File file = generate(receivedFile, name, type);
+
+        try {
+            save(file, receivedFile);
+        } catch (IOException e) {
+            throw new FileStorageException("Couldn't store the image.");
+        }
+
+        return fileRepository.save(file);
+    }
+
+    void save(File image, MultipartFile receivedFile) throws IOException {
         Path targetLocation = this.fileLocation.resolve(image.getName());
         Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -63,11 +71,12 @@ public class FileServiceImpl implements FileService {
         try {
             Path filePath = this.fileLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists()) {
-                return resource;
-            } else {
+
+            if (!resource.exists()) {
                 throw new EntityNotFoundException("File not found");
             }
+
+            return resource;
         } catch (MalformedURLException e) {
             throw new FileFormatException(e.getMessage());
         }
@@ -84,9 +93,15 @@ public class FileServiceImpl implements FileService {
         return fileRepository.findByName(fileName);
     }
 
-    private File generate(MultipartFile receivedFile, String name) {
+    File generate(MultipartFile receivedFile, String name, String type) {
         String fileType = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
         String fileName = name + "." + fileType;
-        return new File(fileName, receivedFile.getSize(), receivedFile.getContentType());
+        File file = new File(fileName, receivedFile.getSize(), receivedFile.getContentType());
+
+        if (!file.getType().startsWith(type)) {
+            throw new FileFormatException("File should be of type" + type);
+        }
+
+        return file;
     }
 }
