@@ -2,19 +2,17 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GitHubModelServiceImplTests {
 
     @Mock
@@ -24,53 +22,38 @@ public class GitHubModelServiceImplTests {
     private GitHubServiceImpl gitHubService;
 
     @Test
-    public void setRemoteDetails_whenGitHubModelIsValid_shouldNotThrow() {
-        //Arrange
+    public void setRemoteDetails_whenGitHubModelIsValid() {
         GitHubModel gitHubModel = new GitHubModel();
-        gitHubModel.setUser("Smytt");
-        gitHubModel.setRepo("Tick42-ExtensionRepository");
+        gitHubModel.setUser("user");
+        gitHubModel.setRepo("repo");
 
-        //Act
-        try {
-            gitHubService.setRemoteDetails(gitHubModel);
-            //Assert
-            Assert.assertTrue(Boolean.TRUE);
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
-
+        gitHubService.setRemoteDetails(gitHubModel);
     }
 
     @Test
     public void generateGitHub_whenLinkCorrect_returnGitHubModel() {
-        //Arrange
-        String link = "https://github.com/Smytt/Tick42-ExtensionRepository";
+        String link = "https://github.com/Ivaylo9512/ExtensionRepository";
 
-        //Act
         GitHubModel gitHubModel = gitHubService.generateGitHub(link);
 
-        //Assert
-        Assert.assertEquals(gitHubModel.getUser(), "Smytt");
-        Assert.assertEquals(gitHubModel.getRepo(), "Tick42-ExtensionRepository");
+        assertEquals(gitHubModel.getUser(), "ivaylo9512");
+        assertEquals(gitHubModel.getRepo(), "ExtensionRepository");
     }
 
     @Test
     public void updateExtensionDetails_whenListProvided_shouldUpdateResults() {
-        //Arrange
         GitHubModel gitHubModel1 = new GitHubModel();
         GitHubModel gitHubModel2 = new GitHubModel();
-        gitHubModel1.setUser("Smytt");
-        gitHubModel1.setRepo("Tick42-ExtensionRepository");
+        gitHubModel1.setUser("username");
+        gitHubModel1.setRepo("repo");
         gitHubModel2.setUser("wrong");
         gitHubModel2.setRepo("wrong");
         List<GitHubModel> gitHubModels = Arrays.asList(gitHubModel1, gitHubModel2);
 
         when(gitHubRepository.findAll()).thenReturn(gitHubModels);
 
-        //Act
         gitHubService.updateExtensionDetails();
 
-        //Assert
         verify(gitHubRepository, times(2)).save(isA(GitHubModel.class));
     }
 }
