@@ -1,15 +1,24 @@
 package com.tick42.quicksilver.models.specs;
 
 import org.springframework.web.multipart.MultipartFile;
+import javax.validation.constraints.Size;
 
 public class RegisterSpec {
+    @Size(min = 8, max = 18)
     private String username;
+
+    @Size(min = 10, max = 25)
     private String password;
-    private String repeatPassword;
+
     private MultipartFile profileImage;
 
     public RegisterSpec() {
 
+    }
+
+    public RegisterSpec(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     public String getUsername() {
@@ -26,14 +35,6 @@ public class RegisterSpec {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRepeatPassword() {
-        return repeatPassword;
-    }
-
-    public void setRepeatPassword(String repeatPassword) {
-        this.repeatPassword = repeatPassword;
     }
 
     public MultipartFile getProfileImage() {

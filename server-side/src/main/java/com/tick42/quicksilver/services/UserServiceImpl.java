@@ -3,6 +3,7 @@ import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
+import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserModel setState(long userId, String state) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         switch (state) {
             case "enable" -> user.setIsActive(true);
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         if (!user.getIsActive() && (loggedUser == null ||
                 !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN"))) {
-            throw new EntityNotFoundException("User is unavailable.");
+            throw new UnauthorizedException("User is unavailable.");
         }
 
         return user;
@@ -111,6 +112,31 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         user.setPassword(passwordSpec.getNewPassword());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public UserModel changeUserInfo(UserSpec userSpec, UserDetails loggedUser){
+        if(userSpec.getId() != loggedUser.getId() &&
+                !loggedUser.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        UserModel user = userRepository.findById(userSpec.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+
+        if(!user.getUsername().equals(userSpec.getUsername())){
+            UserModel existingUser = userRepository.findByUsername(userSpec.getUsername());
+
+            if(existingUser != null){
+                throw new UsernameExistsException("Username is already taken.");
+            }
+        }
+
+        user.setUsername(userSpec.getUsername());
+        user.setCountry(userSpec.getCountry());
+        user.setInfo(userSpec.getInfo());
+
         return userRepository.save(user);
     }
 }

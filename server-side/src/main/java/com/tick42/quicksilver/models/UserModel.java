@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.models;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
 import org.hibernate.annotations.Type;
 import java.util.HashSet;

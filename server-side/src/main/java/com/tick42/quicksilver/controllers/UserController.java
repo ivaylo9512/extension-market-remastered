@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
@@ -41,7 +42,7 @@ public class UserController {
         UserModel newUser = new UserModel(registerSpec, "ROLE_USER");
 
         if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
+            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo", "image");
             newUser.setProfileImage(profileImage);
         }
 
@@ -65,13 +66,9 @@ public class UserController {
         UserModel newUser = new UserModel(registerSpec, "ROLE_ADMIN");
 
         if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo");
+            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo", "image");
             newUser.setProfileImage(profileImage);
         }
-
-        String token = Jwt.generate(new UserDetails(newUser, new ArrayList<>(
-                Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
-        response.addHeader("Authorization", "Token " + token);
 
         return new UserDto(userService.create(newUser));
     }
@@ -105,12 +102,19 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
-    public UserDto changePassword(@Valid NewPasswordSpec newPasswordSpec, HttpServletRequest request){
+    public UserDto changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec, HttpServletRequest request){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
-        long userId = loggedUser.getId();
 
-        return new UserDto(userService.changePassword(newPasswordSpec));
+        return new UserDto(userService.changePassword(newPasswordSpec, loggedUser));
+    }
+
+    @PostMapping(value = "/auth/changeUserInfo")
+    public UserDto changeUserInfo(@Valid @RequestBody UserSpec userModel){
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getDetails();
+
+        return new UserDto(userService.changeUserInfo(userModel, loggedUser));
     }
 
     @ExceptionHandler

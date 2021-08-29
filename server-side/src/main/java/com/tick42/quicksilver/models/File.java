@@ -12,7 +12,7 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne
+    @ManyToOne
     @PrimaryKeyJoinColumn
     private Extension extension;
 
