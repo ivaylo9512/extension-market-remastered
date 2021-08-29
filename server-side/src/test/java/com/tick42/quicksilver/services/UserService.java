@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
-import com.tick42.quicksilver.models.specs.RegisterSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.UserRepository;
@@ -32,7 +31,7 @@ public class UserService {
     private UserServiceImpl userService;
 
     @Test
-    public void findById_withNonExistingUser_Unauthorized() {
+    public void findById_WithNonExistingUser_EntityNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
@@ -42,13 +41,12 @@ public class UserService {
     }
 
     @Test
-    public void findById_whenUserProfileIsNotActive_andCurrentUserIsNotAdmin_Unauthorized(){
+    public void findById_WhenUserProfileIsNotActive_AndCurrentUserIsNotAdmin_Unauthorized(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 2);
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
 
         UserModel blockedUser = new UserModel();
         blockedUser.setIsActive(false);
-        blockedUser.setRole("ROLE_USER");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(blockedUser));
 
@@ -61,7 +59,7 @@ public class UserService {
     public void findById_whenUserProfileIsNotActive_andCurrentUserIsAdmin(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
-        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 1);
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 1);
 
         UserModel blockedUser = new UserModel();
         blockedUser.setIsActive(false);
@@ -125,7 +123,7 @@ public class UserService {
                 () -> userService.findAll("invalid")
         );
 
-        assertEquals(thrown.getMessage(), "\"active\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
+        assertEquals(thrown.getMessage(), "\"invalid\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
 
     }
 
@@ -168,7 +166,7 @@ public class UserService {
                 () -> userService.setState(1,"invalid")
         );
 
-        assertEquals(thrown.getMessage(), "invalid\" is not a valid userModel state. Use \"enable\" or \"block\".");
+        assertEquals(thrown.getMessage(), "\"invalid\" is not a valid userModel state. Use \"enable\" or \"block\".");
     }
 
     @Test
@@ -184,33 +182,30 @@ public class UserService {
     @Test
     public void loadUserByUsername_WithBlockedUser_BlockedUser() {
         UserModel userModel = new UserModel();
-        userModel.setUsername("test");
+        userModel.setUsername("username");
         userModel.setPassword("password");
 
         UserModel foundUserModel = new UserModel();
         foundUserModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
         foundUserModel.setIsActive(false);
-        when(userRepository.findByUsername("test")).thenReturn(foundUserModel);
+        when(userRepository.findByUsername("username")).thenReturn(foundUserModel);
 
         BlockedUserException thrown = assertThrows(BlockedUserException.class,
-                () -> userService.loadUserByUsername("test"));
+                () -> userService.loadUserByUsername("username"));
 
         assertEquals(thrown.getMessage(), "User is disabled.");
     }
 
     @Test
     public void loadUserByUsername(){
-        UserModel foundUser = new UserModel();
-        foundUser.setIsActive(true);
-        foundUser.setRole("ROLE_USER");
-        foundUser.setUsername("username");
+        UserModel foundUser = new UserModel("username", "password", "ROLE_ADMIN");
 
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails userDetails = new UserDetails(foundUser, authorities);
+        UserDetails userDetails = new UserDetails(foundUser, List.of(
+                new SimpleGrantedAuthority(foundUser.getRole())));
 
-        when(userRepository.findByUsername("test")).thenReturn(foundUser);
+        when(userRepository.findByUsername("username")).thenReturn(foundUser);
 
-        UserDetails loggedUser = userService.loadUserByUsername("test");
+        UserDetails loggedUser = userService.loadUserByUsername("username");
 
         assertEquals(userDetails, loggedUser);
         assertEquals(foundUser.getUsername(), loggedUser.getUsername());
@@ -218,37 +213,21 @@ public class UserService {
 
     @Test
     public void RegisterUser_WithAlreadyTakenUsername_UsernameExists() {
-        RegisterSpec newRegistration = new RegisterSpec();
-        newRegistration.setUsername("Test");
-        UserModel registeredUserModel = new UserModel(newRegistration, "ROLE_USER");
+        UserModel user = new UserModel("test", "test", "ROLE_ADMIN");
 
-        when(userRepository.findByUsername("Test")).thenReturn(registeredUserModel);
+        when(userRepository.findByUsername("test")).thenReturn(user);
 
         UsernameExistsException thrown = assertThrows(UsernameExistsException.class,
-                () -> userService.create(registeredUserModel));
+                () -> userService.create(user));
 
         assertEquals(thrown.getMessage(), "Username is already taken.");
     }
 
     @Test
-    public void RegisterUser_WithPasswordMissMatch() {
-        RegisterSpec newRegistration = new RegisterSpec("Test", "TestPassword", "TestPasswordMissMatch");
-        UserModel userModel = new UserModel(newRegistration, "ROLE_USER");
+    public void registerUser() {
+        UserModel userModel = new UserModel("test", "test", "ROLE_USER");
 
-        when(userRepository.findByUsername("Test")).thenReturn(null);
-
-        PasswordsMissMatchException thrown = assertThrows(PasswordsMissMatchException.class,
-                () -> userService.create(userModel));
-
-        assertEquals(thrown.getMessage(), "Username is already taken.");
-    }
-
-    @Test
-    public void SuccessfulRegistration() {
-        RegisterSpec newRegistration = new RegisterSpec("Test", "testPassword", "testPassword");
-        UserModel userModel = new UserModel(newRegistration, "ROLE_USER");
-
-        when(userRepository.findByUsername("Test")).thenReturn(null);
+        when(userRepository.findByUsername("test")).thenReturn(null);
         when(userRepository.save(userModel)).thenReturn(userModel);
 
         UserModel user = userService.create(userModel);
@@ -259,10 +238,10 @@ public class UserService {
     @Test
     public void ChangePassword(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 2);
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 1);
 
         NewPasswordSpec passwordSpec = new NewPasswordSpec("user",
-                "currentPassword", "newTestPassword", "newTestPassword");
+                "currentPassword", "newTestPassword");
 
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
@@ -278,10 +257,10 @@ public class UserService {
     @Test
     public void ChangePassword_WithWrongPassword_BadCredentials(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 2);
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
 
         NewPasswordSpec passwordSpec = new NewPasswordSpec("user",
-                "incorrect", "newTestPassword", "newTestPassword");
+                "incorrect", "newTestPassword");
 
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
@@ -293,22 +272,5 @@ public class UserService {
 
         assertEquals(thrown.getMessage(), "Invalid current password.");
     }
-
-    @Test
-    public void ChangePassword_WithPasswordMissMatch(){
-        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails loggedUser = new UserDetails("TEST", "TEST", authorities, 2);
-
-        NewPasswordSpec passwordSpec = new NewPasswordSpec("user",
-                "incorrect", "newTestPassword", "newTestPassword");
-
-        when(userRepository.findById(2L)).thenReturn(Optional.of(new UserModel()));
-
-        PasswordsMissMatchException thrown = assertThrows(PasswordsMissMatchException.class,
-                () -> userService.changePassword(passwordSpec, loggedUser));
-
-        assertEquals(thrown.getMessage(), "Passwords don't match");
-    }
-
 }
 

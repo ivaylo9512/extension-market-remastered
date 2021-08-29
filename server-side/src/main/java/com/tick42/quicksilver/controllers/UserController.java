@@ -125,13 +125,6 @@ public class UserController {
     }
 
     @ExceptionHandler
-    ResponseEntity<String> handlePasswordsMissMatchException(PasswordsMissMatchException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
     ResponseEntity<String> handleDisabledUserException(BlockedUserException e){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

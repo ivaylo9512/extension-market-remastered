@@ -1,4 +1,5 @@
 package com.tick42.quicksilver.services;
+
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -100,18 +101,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserModel changePassword(NewPasswordSpec passwordSpec){
-        UserModel user = userRepository.findByUsername(passwordSpec.getUsername());
-
-        if(user == null){
-            throw new EntityNotFoundException("User with" + passwordSpec.getUsername() + "is not found.");
-        }
+    public UserModel changePassword(NewPasswordSpec passwordSpec, UserDetails loggedUser){
+        UserModel user = this.findById(loggedUser.getId(), loggedUser);
 
         if (!user.getPassword().equals(passwordSpec.getCurrentPassword())){
             throw new BadCredentialsException("Invalid current password.");
         }
 
-        user.setPassword(passwordSpec.getNewPassword());
+        user.setPassword(BCrypt.hashpw(passwordSpec.getNewPassword(),BCrypt.gensalt(4)));
         return userRepository.save(user);
     }
 

@@ -13,7 +13,6 @@ public class RegisterSpec {
     private MultipartFile profileImage;
 
     public RegisterSpec() {
-
     }
 
     public RegisterSpec(String username, String password) {
