@@ -1,9 +1,6 @@
 package com.tick42.quicksilver.config;
 
-import com.tick42.quicksilver.security.AuthenticationFilter;
-import com.tick42.quicksilver.security.AuthorizationFilter;
-import com.tick42.quicksilver.security.AuthorizationProvider;
-import com.tick42.quicksilver.security.FailureHandler;
+import com.tick42.quicksilver.security.*;
 import com.tick42.quicksilver.services.UserServiceImpl;
 import org.apache.http.HttpHeaders;
 import org.springframework.context.annotation.Bean;
@@ -55,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");  // TODO: lock down before deploying
+        config.addAllowedOrigin("http://192.168.0.105:3005");
         config.addAllowedHeader("*");
         config.addExposedHeader(HttpHeaders.AUTHORIZATION);
         config.addAllowedMethod("*");
@@ -72,7 +69,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("**/api/**/auth/**").authenticated()
                 .and()
                 .addFilterBefore(authenticationFilter(), ConcurrentSessionFilter.class)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .exceptionHandling().accessDeniedHandler(new FailureAccessHandler());
 
         http.addFilterBefore(authorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers().cacheControl();
