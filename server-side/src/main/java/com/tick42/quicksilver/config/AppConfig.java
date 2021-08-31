@@ -12,7 +12,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -21,27 +20,6 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(basePackages = "com.tick42.quicksilver.repositories.base")
 @EnableWebMvc
 public class AppConfig {
-
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean em
-                = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource());
-        em.setPackagesToScan("com.tick42.quicksilver.models");
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        return em;
-    }
-    @Bean
-    public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/tick42-quicksilver4");
-        dataSource.setUsername("root");
-        dataSource.setPassword("1234");
-        return dataSource;
-    }
-
     @Bean
     public PlatformTransactionManager transactionManager(
             EntityManagerFactory emf){
