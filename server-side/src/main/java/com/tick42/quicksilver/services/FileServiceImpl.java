@@ -2,6 +2,8 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.File;
+import com.tick42.quicksilver.models.UserDetails;
+import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
@@ -83,6 +85,26 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public boolean delete(String fileName, UserModel loggedUser) {
+        File file = findByName(fileName);
+        if(file == null){
+            throw new EntityNotFoundException("File not found.");
+        }
+
+        if(file.getExtension().getOwner().getId() != loggedUser.getId()
+                && !loggedUser.getRole().equals("ROLE_ADMIN")){
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        if(new java.io.File("./uploads/" + fileName).delete()){
+            fileRepository.delete(file);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public File increaseCount(File file){
         file.setDownloadCount(file.getDownloadCount() + 1);
         return fileRepository.save(file);
@@ -99,7 +121,7 @@ public class FileServiceImpl implements FileService {
         File file = new File(fileName, receivedFile.getSize(), receivedFile.getContentType());
 
         if (!file.getType().startsWith(type)) {
-            throw new FileFormatException("File should be of type" + type);
+            throw new FileFormatException("File should be of type " + type);
         }
 
         return file;
