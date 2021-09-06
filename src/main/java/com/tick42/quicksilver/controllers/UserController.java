@@ -39,10 +39,11 @@ public class UserController {
 
     @PostMapping(value = "/register")
     public UserDto register(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
-        UserModel newUser = new UserModel(registerSpec, "ROLE_USER");
+        UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_USER"));
 
         if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo", "image");
+            File profileImage = fileService.create(registerSpec.getProfileImage(),
+                    newUser.getId() + "logo", "image", newUser);
             newUser.setProfileImage(profileImage);
         }
 
@@ -50,7 +51,7 @@ public class UserController {
                 Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
         response.addHeader("Authorization", "Token " + token);
 
-        return new UserDto(userService.create(newUser));
+        return new UserDto(userService.save(newUser));
     }
 
     @PostMapping("/login")
@@ -63,14 +64,15 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "auth/users/adminRegistration")
     public UserDto registerAdmin(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
-        UserModel newUser = new UserModel(registerSpec, "ROLE_ADMIN");
+        UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_ADMIN"));
 
         if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(), newUser.getId() + "logo", "image");
+            File profileImage = fileService.create(registerSpec.getProfileImage(),
+                    newUser.getId() + "logo", "image", newUser);
             newUser.setProfileImage(profileImage);
         }
 
-        return new UserDto(userService.create(newUser));
+        return new UserDto(userService.save(newUser));
     }
 
     @GetMapping(value = "/findById/{id}")

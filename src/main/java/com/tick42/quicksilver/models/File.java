@@ -16,6 +16,10 @@ public class File {
     @PrimaryKeyJoinColumn
     private Extension extension;
 
+    @ManyToOne
+    @PrimaryKeyJoinColumn
+    private UserModel owner;
+
     @Column(name = "download_count")
     private int downloadCount;
 
@@ -93,5 +97,13 @@ public class File {
 
     public void setDownloadCount(int downloadCount) {
         this.downloadCount = downloadCount;
+    }
+
+    public UserModel getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserModel owner) {
+        this.owner = owner;
     }
 }

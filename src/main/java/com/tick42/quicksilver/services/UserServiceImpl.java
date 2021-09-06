@@ -54,6 +54,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    public UserModel save(UserModel user) {
+        return userRepository.save(user);
+    }
+
+    @Override
     public List<UserModel> findAll(String state) {
         List<UserModel> user;
 

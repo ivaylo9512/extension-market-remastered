@@ -14,6 +14,8 @@ public interface UserService {
 
     List<UserModel> findAll(String state);
 
+    UserModel save(UserModel user);
+
     UserModel findById(long id, UserDetails loggedUser);
 
     UserModel changePassword(NewPasswordSpec changePasswordSpec, UserDetails loggedUser);

@@ -6,6 +6,7 @@ import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import org.apache.commons.io.IOUtils;
+import org.h2.engine.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -81,7 +82,7 @@ public class FileService {
                 "text132".getBytes());
 
         FileFormatException thrown = assertThrows(FileFormatException.class,
-                () -> fileService.create(file, "savedName", "image"));
+                () -> fileService.create(file, "savedName", "image", new UserModel()));
 
         assertEquals(thrown.getMessage(), "File should be of type image");
     }
@@ -100,7 +101,7 @@ public class FileService {
         when(fileService.generate(file, "savedName.png", "image")).thenReturn(generatedFile);
         when(fileRepository.save(generatedFile)).thenReturn(generatedFile);
 
-        File savedFile = fileService.create(file, "savedName.png", "image");
+        File savedFile = fileService.create(file, "savedName.png", "image", new UserModel());
 
         assertEquals(savedFile.getName(), "savedName.png");
         assertEquals(savedFile.getType(), "image/png");
@@ -112,7 +113,7 @@ public class FileService {
         MultipartFile multipartFile = new MockMultipartFile("test", "test.txt", "text/plain",
                 IOUtils.toByteArray(input));
 
-        fileService.create(multipartFile, "test2", "text");
+        fileService.create(multipartFile, "test2", "text", new UserModel());
 
         assertTrue(new java.io.File("./uploads/test2.txt").exists());
 
@@ -129,6 +130,7 @@ public class FileService {
 
         File file = new File();
         file.setExtension(extension);
+        file.setOwner(owner);
 
         when(fileRepository.findByName("test3.txt")).thenReturn(file);
 
@@ -152,6 +154,7 @@ public class FileService {
 
         File file = new File();
         file.setExtension(extension);
+        file.setOwner(owner);
 
         when(fileRepository.findByName("test1.txt")).thenReturn(file);
 
@@ -186,6 +189,7 @@ public class FileService {
 
         File file = new File();
         file.setExtension(extension);
+        file.setOwner(loggedUser);
 
         when(fileRepository.findByName("test11.txt")).thenReturn(file);
 

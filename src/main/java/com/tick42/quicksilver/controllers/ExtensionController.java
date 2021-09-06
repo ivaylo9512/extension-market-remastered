@@ -93,7 +93,7 @@ public class ExtensionController {
 
         Extension extension = extensionService.save(new Extension(extensionSpec, user, tags));
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        setFiles(extensionSpec, extension);
+        setFiles(extensionSpec, extension, user);
 
         return new ExtensionDto(extensionService.save(extension));
     }
@@ -110,7 +110,7 @@ public class ExtensionController {
 
         Extension extension = new Extension(extensionSpec, user, tags);
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        setFiles(extensionSpec, extension);
+        setFiles(extensionSpec, extension, user);
         if(extensionSpec.getGithub() != null)
             extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
 
@@ -122,20 +122,20 @@ public class ExtensionController {
     }
 
 
-    private void setFiles(ExtensionSpec extensionSpec, Extension extension) {
+    private void setFiles(ExtensionSpec extensionSpec, Extension extension, UserModel loggedUser) {
         long id = extension.getId();
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            extension.setImage(fileService.create(image, id + "image", "image"));
+            extension.setImage(fileService.create(image, id + "image", "image", loggedUser));
         }
         if(file != null){
-            extension.setFile(fileService.create(file, String.valueOf(id), ""));
+            extension.setFile(fileService.create(file, String.valueOf(id), "", loggedUser));
         }
         if(cover != null){
-            extension.setCover(fileService.create(cover, id +"cover", "image"));
+            extension.setCover(fileService.create(cover, id +"cover", "image", loggedUser));
         }
     }
 

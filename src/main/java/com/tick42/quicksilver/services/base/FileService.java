@@ -10,7 +10,7 @@ public interface FileService {
 
     File update(MultipartFile receivedFile, String name, long id, String type);
 
-    File create(MultipartFile receivedFile, String name, String type);
+    File create(MultipartFile receivedFile, String name, String type, UserModel owner);
 
     boolean delete(String fileName, UserModel loggedUser);
 

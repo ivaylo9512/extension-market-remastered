@@ -1,8 +1,8 @@
 .gradle
 /build/
-/server-side/out
-/server-side/classes
-/server-side/build
+out
+classes
+build
 
 ### STS ###
 .apt_generated

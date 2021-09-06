@@ -51,8 +51,9 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File create(MultipartFile receivedFile, String name, String type) {
+    public File create(MultipartFile receivedFile, String name, String type, UserModel owner) {
         File file = generate(receivedFile, name, type);
+        file.setOwner(owner);
 
         try {
             save(file, receivedFile);
@@ -91,7 +92,7 @@ public class FileServiceImpl implements FileService {
             throw new EntityNotFoundException("File not found.");
         }
 
-        if(file.getExtension().getOwner().getId() != loggedUser.getId()
+        if(file.getOwner().getId() != loggedUser.getId()
                 && !loggedUser.getRole().equals("ROLE_ADMIN")){
             throw new UnauthorizedException("Unauthorized");
         }
