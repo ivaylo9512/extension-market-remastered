@@ -27,14 +27,12 @@ import java.util.Collections;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
     private final UserServiceImpl userService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthorizationProvider authorizationProvider;
+    private final FailureHandler failureHandler = new FailureHandler();
 
-    public SecurityConfig(UserServiceImpl userService, PasswordEncoder passwordEncoder, AuthorizationProvider authorizationProvider) {
+    public SecurityConfig(UserServiceImpl userService, AuthorizationProvider authorizationProvider) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
         this.authorizationProvider = authorizationProvider;
     }
 
@@ -71,7 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(authenticationFilter(), ConcurrentSessionFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .exceptionHandling().accessDeniedHandler(new FailureAccessHandler());
+                .exceptionHandling().accessDeniedHandler(failureHandler);
 
         http.addFilterBefore(authorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers().cacheControl();
@@ -81,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         AuthorizationFilter filter = new AuthorizationFilter();
         filter.setFilterProcessesUrl("/api/**/auth/**");
         filter.setAuthenticationManager(authenticationManagerAuthorization());
-        filter.setAuthenticationFailureHandler(new FailureHandler());
+        filter.setAuthenticationFailureHandler(failureHandler);
         filter.setAuthenticationSuccessHandler((request, response, authentication) -> {});
         return filter;
     }
