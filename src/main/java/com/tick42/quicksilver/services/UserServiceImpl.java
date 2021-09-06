@@ -81,9 +81,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        if (!user.getIsActive() && (loggedUser == null ||
-                !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN"))) {
+        if(loggedUser != null && AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN")){
+            return user;
+        }
+
+        if (!user.getIsActive()) {
             throw new UnauthorizedException("User is unavailable.");
+        }
+
+        if(!user.isEnabled()){
+            throw new DisabledUserException("You must complete the registration. Check your email.");
         }
 
         return user;

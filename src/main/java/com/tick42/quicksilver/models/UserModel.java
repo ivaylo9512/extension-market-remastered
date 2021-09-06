@@ -25,6 +25,9 @@ public class UserModel {
     @JoinColumn(name = "image_id")
     private File profileImage;
 
+    @Column(name = "is_enabled")
+    private boolean isEnabled = false;
+
     @Column(name = "extensions_rated")
     private int extensionsRated;
 
@@ -137,5 +140,13 @@ public class UserModel {
 
     public void setProfileImage(File profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 }

@@ -41,17 +41,53 @@ public class UserService {
     }
 
     @Test
+    public void findById_WithNotEnabledUser() {
+        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
+
+        UserModel user = new UserModel();
+        user.setId(1);
+        user.setIsActive(true);
+        user.setEnabled(false);
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        DisabledUserException thrown = assertThrows(DisabledUserException.class,
+                () -> userService.findById(user.getId(), loggedUser));
+
+        assertEquals(thrown.getMessage(), "You must complete the registration. Check your email.");
+    }
+
+    @Test
+    public void findById_WithNotEnabledUser_AndLoggedAdminUser() {
+        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
+
+        UserModel user = new UserModel();
+        user.setId(1);
+        user.setIsActive(true);
+        user.setEnabled(false);
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        UserModel foundUser = userService.findById(user.getId(), loggedUser);
+
+        assertEquals(foundUser, user);
+    }
+
+    @Test
     public void findById_WhenUserProfileIsNotActive_AndCurrentUserIsNotAdmin_Unauthorized(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
 
         UserModel blockedUser = new UserModel();
+        blockedUser.setId(1);
         blockedUser.setIsActive(false);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(blockedUser));
+        when(userRepository.findById(blockedUser.getId())).thenReturn(Optional.of(blockedUser));
 
         UnauthorizedException thrown = assertThrows(UnauthorizedException.class,
-                () -> userService.findById(1, loggedUser));
+                () -> userService.findById(blockedUser.getId(), loggedUser));
 
         assertEquals(thrown.getMessage(), "User is unavailable.");
     }
@@ -62,13 +98,14 @@ public class UserService {
         UserDetails loggedUser = new UserDetails("test", "test", authorities, 1);
 
         UserModel blockedUser = new UserModel();
+        blockedUser.setId(1);
         blockedUser.setIsActive(false);
         blockedUser.setUsername("test");
         blockedUser.setRole("ROLE_USER");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(blockedUser));
+        when(userRepository.findById(blockedUser.getId())).thenReturn(Optional.of(blockedUser));
 
-        UserModel user = userService.findById(1, loggedUser);
+        UserModel user = userService.findById(blockedUser.getId(), loggedUser);
         assertEquals(user.getUsername(), blockedUser.getUsername());
     }
 
@@ -245,6 +282,7 @@ public class UserService {
 
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
+        userModel.setEnabled(true);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
         when(userRepository.save(userModel)).thenReturn(userModel);
@@ -264,6 +302,7 @@ public class UserService {
 
         UserModel userModel = new UserModel();
         userModel.setPassword("currentPassword");
+        userModel.setEnabled(true);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(userModel));
 
