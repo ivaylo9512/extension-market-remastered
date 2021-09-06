@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,16 +27,6 @@ public class GitHubModelServiceImplTests {
         gitHubModel.setRepo("repo");
 
         gitHubService.setRemoteDetails(gitHubModel);
-    }
-
-    @Test
-    public void generateGitHub_whenLinkCorrect_returnGitHubModel() {
-        String link = "https://github.com/Ivaylo9512/ExtensionRepository";
-
-        GitHubModel gitHubModel = gitHubService.generateGitHub(link);
-
-        assertEquals(gitHubModel.getUser(), "ivaylo9512");
-        assertEquals(gitHubModel.getRepo(), "ExtensionRepository");
     }
 
     @Test

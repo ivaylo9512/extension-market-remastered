@@ -191,14 +191,13 @@ public class GitHubServiceImpl implements GitHubService {
         return userSettings;
     }
 
-
     @Override
     public GitHubModel fetchGitHub(GitHubModel gitHubModel, UserModel loggedUser) {
         if (!loggedUser.getRole().equals("ROLE_ADMIN")) {
             throw new UnauthorizedException("You are not authorized to trigger a github refresh.");
         }
-        setRemoteDetails(gitHubModel);
 
+        setRemoteDetails(gitHubModel);
         return gitHubRepository.save(gitHubModel);
     }
 
