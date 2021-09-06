@@ -6,8 +6,10 @@ plugins {
 
 group = 'com.tick42'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 16
-targetCompatibility = 16
+java {
+	sourceCompatibility = 16
+	targetCompatibility = 16
+}
 
 test {
 	useJUnitPlatform()
@@ -22,6 +24,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation "org.springframework.boot:spring-boot-configuration-processor"
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
 	implementation group: 'org.springframework.security', name: 'spring-security-jwt', version: '1.0.2.RELEASE'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.6.0'
@@ -39,7 +42,6 @@ dependencies {
 	implementation group: 'com.h2database', name: 'h2', version: '1.4.192'
 	implementation group: 'org.apache.derby', name: 'derby', version: '10.14.2.0'
 	implementation group: 'org.springframework', name: 'spring-context'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 	testImplementation group: 'org.springframework.security', name: 'spring-security-test'
