@@ -89,7 +89,7 @@ public class ExtensionController {
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+        Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
 
         Extension extension = extensionService.save(new Extension(extensionSpec, user, tags));
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
@@ -106,7 +106,7 @@ public class ExtensionController {
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        Set<Tag> tags = tagService.generateTags(extensionSpec.getTags());
+        Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
 
         Extension extension = new Extension(extensionSpec, user, tags);
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
@@ -114,7 +114,7 @@ public class ExtensionController {
         if(extensionSpec.getGithub() != null)
             extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
 
-        ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension));
+        ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension, user));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
         extensionDto.setCurrentUserRatingValue(rating);
 
@@ -129,13 +129,13 @@ public class ExtensionController {
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            extension.setImage(fileService.create(image, id + "image"));
+            extension.setImage(fileService.create(image, id + "image", "image"));
         }
         if(file != null){
-            extension.setFile(fileService.create(file, String.valueOf(id)));
+            extension.setFile(fileService.create(file, String.valueOf(id), ""));
         }
         if(cover != null){
-            extension.setCover(fileService.create(cover, id +"cover"));
+            extension.setCover(fileService.create(cover, id +"cover", "image"));
         }
     }
 
@@ -150,7 +150,9 @@ public class ExtensionController {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
 
-        Extension extension = extensionService.delete(id, loggedUser);
+        UserModel userModel = userService.findById(loggedUser.getId(), loggedUser);
+
+        Extension extension = extensionService.delete(id, userModel);
         ratingService.updateRatingOnExtensionDelete(extension);
     }
 

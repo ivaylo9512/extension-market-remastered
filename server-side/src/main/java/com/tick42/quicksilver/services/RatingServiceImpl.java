@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RatingServiceImpl implements RatingService {
-
     private final RatingRepository ratingRepository;
     private final ExtensionRepository extensionRepository;
     private final UserRepository userRepository;
@@ -27,7 +26,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public Extension rate(Extension extension, int rating, long userId) {
         if (rating > 5) {
-            throw new InvalidInputException("Rating must be between 1 and 5");
+            throw new InvalidInputException("Rating must be between 1 and 5.");
         }
 
         Rating newRating = new Rating(rating, extension.getId(), userId);
@@ -35,7 +34,7 @@ public class RatingServiceImpl implements RatingService {
         double userRatingForExtension = userRatingForExtension(extension.getId(), userId);
 
         newExtensionRating(userRatingForExtension, newRating, extension);
-        newUserRating(currentExtensionRating, extension, rating);
+        newUserRating(currentExtensionRating, extension);
 
         return extension;
     }
@@ -43,37 +42,33 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public int userRatingForExtension(long extensionId, long userId) {
         return ratingRepository.findById(
-                new RatingPK(extensionId,userId)).orElse(new Rating(0)).getRating();
+                new RatingPK(extensionId, userId)).orElse(new Rating(0)).getRating();
     }
 
-    private void newUserRating(double currentExtensionRating, Extension extension, int rating) {
+    public void newUserRating(double currentExtensionRating, Extension extension) {
         UserModel userModel = extension.getOwner();
         double userRating = userModel.getRating();
         int extensionsRated = userModel.getExtensionsRated();
 
-        if (currentExtensionRating == 0) {
-            userModel.setRating((userRating * extensionsRated + rating) / (extensionsRated + 1));
-            userModel.setExtensionsRated(userModel.getExtensionsRated() + 1);
-            userRepository.save(userModel);
+        if(currentExtensionRating == 0) {
+            userModel.setRating((userRating * extensionsRated + extension.getRating()) / (extensionsRated + 1));
+            userModel.setExtensionsRated(extensionsRated + 1);
         } else {
             userModel.setRating(((userRating * extensionsRated - currentExtensionRating) + extension.getRating()) / extensionsRated);
-            userRepository.save(userModel);
         }
+
+        userRepository.save(userModel);
     }
 
-    @Override
     public Extension newExtensionRating(double userRatingForExtension, Rating newRating, Extension extension) {
-
         if (userRatingForExtension == 0) {
-            ratingRepository.save(newRating);
             extension.setRating((extension.getRating() * extension.getTimesRated() + newRating.getRating()) / (extension.getTimesRated() + 1));
             extension.setTimesRated(extension.getTimesRated() + 1);
-            extensionRepository.save(extension);
         } else {
-            extension.setRating(((extension.getRating() * extension.getTimesRated() - userRatingForExtension) + newRating.getRating()) / (extension.getTimesRated()));
-            extensionRepository.save(extension);
-            ratingRepository.save(newRating);
+            extension.setRating((extension.getRating() * extension.getTimesRated() - userRatingForExtension + newRating.getRating()) / (extension.getTimesRated()));
         }
+        ratingRepository.save(newRating);
+        extensionRepository.save(extension);
 
         return extension;
     }
@@ -86,15 +81,10 @@ public class RatingServiceImpl implements RatingService {
         double userRating = userModel.getRating();
         int userRatedExtensions = userModel.getExtensionsRated();
 
-        if (userRatedExtensions > 1 || extensionRating == 0) {
-            if (extensionRating > 0) {
-                userModel.setRating((userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1));
-                userModel.setExtensionsRated(userRatedExtensions - 1);
-                userRepository.save(userModel);
-            }
-        }else{
-            userModel.setRating(0);
-            userModel.setExtensionsRated(0);
+        if (extensionRating > 0) {
+            double rating = (userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1);
+            userModel.setRating(rating);
+            userModel.setExtensionsRated(userRatedExtensions - 1);
             userRepository.save(userModel);
         }
     }

@@ -16,7 +16,7 @@ public interface UserService {
 
     UserModel findById(long id, UserDetails loggedUser);
 
-    UserModel changePassword(NewPasswordSpec changePasswordSpec);
+    UserModel changePassword(NewPasswordSpec changePasswordSpec, UserDetails loggedUser);
 
     UserModel changeUserInfo(UserSpec userSpec, UserDetails loggedUser);
 }
