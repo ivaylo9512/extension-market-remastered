@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.models.specs;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -8,8 +9,14 @@ public class UserSpec {
 
     @Size(min = 8, max = 18)
     private String username;
+
+    @Email
+    @NotNull
+    private String email;
+
     @NotNull
     private String country;
+
     @NotNull
     private String info;
 
@@ -53,5 +60,13 @@ public class UserSpec {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

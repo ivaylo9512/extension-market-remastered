@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 public class UserDto {
     private long id;
     private String username;
+    private String email;
     private int totalExtensions;
     private List<ExtensionDto> extensions = new ArrayList<>();
     private boolean isActive;
@@ -27,6 +28,7 @@ public class UserDto {
         setProfileImage(userModel.getProfileImage());
         this.id = userModel.getId();
         this.username = userModel.getUsername();
+        this.email = userModel.getEmail();
         this.extensions = userModel.getExtensions()
                 .stream()
                 .map(ExtensionDto::new)
@@ -128,5 +130,13 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

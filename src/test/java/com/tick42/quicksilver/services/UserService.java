@@ -235,7 +235,7 @@ public class UserService {
 
     @Test
     public void loadUserByUsername(){
-        UserModel foundUser = new UserModel("username", "password", "ROLE_ADMIN");
+        UserModel foundUser = new UserModel("username", "test@gmail.com", "password", "ROLE_ADMIN");
 
         UserDetails userDetails = new UserDetails(foundUser, List.of(
                 new SimpleGrantedAuthority(foundUser.getRole())));
@@ -250,9 +250,9 @@ public class UserService {
 
     @Test
     public void RegisterUser_WithAlreadyTakenUsername_UsernameExists() {
-        UserModel user = new UserModel("test", "test", "ROLE_ADMIN");
+        UserModel user = new UserModel("test", "test@gmail.com", "test", "ROLE_ADMIN");
 
-        when(userRepository.findByUsername("test")).thenReturn(user);
+        when(userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail())).thenReturn(user);
 
         UsernameExistsException thrown = assertThrows(UsernameExistsException.class,
                 () -> userService.create(user));
@@ -262,9 +262,9 @@ public class UserService {
 
     @Test
     public void registerUser() {
-        UserModel userModel = new UserModel("test", "test", "ROLE_USER");
+        UserModel userModel = new UserModel("test", "testEmail@gmail.com", "test", "ROLE_USER");
 
-        when(userRepository.findByUsername("test")).thenReturn(null);
+        when(userRepository.findByUsernameOrEmail(userModel.getUsername(), userModel.getEmail())).thenReturn(null);
         when(userRepository.save(userModel)).thenReturn(userModel);
 
         UserModel user = userService.create(userModel);

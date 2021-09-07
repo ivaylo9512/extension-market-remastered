@@ -31,7 +31,12 @@ public class UserModel {
     @Column(name = "extensions_rated")
     private int extensionsRated;
 
+    @Column(unique = true)
     private String username;
+
+    @Column(unique = true)
+    private String email;
+
     private String password;
     private String role;
     private double rating;
@@ -42,10 +47,11 @@ public class UserModel {
 
     }
 
-    public UserModel(String username, String password, String role) {
+    public UserModel(String username, String email, String password, String role) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.email = email;
     }
 
     public UserModel(RegisterSpec newUser, String role) {
@@ -148,5 +154,13 @@ public class UserModel {
 
     public void setEnabled(boolean enabled) {
         isEnabled = enabled;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

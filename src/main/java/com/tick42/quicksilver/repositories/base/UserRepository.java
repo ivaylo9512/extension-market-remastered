@@ -8,5 +8,7 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserModel, Long> {
     UserModel findByUsername(String username);
 
+    UserModel findByUsernameOrEmail(String username, String email);
+
     List<UserModel> findByActive(boolean state);
 }
