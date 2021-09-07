@@ -33,7 +33,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         UserModel owner = extension.getOwner();
         if(extension.getIsPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
-                (loggedUser.getId() != owner.getId() || !owner.getIsActive())))){
+                (loggedUser.getId() != owner.getId() || !owner.isActive())))){
             throw new UnauthorizedException("Extension is not available.");
         }
 

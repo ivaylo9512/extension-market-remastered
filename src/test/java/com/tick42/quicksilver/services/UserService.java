@@ -47,7 +47,7 @@ public class UserService {
 
         UserModel user = new UserModel();
         user.setId(1);
-        user.setIsActive(true);
+        user.setActive(true);
         user.setEnabled(false);
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -65,7 +65,7 @@ public class UserService {
 
         UserModel user = new UserModel();
         user.setId(1);
-        user.setIsActive(true);
+        user.setActive(true);
         user.setEnabled(false);
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -82,7 +82,7 @@ public class UserService {
 
         UserModel blockedUser = new UserModel();
         blockedUser.setId(1);
-        blockedUser.setIsActive(false);
+        blockedUser.setActive(false);
 
         when(userRepository.findById(blockedUser.getId())).thenReturn(Optional.of(blockedUser));
 
@@ -99,7 +99,7 @@ public class UserService {
 
         UserModel blockedUser = new UserModel();
         blockedUser.setId(1);
-        blockedUser.setIsActive(false);
+        blockedUser.setActive(false);
         blockedUser.setUsername("test");
         blockedUser.setRole("ROLE_USER");
 
@@ -113,8 +113,8 @@ public class UserService {
     public void findBlockedUsers() {
         UserModel userModel = new UserModel();
         UserModel userModel1 = new UserModel();
-        userModel.setIsActive(false);
-        userModel1.setIsActive(false);
+        userModel.setActive(false);
+        userModel1.setActive(false);
         List<UserModel> userModels = List.of(userModel, userModel1);
 
         when(userRepository.findByActive(false)).thenReturn(userModels);
@@ -122,16 +122,16 @@ public class UserService {
         List<UserModel> usersDTO = userService.findAll("blocked");
 
         assertEquals(2, usersDTO.size());
-        assertFalse(usersDTO.get(0).getIsActive());
-        assertFalse(usersDTO.get(1).getIsActive());
+        assertFalse(usersDTO.get(0).isActive());
+        assertFalse(usersDTO.get(1).isActive());
     }
 
     @Test
     public void findActiveUsers() {
         UserModel userModel = new UserModel();
         UserModel userModel1 = new UserModel();
-        userModel.setIsActive(true);
-        userModel1.setIsActive(true);
+        userModel.setActive(true);
+        userModel1.setActive(true);
         List<UserModel> userModels = Arrays.asList(userModel, userModel1);
 
         when(userRepository.findByActive(true)).thenReturn(userModels);
@@ -139,8 +139,8 @@ public class UserService {
         List<UserModel> usersDTO = userService.findAll("active");
 
         assertEquals(2, usersDTO.size());
-        assertTrue(usersDTO.get(0).getIsActive());
-        assertTrue(usersDTO.get(1).getIsActive());
+        assertTrue(usersDTO.get(0).isActive());
+        assertTrue(usersDTO.get(1).isActive());
     }
 
     @Test
@@ -167,7 +167,7 @@ public class UserService {
     @Test()
     public void setUserState_Enable(){
         UserModel userModel = new UserModel();
-        userModel.setIsActive(false);
+        userModel.setActive(false);
         userModel.setId(1);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
@@ -175,13 +175,13 @@ public class UserService {
 
         UserModel user = userService.setState(1,"enable");
 
-        assertTrue(user.getIsActive());
+        assertTrue(user.isActive());
     }
 
     @Test()
     public void setUserState_Block(){
         UserModel userModel = new UserModel();
-        userModel.setIsActive(true);
+        userModel.setActive(true);
         userModel.setId(1);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
@@ -189,7 +189,7 @@ public class UserService {
 
         UserModel user = userService.setState(1,"block");
 
-        assertFalse(user.getIsActive());
+        assertFalse(user.isActive());
     }
 
     @Test
@@ -224,7 +224,7 @@ public class UserService {
 
         UserModel foundUserModel = new UserModel();
         foundUserModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
-        foundUserModel.setIsActive(false);
+        foundUserModel.setActive(false);
         when(userRepository.findByUsername("username")).thenReturn(foundUserModel);
 
         BlockedUserException thrown = assertThrows(BlockedUserException.class,

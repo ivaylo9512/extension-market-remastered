@@ -147,7 +147,7 @@ public class ExtensionService {
 
     public void findById_WhenOwnerIsInactiveAndUserIsNull_EntityUnavailable() {
         UserModel owner = new UserModel();
-        owner.setIsActive(false);
+        owner.setActive(false);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
@@ -168,7 +168,7 @@ public class ExtensionService {
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
-        owner.setIsActive(false);
+        owner.setActive(false);
 
         Extension extension = new Extension();
         extension.setOwner(owner);
@@ -185,7 +185,7 @@ public class ExtensionService {
     @Test
     public void findById_whenExtensionIsPendingAndOwnerIsActiveAndUserIsNull_EntityUnavailable() {
         UserModel owner = new UserModel();
-        owner.setIsActive(true);
+        owner.setActive(true);
 
         Extension extension = new Extension();
         extension.setIsPending(true);
@@ -207,7 +207,7 @@ public class ExtensionService {
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
-        owner.setIsActive(true);
+        owner.setActive(true);
         owner.setId(2);
 
         Extension extension = new Extension();
@@ -230,7 +230,7 @@ public class ExtensionService {
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
-        owner.setIsActive(false);
+        owner.setActive(false);
 
         Extension extension = new Extension();
         extension.setId(1);
@@ -251,7 +251,7 @@ public class ExtensionService {
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
-        owner.setIsActive(true);
+        owner.setActive(true);
         owner.setId(1);
 
         Extension extension = new Extension();
@@ -273,7 +273,7 @@ public class ExtensionService {
         UserDetails user = new UserDetails("TEST", "TEST", authorities, 1);
 
         UserModel owner = new UserModel();
-        owner.setIsActive(true);
+        owner.setActive(true);
         owner.setId(2);
 
         Extension extension = new Extension();

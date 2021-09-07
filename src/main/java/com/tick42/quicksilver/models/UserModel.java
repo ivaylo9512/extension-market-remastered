@@ -19,7 +19,7 @@ public class UserModel {
 
     @Column(name = "is_active", nullable = false)
     @Type(type = "org.hibernate.type.NumericBooleanType")
-    private boolean active = true;
+    private boolean isActive = true;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_image")
@@ -113,14 +113,6 @@ public class UserModel {
         this.id = id;
     }
 
-    public boolean getIsActive() {
-        return active;
-    }
-
-    public void setIsActive(boolean active) {
-        this.active = active;
-    }
-
     public String getRole() {
         return role;
     }
@@ -191,5 +183,13 @@ public class UserModel {
 
     public void setGitHubSettings(Settings gitHubSettings) {
         this.gitHubSettings = gitHubSettings;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

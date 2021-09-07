@@ -65,6 +65,7 @@ public class UserController {
     @PostMapping(value = "/auth/registerAdmin")
     public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
         UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_ADMIN"));
+        newUser.setEnabled(true);
 
         if(registerSpec.getProfileImage() != null){
             File profileImage = fileService.create(registerSpec.getProfileImage(),
@@ -117,6 +118,13 @@ public class UserController {
                 .getAuthentication().getDetails();
 
         return new UserDto(userService.changeUserInfo(userSpec, loggedUser));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping(value = "/auth/setEnabled/{state}/{id}")
+    public void setEnable(@PathVariable(name = "state") boolean state,
+                          @PathVariable(name = "id") long id){
+        userService.setEnabled(state, id);
     }
 
     @ExceptionHandler

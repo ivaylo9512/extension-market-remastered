@@ -36,7 +36,7 @@ public class UserDto {
                 .map(ExtensionDto::new)
                 .collect(Collectors.toList());
         this.totalExtensions = this.extensions.size();
-        this.isActive = userModel.getIsActive();
+        this.isActive = userModel.isActive();
         this.extensionsRated = userModel.getExtensionsRated();
         this.rating = userModel.getRating();
         this.country = userModel.getCountry();

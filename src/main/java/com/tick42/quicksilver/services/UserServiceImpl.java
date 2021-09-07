@@ -33,8 +33,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         switch (state) {
-            case "enable" -> user.setIsActive(true);
-            case "block" -> user.setIsActive(false);
+            case "enable" -> user.setActive(true);
+            case "block" -> user.setActive(false);
             default -> throw new InvalidInputException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
         }
 
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             return user;
         }
 
-        if (!user.getIsActive()) {
+        if (!user.isActive()) {
             throw new UnauthorizedException("User is unavailable.");
         }
 
@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if(foundUser == null){
             throw new BadCredentialsException("Invalid username or password.");
         }
-        if (!foundUser.getIsActive()) {
+        if (!foundUser.isActive()) {
             throw new BlockedUserException("User is disabled.");
         }
 
@@ -149,5 +149,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setInfo(userSpec.getInfo());
 
         return userRepository.save(user);
+    }
+
+    @Override
+    public void setEnabled(boolean state, long id){
+        UserModel user = userRepository.getById(id);
+        user.setEnabled(true);
+
+        userRepository.save(user);
     }
 }
