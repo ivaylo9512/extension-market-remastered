@@ -17,12 +17,12 @@ public class UserModel {
     @OrderBy(value = "upload_date DESC")
     private Set<Extension> extensions = new HashSet<>();
 
-    @Column(name = "enabled", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean active = true;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "image_id")
+    @JoinColumn(name = "profile_image")
     private File profileImage;
 
     @Column(name = "is_enabled")
@@ -36,6 +36,9 @@ public class UserModel {
 
     @Column(unique = true)
     private String email;
+
+    @OneToOne(mappedBy = "user")
+    private Settings gitHubSettings;
 
     private String password;
     private String role;
@@ -162,5 +165,13 @@ public class UserModel {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Settings getGitHubSettings() {
+        return gitHubSettings;
+    }
+
+    public void setGitHubSettings(Settings gitHubSettings) {
+        this.gitHubSettings = gitHubSettings;
     }
 }

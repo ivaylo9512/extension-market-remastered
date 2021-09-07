@@ -17,7 +17,9 @@ public interface GitHubService {
 
     void updateExtensionDetails();
 
-    Settings createScheduledTask(UserModel user, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec);
+    Settings createScheduledTask(ScheduledTaskRegistrar taskRegistrar);
+
+    void initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec);
 
     Settings getSettings(UserModel user);
 

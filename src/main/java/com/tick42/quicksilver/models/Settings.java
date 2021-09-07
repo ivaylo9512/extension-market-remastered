@@ -23,14 +23,17 @@ public class Settings {
     private int wait;
 
     public Settings() {
-
     }
-    public Settings(GitHubSettingSpec settingsSpec) {
+
+    public Settings(GitHubSettingSpec settingsSpec, UserModel user, long id) {
+        this.id = id;
         this.rate = settingsSpec.getRate();
         this.wait = settingsSpec.getWait();
         this.token = settingsSpec.getToken();
         this.username = settingsSpec.getUsername();
+        this.user = user;
     }
+
     public long getId() {
         return id;
     }
@@ -69,6 +72,10 @@ public class Settings {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public UserModel getUser() {
+        return user;
     }
 
     public void setUser(UserModel user) {

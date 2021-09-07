@@ -148,31 +148,14 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public Settings createScheduledTask(UserModel user, ScheduledTaskRegistrar taskRegistrar, GitHubSettingSpec gitHubSettingSpec) {
-        settings = settingsRepository.findByUser(user);
-
-        if(settings == null) settings = new Settings();
-
-        if (gitHubSettingSpec != null) {
-            Settings newSettings = new Settings(gitHubSettingSpec);
-
-            if(settings.getId() != 0) newSettings.setId(settings.getId());
-
-            newSettings.setUser(user);
-            settings = settingsRepository.save(newSettings);
-        }
-
-        if (settings.getToken() == null || settings.getUsername() == null) return null;
-
+    public Settings createScheduledTask(ScheduledTaskRegistrar taskRegistrar) {
         try {
             gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't connect to github.");
         }
 
-
         if (scheduler.getTask() != null) scheduler.getTask().cancel();
-
 
         FixedRateTask updateGitHubData = new FixedRateTask(this::updateExtensionDetails, settings.getRate(), settings.getWait());
 
@@ -180,6 +163,17 @@ public class GitHubServiceImpl implements GitHubService {
         scheduler.setTask(taskRegistrar.scheduleFixedRateTask(updateGitHubData));
 
         return settings;
+    }
+
+    @Override
+    public void initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec){
+        this.settings = settings;
+
+        if (gitHubSettingSpec != null) {
+            long id = settings == null ? 0 : settings.getId();
+            this.settings = new Settings(gitHubSettingSpec, user, id);
+            settingsRepository.save(this.settings);
+        }
     }
 
     @Override
