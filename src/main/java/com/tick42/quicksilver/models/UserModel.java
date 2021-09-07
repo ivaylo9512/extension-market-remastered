@@ -50,6 +50,21 @@ public class UserModel {
 
     }
 
+    public UserModel(String username, String email, String password, String role, String info, String country) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.info = info;
+        this.country = country;
+    }
+
+    public UserModel(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
     public UserModel(String username, String email, String password, String role) {
         this.username = username;
         this.password = password;
@@ -58,8 +73,11 @@ public class UserModel {
     }
 
     public UserModel(RegisterSpec newUser, String role) {
-        this.setUsername(newUser.getUsername());
-        this.setPassword(newUser.getPassword());
+        this.username = newUser.getUsername();
+        this.email = newUser.getEmail();
+        this.info = newUser.getInfo();
+        this.country = newUser.getCountry();
+        this.password = newUser.getPassword();
         this.setRole(role);
     }
 

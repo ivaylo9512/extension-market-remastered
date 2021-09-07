@@ -22,6 +22,8 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
         this.extensionRepository = extensionRepository;
+        updateMostRecent();
+        loadFeatured();
     }
 
     @Override

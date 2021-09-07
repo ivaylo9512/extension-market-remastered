@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 public class ExtensionSpec {
-    @NotNull
+    @NotNull(message = "Id is required")
     private long id;
 
     @NotNull(message = "Name is required")

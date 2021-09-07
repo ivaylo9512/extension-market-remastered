@@ -10,6 +10,8 @@ import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -83,7 +85,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDto createExtension(@ModelAttribute ExtensionSpec extensionSpec) {
+    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -100,7 +102,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDto editExtension(@ModelAttribute ExtensionSpec extensionSpec) throws IOException, BindException {
+    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();

@@ -1,23 +1,30 @@
 package com.tick42.quicksilver.models.specs;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 public class RegisterSpec {
-    @Size(min = 8, max = 18)
+    @NotNull(message = "Username is required")
+    @Length(min = 8, max = 18, message = ("Password must be between 8 and 18 characters"))
     private String username;
 
-    @Email
-    @NotNull
+    @NotNull(message = "Email is required")
+    @Email(message = "Must be a valid email")
     private String email;
 
-    @Size(min = 10, max = 25)
+    @NotNull(message = "Password is required")
+    @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters"))
     private String password;
 
     private MultipartFile profileImage;
+
+    @NotNull(message = "Country is required")
+    private String country;
+
+    @NotNull(message = "Info is required")
+    private String info;
 
     public RegisterSpec() {
     }
@@ -57,5 +64,21 @@ public class RegisterSpec {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

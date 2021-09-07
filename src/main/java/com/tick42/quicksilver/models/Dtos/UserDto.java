@@ -2,6 +2,8 @@ package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.models.specs.UserSpec;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +42,15 @@ public class UserDto {
         this.country = userModel.getCountry();
         this.info = userModel.getInfo();
         this.role = userModel.getRole();
+    }
+
+    public UserDto(UserSpec user, String role){
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.email = user.getEmail();
+        this.country = user.getCountry();
+        this.info = user.getInfo();
+        this.role = role;
     }
 
     public long getId() {

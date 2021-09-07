@@ -53,4 +53,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler
+    ResponseEntity<String> disabledUserException(DisabledUserException e){
+        return ResponseEntity
+                .status(HttpStatus.LOCKED)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity<String> handleBlockedUserException(BlockedUserException e){
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
+    }
 }

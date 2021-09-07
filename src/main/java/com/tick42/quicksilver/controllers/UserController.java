@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDto register(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
+    public UserDto register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
         UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_USER"));
 
         if(registerSpec.getProfileImage() != null){
@@ -62,8 +62,8 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping(value = "auth/users/adminRegistration")
-    public UserDto registerAdmin(@ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
+    @PostMapping(value = "/auth/registerAdmin")
+    public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
         UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_ADMIN"));
 
         if(registerSpec.getProfileImage() != null){
@@ -112,11 +112,11 @@ public class UserController {
     }
 
     @PostMapping(value = "/auth/changeUserInfo")
-    public UserDto changeUserInfo(@Valid @RequestBody UserSpec userModel){
+    public UserDto changeUserInfo(@Valid @RequestBody UserSpec userSpec){
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getDetails();
 
-        return new UserDto(userService.changeUserInfo(userModel, loggedUser));
+        return new UserDto(userService.changeUserInfo(userSpec, loggedUser));
     }
 
     @ExceptionHandler
@@ -127,7 +127,7 @@ public class UserController {
     }
 
     @ExceptionHandler
-    ResponseEntity<String> handleDisabledUserException(BlockedUserException e){
+    ResponseEntity<String> handleEmailExistsException(EmailExistsException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
