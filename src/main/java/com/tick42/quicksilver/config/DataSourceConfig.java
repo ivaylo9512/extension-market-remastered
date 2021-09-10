@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -8,11 +9,16 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Configuration
 @Profile("production")
 public class DataSourceConfig {
+    @Value("${spring.profiles.active:Unknown}")
+    private String activeProfile;
+
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean em
@@ -24,15 +30,23 @@ public class DataSourceConfig {
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(additionalProperties());
 
+        if(activeProfile.equals("test")){
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("hibernate.hbm2ddl.auto", "create");
+            em.setJpaPropertyMap(properties);
+        }
+
         return em;
     }
 
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl("jdbc:mysql://192.168.0.105:3306/extensions-market?serverTimezone=UTC");
-        dataSource.setUsername( "root" );
-        dataSource.setPassword( "1234" );
+        dataSource.setUrl(String.format("jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306/extensions-market%s/?serverTimezone=UTC",
+                activeProfile.equals("test") ? "test" : ""));
+
+        dataSource.setUsername("admin");
+        dataSource.setPassword("Admin1234");
         return dataSource;
     }
 

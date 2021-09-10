@@ -18,12 +18,8 @@ public class TestDataSourceConfig {
         LocalContainerEntityManagerFactoryBean em
                 = new LocalContainerEntityManagerFactoryBean();
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "create");
-
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 
-        em.setJpaPropertyMap(properties);
         em.setDataSource(dataSource());
         em.setPackagesToScan("com/tick42/quicksilver/models");
         em.setJpaVendorAdapter(vendorAdapter);
@@ -35,9 +31,9 @@ public class TestDataSourceConfig {
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl("jdbc:mysql://192.168.0.105:3306/extensions-market-test");
-        dataSource.setUsername("root");
-        dataSource.setPassword("1234");
+        dataSource.setUrl("jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306/extensions-market-test");
+        dataSource.setUsername("admin");
+        dataSource.setPassword("Admin1234");
 
         return dataSource;
     }
