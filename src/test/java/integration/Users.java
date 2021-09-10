@@ -3,7 +3,6 @@ package integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.config.AppConfig;
 import com.tick42.quicksilver.config.SecurityConfig;
-import com.tick42.quicksilver.config.TestDataSourceConfig;
 import com.tick42.quicksilver.config.TestWebConfig;
 import com.tick42.quicksilver.controllers.UserController;
 import com.tick42.quicksilver.models.Dtos.UserDto;
@@ -46,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(classes = { AppConfig.class, TestWebConfig.class, SecurityConfig.class, TestDataSourceConfig.class })
+@ContextConfiguration(classes = { AppConfig.class, TestWebConfig.class, SecurityConfig.class })
 @WebAppConfiguration(value = "src/main/java/com/tick42/quicksilver")
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)

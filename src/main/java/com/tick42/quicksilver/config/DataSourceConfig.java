@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -14,10 +16,12 @@ import java.util.Map;
 import java.util.Properties;
 
 @Configuration
-@Profile("production")
 public class DataSourceConfig {
-    @Value("${spring.profiles.active:Unknown}")
-    private String activeProfile;
+    Environment env;
+
+    public DataSourceConfig(Environment env) {
+        this.env = env;
+    }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
@@ -30,7 +34,7 @@ public class DataSourceConfig {
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(additionalProperties());
 
-        if(activeProfile.equals("test")){
+        if(env.acceptsProfiles(Profiles.of("test"))){
             Map<String, Object> properties = new HashMap<>();
             properties.put("hibernate.hbm2ddl.auto", "create");
             em.setJpaPropertyMap(properties);
@@ -42,11 +46,11 @@ public class DataSourceConfig {
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl(String.format("jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306/extensions-market%s/?serverTimezone=UTC",
-                activeProfile.equals("test") ? "test" : ""));
-
+        dataSource.setUrl(String.format("jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306/extensions-market%s?serverTimezone=UTC",
+                env.acceptsProfiles(Profiles.of("test")) ? "-test" : ""));
         dataSource.setUsername("admin");
         dataSource.setPassword("Admin1234");
+
         return dataSource;
     }
 
