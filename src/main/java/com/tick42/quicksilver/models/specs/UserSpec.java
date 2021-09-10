@@ -30,6 +30,7 @@ public class UserSpec {
         this.username = username;
         this.email = email;
         this.info = info;
+        this.country = country;
     }
 
     public String getUsername() {

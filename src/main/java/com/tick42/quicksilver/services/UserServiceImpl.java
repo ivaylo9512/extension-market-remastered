@@ -69,8 +69,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         user = switch (state) {
-            case "active" -> userRepository.findByActive(true);
-            case "blocked" -> userRepository.findByActive(false);
+            case "active" -> userRepository.findByIsActive(true);
+            case "blocked" -> userRepository.findByIsActive(false);
             case "all" -> userRepository.findAll();
             default -> throw new InvalidInputException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
         };
@@ -145,6 +145,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         user.setUsername(userSpec.getUsername());
+        user.setEmail(userSpec.getEmail());
         user.setCountry(userSpec.getCountry());
         user.setInfo(userSpec.getInfo());
 

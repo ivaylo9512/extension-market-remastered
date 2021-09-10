@@ -73,12 +73,14 @@ public class UserModel {
     }
 
     public UserModel(RegisterSpec newUser, String role) {
-        this.username = newUser.getUsername();
-        this.email = newUser.getEmail();
-        this.info = newUser.getInfo();
-        this.country = newUser.getCountry();
-        this.password = newUser.getPassword();
-        this.setRole(role);
+        this(newUser.getUsername(), newUser.getEmail(), newUser.getPassword(), role,
+                newUser.getInfo(), newUser.getCountry());
+    }
+
+    public UserModel(String username, String email, String password, String role, String info, String country, double rating, int extensionsRated) {
+        this(username, email, password, role, info, country);
+        this.rating = rating;
+        this.extensionsRated = extensionsRated;
     }
 
     public String getUsername() {

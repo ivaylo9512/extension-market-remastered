@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableConfigurationProperties
-public class QuicksilverApplication {
+public class ExtensionsApplication {
     public static void main(String[] args) {
-        SpringApplication.run(QuicksilverApplication.class, args);
+        SpringApplication.run(ExtensionsApplication.class, args);
     }
 }

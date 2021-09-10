@@ -117,7 +117,7 @@ public class UserService {
         userModel1.setActive(false);
         List<UserModel> userModels = List.of(userModel, userModel1);
 
-        when(userRepository.findByActive(false)).thenReturn(userModels);
+        when(userRepository.findByIsActive(false)).thenReturn(userModels);
 
         List<UserModel> usersDTO = userService.findAll("blocked");
 
@@ -134,7 +134,7 @@ public class UserService {
         userModel1.setActive(true);
         List<UserModel> userModels = Arrays.asList(userModel, userModel1);
 
-        when(userRepository.findByActive(true)).thenReturn(userModels);
+        when(userRepository.findByIsActive(true)).thenReturn(userModels);
 
         List<UserModel> usersDTO = userService.findAll("active");
 

@@ -4,16 +4,10 @@ import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.UserSpec;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class UserDto {
     private long id;
     private String username;
     private String email;
-    private int totalExtensions;
-    private List<ExtensionDto> extensions = new ArrayList<>();
     private boolean isActive;
     private double rating;
     private int extensionsRated;
@@ -31,11 +25,6 @@ public class UserDto {
         this.id = userModel.getId();
         this.username = userModel.getUsername();
         this.email = userModel.getEmail();
-        this.extensions = userModel.getExtensions()
-                .stream()
-                .map(ExtensionDto::new)
-                .collect(Collectors.toList());
-        this.totalExtensions = this.extensions.size();
         this.isActive = userModel.isActive();
         this.extensionsRated = userModel.getExtensionsRated();
         this.rating = userModel.getRating();
@@ -67,22 +56,6 @@ public class UserDto {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public List<ExtensionDto> getExtensions() {
-        return extensions;
-    }
-
-    public void setExtensions(List<ExtensionDto> extensions) {
-        this.extensions = extensions;
-    }
-
-    public int getTotalExtensions() {
-        return totalExtensions;
-    }
-
-    public void setTotalExtensions(int totalExtensions) {
-        this.totalExtensions = totalExtensions;
     }
 
     public boolean getIsActive() {
