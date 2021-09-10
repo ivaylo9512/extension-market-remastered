@@ -19,11 +19,6 @@ import java.io.IOException;
 public class TestScheduleConfig implements SchedulingConfigurer {
     @Autowired
     private GitHubService gitHubService;
-    private final UserService userService;
-
-    public TestScheduleConfig(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -35,7 +30,7 @@ public class TestScheduleConfig implements SchedulingConfigurer {
     }
 
     private String getTokenFromFile() {
-        try(BufferedReader br = new BufferedReader(new FileReader("C:/users/ivail/gitToken.txt"))){
+        try(BufferedReader br = new BufferedReader(new FileReader("/gitToken.txt"))){
             return br.readLine();
         } catch (IOException e) {
             e.printStackTrace();
