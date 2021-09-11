@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping(value = "/api/files")
@@ -35,7 +37,7 @@ public class FileController {
     }
 
     @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> getAsResource(@PathVariable String fileName, HttpServletRequest request) {
+    public ResponseEntity<Resource> getAsResource(@PathVariable("fileName") String fileName, HttpServletRequest request) throws FileNotFoundException {
         Resource resource = fileService.getAsResource(fileName);
         String contentType;
 
@@ -46,7 +48,9 @@ public class FileController {
         }
 
         if(fileName.contains("file")) {
-            File file = fileService.findByName(fileName);
+            String[] result = Arrays.stream(fileName.split("[file|.]")).filter(s -> !s.equals("")).toArray(String[]::new);
+
+            File file = fileService.findByName("file", Long.parseLong(result[0]));
             fileService.increaseCount(file);
             extensionService.reloadFile(file);
         }
@@ -58,11 +62,11 @@ public class FileController {
                 .body(resource);
     }
 
-    @DeleteMapping("/auth/delete/{name}")
-    public boolean delete(@PathVariable("name") String name){
+    @DeleteMapping("/auth/delete/{resourceType}/{ownerId}")
+    public boolean delete(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getDetails();
 
-      return fileService.delete(name, userService.findById(loggedUser.getId(), loggedUser));
+        return fileService.delete(resourceType, ownerId, userService.findById(loggedUser.getId(), loggedUser));
     }
 }

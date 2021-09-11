@@ -23,7 +23,10 @@ public class File {
     @Column(name = "download_count")
     private int downloadCount;
 
-    private String name;
+    @Column(name = "resource_type")
+    private String resourceType;
+
+    private String extensionType;
     private String type;
     private double size;
 
@@ -31,10 +34,11 @@ public class File {
 
     }
 
-    public File(String name, double size, String type){
-        this.name = name;
+    public File(String resourceType, double size, String type, String extensionType){
+        this.resourceType = resourceType;
         this.size = size;
         this.type = type;
+        this.extensionType = extensionType;
     }
 
     @Override
@@ -83,12 +87,20 @@ public class File {
         this.type = type;
     }
 
-    public String getName() {
-        return name;
+    public String getResourceType() {
+        return resourceType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    public String getExtensionType() {
+        return extensionType;
+    }
+
+    public void setExtensionType(String extensionType) {
+        this.extensionType = extensionType;
     }
 
     public int getDownloadCount() {

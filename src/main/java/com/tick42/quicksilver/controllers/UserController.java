@@ -17,6 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -39,12 +41,17 @@ public class UserController {
 
     @PostMapping(value = "/register")
     public UserDto register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
+        MultipartFile profileImage = registerSpec.getProfileImage();
+        File file = null;
+
+        if(profileImage != null){
+            file = fileService.generate(profileImage,"logo", "image/png");
+        }
+
         UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_USER"));
 
-        if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(),
-                    newUser.getId() + "logo", "image", newUser);
-            newUser.setProfileImage(profileImage);
+        if(file != null){
+            fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
         }
 
         String token = Jwt.generate(new UserDetails(newUser, new ArrayList<>(
@@ -64,13 +71,18 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/auth/registerAdmin")
     public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
+        MultipartFile profileImage = registerSpec.getProfileImage();
+        File file = null;
+
+        if(profileImage != null){
+            file = fileService.generate(profileImage,"logo", "image/png");
+        }
+
         UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_ADMIN"));
         newUser.setEnabled(true);
 
-        if(registerSpec.getProfileImage() != null){
-            File profileImage = fileService.create(registerSpec.getProfileImage(),
-                    newUser.getId() + "logo", "image", newUser);
-            newUser.setProfileImage(profileImage);
+        if(file != null){
+            fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
         }
 
         return new UserDto(userService.save(newUser));

@@ -4,17 +4,18 @@ import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.FileNotFoundException;
 
 public interface FileService {
-    Resource getAsResource(String fileName);
+    boolean delete(String resourceType, long ownerId, UserModel loggedUser);
 
-    File update(MultipartFile receivedFile, String name, long id, String type);
+    Resource getAsResource(String fileName) throws FileNotFoundException;
 
-    File create(MultipartFile receivedFile, String name, String type, UserModel owner);
+    File findByName(String resourceType, long ownerId);
 
-    boolean delete(String fileName, UserModel loggedUser);
+    void save(String name, MultipartFile receivedFile);
+
+    File generate(MultipartFile receivedFile, String resourceType, String fileType);
 
     File increaseCount(File file);
-
-    File findByName(String fileName);
 }

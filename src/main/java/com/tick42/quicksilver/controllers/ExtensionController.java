@@ -93,9 +93,13 @@ public class ExtensionController {
         UserModel user = userService.findById(userId, loggedUser);
         Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
 
-        Extension extension = extensionService.save(new Extension(extensionSpec, user, tags));
+        Extension newExtension = new Extension(extensionSpec, user, tags);
+        generateFiles(extensionSpec, newExtension);
+
+        Extension extension = extensionService.save(newExtension);
+
+        saveFiles(extensionSpec, extension);
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        setFiles(extensionSpec, extension, user);
 
         return new ExtensionDto(extensionService.save(extension));
     }
@@ -112,7 +116,10 @@ public class ExtensionController {
 
         Extension extension = new Extension(extensionSpec, user, tags);
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
-        setFiles(extensionSpec, extension, user);
+
+        generateFiles(extensionSpec, extension);
+        saveFiles(extensionSpec, extension);
+
         if(extensionSpec.getGithub() != null)
             extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
 
@@ -124,20 +131,37 @@ public class ExtensionController {
     }
 
 
-    private void setFiles(ExtensionSpec extensionSpec, Extension extension, UserModel loggedUser) {
+    private void generateFiles(ExtensionSpec extensionSpec, Extension extension) {
+        MultipartFile image = extensionSpec.getImage();
+        MultipartFile file = extensionSpec.getFile();
+        MultipartFile cover = extensionSpec.getCover();
+
+        if(image != null){
+            extension.setImage(fileService.generate(image, "image", "image"));
+        }
+        if(file != null){
+            extension.setCover(fileService.generate(file, "file", ""));
+        }
+        if(cover != null){
+            extension.setCover(fileService.generate(cover, "cover", "image"));
+        }
+    }
+
+    private void saveFiles(ExtensionSpec extensionSpec, Extension extension) {
         long id = extension.getId();
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            extension.setImage(fileService.create(image, id + "image", "image", loggedUser));
+            fileService.save("image" + id, image);
         }
         if(file != null){
-            extension.setFile(fileService.create(file, String.valueOf(id), "", loggedUser));
+            fileService.save("file" + id, file);
+            extension.setCover(fileService.generate(cover, "file", ""));
         }
         if(cover != null){
-            extension.setCover(fileService.create(cover, id +"cover", "image", loggedUser));
+            fileService.save("cover" + id, cover);
         }
     }
 

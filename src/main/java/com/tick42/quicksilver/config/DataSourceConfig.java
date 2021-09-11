@@ -17,7 +17,7 @@ import java.util.Properties;
 
 @Configuration
 public class DataSourceConfig {
-    Environment env;
+    private final Environment env;
 
     public DataSourceConfig(Environment env) {
         this.env = env;

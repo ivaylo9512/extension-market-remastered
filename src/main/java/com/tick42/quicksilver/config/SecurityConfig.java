@@ -1,11 +1,10 @@
 package com.tick42.quicksilver.config;
 
 import com.tick42.quicksilver.security.*;
-import com.tick42.quicksilver.services.UserServiceImpl;
+import com.tick42.quicksilver.services.base.UserService;
 import org.apache.http.HttpHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -20,18 +19,17 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
 import java.util.Collections;
 
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final AuthorizationProvider authorizationProvider;
     private final FailureHandler failureHandler = new FailureHandler();
 
-    public SecurityConfig(UserServiceImpl userService, AuthorizationProvider authorizationProvider) {
+    public SecurityConfig(UserService userService, AuthorizationProvider authorizationProvider) {
         this.userService = userService;
         this.authorizationProvider = authorizationProvider;
     }
@@ -49,12 +47,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://192.168.0.105:3005");
         config.addAllowedHeader("*");
         config.addExposedHeader(HttpHeaders.AUTHORIZATION);
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
+
         return new CorsFilter(source);
     }
 
@@ -81,6 +81,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         filter.setAuthenticationManager(authenticationManagerAuthorization());
         filter.setAuthenticationFailureHandler(failureHandler);
         filter.setAuthenticationSuccessHandler((request, response, authentication) -> {});
+
         return filter;
     }
 

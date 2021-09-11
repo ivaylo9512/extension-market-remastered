@@ -4,10 +4,11 @@ import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.UserSpec;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserService extends UserDetailsService {
     UserModel setState(long id, String state);
 
     UserModel create(UserModel user);

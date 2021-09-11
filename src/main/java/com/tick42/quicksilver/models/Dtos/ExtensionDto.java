@@ -26,9 +26,9 @@ public class ExtensionDto {
     private String lastSuccessfulPullOfData;
     private String lastFailedAttemptToCollectData;
     private String lastErrorMessage;
-    private String fileLocation;
-    private String imageLocation;
-    private String coverLocation;
+    private String fileName;
+    private String imageName;
+    private String coverName;
     private List<String> tags = new ArrayList<>();
     private double rating;
     private int timesRated;
@@ -53,8 +53,9 @@ public class ExtensionDto {
         this.rating = extension.getRating();
         this.timesRated = extension.getTimesRated();
 
-        setImageLocation(extension.getImage());
-        setCoverLocation(extension.getCover());
+        setImageName(extension.getImage());
+        setCoverName(extension.getCover());
+        setFileName(extension.getFile());
         setUploadDate(extension.getUploadDate());
     }
     @Override
@@ -183,26 +184,6 @@ public class ExtensionDto {
         this.pullRequests = pullRequests;
     }
 
-    public String getFileLocation() {
-        return fileLocation;
-    }
-
-    public void setFileLocation(File file) {
-        if(file != null) {
-            this.fileLocation = file.getName();
-        }
-    }
-
-    public String getImageLocation() {
-        return imageLocation;
-    }
-
-    public void setImageLocation(File image) {
-        if(image != null){
-            this.imageLocation = image.getName();
-        }
-    }
-
     public List<String> getTags() {
         return tags;
     }
@@ -259,13 +240,33 @@ public class ExtensionDto {
         this.currentUserRatingValue = currentUserRatingValue;
     }
 
-    public String getCoverLocation() {
-        return coverLocation;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setCoverLocation(File coverLocation) {
-        if(coverLocation != null){
-            this.coverLocation = coverLocation.getName();
+    public void setFileName(File file) {
+        if(file != null){
+            this.fileName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
+        }
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(File file) {
+        if(file != null){
+            this.imageName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
+        }
+    }
+
+    public String getCoverName() {
+        return coverName;
+    }
+
+    public void setCoverName(File file) {
+        if(file != null){
+            this.coverName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
         }
     }
 
