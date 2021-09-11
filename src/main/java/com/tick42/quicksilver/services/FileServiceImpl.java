@@ -77,7 +77,7 @@ public class FileServiceImpl implements FileService {
             throw new EntityNotFoundException("File not found.");
         }
 
-        boolean isDeleted = new java.io.File("./uploads/" + resourceType + ownerId + "." + file.getExtension()).delete();
+        boolean isDeleted = new java.io.File("./uploads/" + resourceType + ownerId + "." + file.getExtensionType()).delete();
         if(isDeleted){
             fileRepository.delete(file);
             return true;
