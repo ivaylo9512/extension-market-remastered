@@ -11,10 +11,10 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
-
 -- Dumping database structure for extensions-market-test
 CREATE DATABASE IF NOT EXISTS `extensions-market-test` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `extensions-market-test`;
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- Dumping structure for table extensions-market-test.users
 DELETE FROM `users`;
@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   KEY `FKc7w5h6b6d74bu9o1yulvrbh6c` (`profile_image`),
   CONSTRAINT `FKc7w5h6b6d74bu9o1yulvrbh6c` FOREIGN KEY (`profile_image`) REFERENCES `files` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
 
--- Dumping data for table chat-app-test.users: ~3 rows (approximately)
+-- Dumping data for table extensions-market-test.users: ~3 rows (approximately)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` (`id`, `country`, `info`, `password`, `role`, `username`, `email`, `profile_image`, `is_enabled`, `is_active`, `rating`, `extensions_rated`) VALUES
 	(1, 'Bulgaria', 'info', '$2a$04$PFraPHMqOOa7qiBJX5Mmq.STptiykt4m1H.p7rfpzzg/x1mQ9Ega6', 'ROLE_ADMIN', 'adminUser', 'adminUser@gmail.com', NULL, true, true, 4.166666666666667, 3),
@@ -51,6 +51,7 @@ INSERT INTO `users` (`id`, `country`, `info`, `password`, `role`, `username`, `e
 	(9, 'Spain', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'testFifth', 'testFifth@gmail.com', NULL, true, true, 0, 0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 
+SET FOREIGN_KEY_CHECKS = 1;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

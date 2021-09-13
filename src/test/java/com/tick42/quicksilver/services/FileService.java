@@ -1,12 +1,10 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.FileFormatException;
-import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import org.apache.commons.io.IOUtils;
-import org.h2.engine.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -46,7 +45,7 @@ public class FileService {
         new java.io.File("./uploads/logo.txt").delete();
         new java.io.File("./uploads/logo1.txt").delete();
         new java.io.File("./uploads/logo2.txt").delete();
-        new java.io.File("./uploads/test3.txt").delete();
+        new java.io.File("./uploads/logo3.txt").delete();
     }
 
     @Test
@@ -88,6 +87,20 @@ public class FileService {
     }
 
     @Test
+    public void generate_WhenTypeIsNull_FileFormat() {
+        MockMultipartFile file = new MockMultipartFile(
+                "text132",
+                "text132.txt",
+                null,
+                "text132".getBytes());
+
+        FileFormatException thrown = assertThrows(FileFormatException.class,
+                () -> fileService.generate(file, "logo", "image"));
+
+        assertEquals(thrown.getMessage(), "File should be of type image");
+    }
+
+    @Test
     public void createAndSave() throws Exception{
         FileInputStream input = new FileInputStream("./uploads/logo.txt");
         MultipartFile multipartFile = new MockMultipartFile("test", "logo.txt", "text/plain",
@@ -104,17 +117,13 @@ public class FileService {
         UserModel owner = new UserModel();
         owner.setId(1);
 
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-
         File file = new File();
-        file.setExtension(extension);
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", 1)).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(file);
 
-        boolean isDeleted = fileService.delete("logo", 1, owner);
+        boolean isDeleted = fileService.delete("logo", owner, owner);
 
         assertFalse(new java.io.File("./uploads/logo1.txt").exists());
         assertTrue(isDeleted);
@@ -129,17 +138,13 @@ public class FileService {
         UserModel owner = new UserModel();
         owner.setId(3);
 
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-
         File file = new File();
-        file.setExtension(extension);
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", owner.getId())).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(file);
 
-        boolean isDeleted = fileService.delete("logo", owner.getId(), loggedUser);
+        boolean isDeleted = fileService.delete("logo", owner, loggedUser);
 
         assertFalse(new java.io.File("./uploads/logo3.txt").exists());
         assertTrue(isDeleted);
@@ -150,11 +155,14 @@ public class FileService {
         UserModel loggedUser = new UserModel();
         loggedUser.setRole("ROLE_ADMIN");
 
-        when(fileRepository.findByName("logo", 11)).thenReturn(null);
+        UserModel owner = new UserModel();
+        owner.setId(11);
+
+        when(fileRepository.findByName("logo", owner)).thenReturn(null);
 
         EntityNotFoundException thrown = assertThrows(
                 EntityNotFoundException.class,
-                () -> fileService.delete("logo", 11, loggedUser));
+                () -> fileService.delete("logo", owner, loggedUser));
 
         assertEquals(thrown.getMessage(), "File not found.");
     }
@@ -165,26 +173,32 @@ public class FileService {
         loggedUser.setId(2);
         loggedUser.setRole("ROLE_ADMIN");
 
-        Extension extension = new Extension();
-        extension.setOwner(loggedUser);
+        UserModel owner = new UserModel();
+        owner.setId(11);
 
         File file = new File();
-        file.setExtension(extension);
-        file.setOwner(loggedUser);
-        file.setExtensionType("txt");
+        file.setOwner(owner);
 
-        when(fileRepository.findByName("logo", 11)).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(file);
 
-        boolean isDeleted = fileService.delete("logo", 11, loggedUser);
+        boolean isDeleted = fileService.delete("logo", owner, loggedUser);
         assertFalse(isDeleted);
 
         verify(fileRepository, times(0)).delete(any(File.class));
     }
 
     @Test
-    public void find(){
+    public void getAsResource() throws MalformedURLException {
         Resource resource = fileService.getAsResource("logo.txt");
 
         assertEquals(resource.getFilename(), "logo.txt");
+    }
+
+    @Test
+    public void getAsResource_WhenFileNonexistent(){
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> fileService.getAsResource("nonexistent.txt"));
+
+        assertEquals(thrown.getMessage(), "File not found");
     }
 }

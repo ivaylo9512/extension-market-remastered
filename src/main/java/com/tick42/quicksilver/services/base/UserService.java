@@ -19,6 +19,8 @@ public interface UserService extends UserDetailsService {
 
     UserModel findById(long id, UserDetails loggedUser);
 
+    UserModel getById(long id);
+
     UserModel changePassword(NewPasswordSpec changePasswordSpec, UserDetails loggedUser);
 
     UserModel changeUserInfo(UserSpec userSpec, UserDetails loggedUser);

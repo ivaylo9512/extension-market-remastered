@@ -12,12 +12,10 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
-    @PrimaryKeyJoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
     private Extension extension;
 
-    @ManyToOne
-    @PrimaryKeyJoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
     private UserModel owner;
 
     @Column(name = "download_count")
@@ -49,9 +47,8 @@ public class File {
     @Override
     public boolean equals(Object obj) {
         if(obj == this) return true;
-        if(!(obj instanceof File)) return false;
+        if(!(obj instanceof File extension)) return false;
 
-        File extension = (File) obj;
         return extension.getId() == getId();
     }
 

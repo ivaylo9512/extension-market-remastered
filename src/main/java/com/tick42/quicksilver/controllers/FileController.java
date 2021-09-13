@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.FileStorageException;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -11,14 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 
 @RestController
@@ -37,7 +35,7 @@ public class FileController {
     }
 
     @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> getAsResource(@PathVariable("fileName") String fileName, HttpServletRequest request) throws FileNotFoundException {
+    public ResponseEntity<Resource> getAsResource(@PathVariable("fileName") String fileName, HttpServletRequest request) throws MalformedURLException {
         Resource resource = fileService.getAsResource(fileName);
         String contentType;
 
@@ -50,7 +48,7 @@ public class FileController {
         if(fileName.contains("file")) {
             String[] result = Arrays.stream(fileName.split("[file|.]")).filter(s -> !s.equals("")).toArray(String[]::new);
 
-            File file = fileService.findByName("file", Long.parseLong(result[0]));
+            File file = fileService.findByName("file", userService.getById(Long.parseLong(result[0])));
             fileService.increaseCount(file);
             extensionService.reloadFile(file);
         }
@@ -62,11 +60,17 @@ public class FileController {
                 .body(resource);
     }
 
+    @GetMapping("/findByName/{resourceType}/{ownerId}")
+    public File findByName(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
+        return fileService.findByName(resourceType, userService.getById(ownerId));
+    }
+
     @DeleteMapping("/auth/delete/{resourceType}/{ownerId}")
     public boolean delete(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getDetails();
 
-        return fileService.delete(resourceType, ownerId, userService.findById(loggedUser.getId(), loggedUser));
+        return fileService.delete(resourceType, userService.getById(ownerId),
+                userService.findById(loggedUser.getId(), loggedUser));
     }
 }

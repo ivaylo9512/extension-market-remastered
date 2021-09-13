@@ -82,14 +82,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler
-    ResponseEntity<String> handleFileStorageException(FileStorageException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
     ResponseEntity<String> disabledUserException(DisabledUserException e){
         return ResponseEntity
                 .status(HttpStatus.LOCKED)

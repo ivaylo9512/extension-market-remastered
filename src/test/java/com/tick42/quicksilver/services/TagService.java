@@ -1,16 +1,13 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.InvalidInputException;
-import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.TagRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 public class TagService {
-
     @Mock
     private TagRepository tagRepository;
     @InjectMocks

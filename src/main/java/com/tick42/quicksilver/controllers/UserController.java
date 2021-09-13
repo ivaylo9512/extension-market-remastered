@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDto register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) {
+    public UserDto register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException {
         MultipartFile profileImage = registerSpec.getProfileImage();
         File file = null;
 
@@ -48,7 +49,7 @@ public class UserController {
             file = fileService.generate(profileImage,"logo", "image/png");
         }
 
-        UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_USER"));
+        UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_USER"));
 
         if(file != null){
             fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
@@ -70,7 +71,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/auth/registerAdmin")
-    public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response){
+    public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec) throws IOException {
         MultipartFile profileImage = registerSpec.getProfileImage();
         File file = null;
 
@@ -78,7 +79,7 @@ public class UserController {
             file = fileService.generate(profileImage,"logo", "image/png");
         }
 
-        UserModel newUser = userService.create(new UserModel(registerSpec, "ROLE_ADMIN"));
+        UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_ADMIN"));
         newUser.setEnabled(true);
 
         if(file != null){

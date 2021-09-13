@@ -72,9 +72,10 @@ public class UserModel {
         this.email = email;
     }
 
-    public UserModel(RegisterSpec newUser, String role) {
+    public UserModel(RegisterSpec newUser, File profileImage, String role) {
         this(newUser.getUsername(), newUser.getEmail(), newUser.getPassword(), role,
                 newUser.getInfo(), newUser.getCountry());
+        setProfileImage(profileImage);
     }
 
     public UserModel(String username, String email, String password, String role, String info, String country, double rating, int extensionsRated) {
@@ -160,9 +161,11 @@ public class UserModel {
     }
 
     public void setProfileImage(File profileImage) {
-        this.profileImage = profileImage;
+        if(profileImage != null){
+            this.profileImage = profileImage;
+            profileImage.setOwner(this);
+        }
     }
-
     public boolean isEnabled() {
         return isEnabled;
     }

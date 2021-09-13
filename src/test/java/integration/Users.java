@@ -10,6 +10,7 @@ import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.security.Jwt;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -27,13 +29,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.containsString;
@@ -69,12 +76,13 @@ public class Users {
         rdp.execute(dataSource);
     }
 
+    @AfterEach
+    public void reset(){
+        new File("./uploads/logo.png").delete();
+    }
+
     @BeforeAll
     public void setup() {
-        ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
-        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
-        rdp.execute(dataSource);
-
         UserModel admin = new UserModel("adminUser", "password", "ROLE_ADMIN");
         admin.setId(1);
 
@@ -106,8 +114,14 @@ public class Users {
     private UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "Bulgaria", "info");
     private UserDto userDto = new UserDto(user);
 
-    private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token){
-        MockHttpServletRequestBuilder request = post(url)
+    private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token) throws IOException {
+        FileInputStream input = new FileInputStream("./uploads/test.png");
+        MockMultipartFile profileImage = new MockMultipartFile("profileImage", "test.png", "image/png",
+                IOUtils.toByteArray(input));
+        input.close();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart(url)
+                .file(profileImage)
                 .param("username", username)
                 .param("email", email)
                 .param("password", user.getPassword())
@@ -119,6 +133,7 @@ public class Users {
         }
 
         userDto.setRole(role);
+        userDto.setProfileImage("logo10.png");
         userDto.setId(10);
         userDto.setEmail(email);
         userDto.setUsername(username);
@@ -134,7 +149,8 @@ public class Users {
                 .andExpect(status().isOk());
 
         enableUser(userDto.getId());
-        checkDbForUser(userDto);
+        checkDBForUser(userDto);
+        checkDBForImage("logo", userDto.getId());
     }
 
     @WithMockUser(value = "spring")
@@ -146,7 +162,8 @@ public class Users {
                 .andExpect(content().string(containsString(objectMapper.writeValueAsString(userDto))));
 
         enableUser(userDto.getId());
-        checkDbForUser(userDto);
+        checkDBForUser(userDto);
+        checkDBForImage("logo", userDto.getId());
     }
 
     @WithMockUser(value = "spring")
@@ -165,9 +182,23 @@ public class Users {
                 .andExpect(content().string(containsString("Username is already taken.")));
     }
 
-    private void checkDbForUser(UserDto user) throws Exception{
+    private void checkDBForUser(UserDto user) throws Exception{
         mockMvc.perform(get("/api/users/findById/" + user.getId()))
                 .andExpect(content().string(objectMapper.writeValueAsString(user)));
+    }
+
+    private void checkDBForImage(String resourceType, long userId) throws Exception{
+        MvcResult result = mockMvc.perform(get(String.format("/api/files/findByName/%s/%s", resourceType, userId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        com.tick42.quicksilver.models.File image = objectMapper.readValue(result.getResponse().getContentAsString(), com.tick42.quicksilver.models.File.class);
+
+        assertEquals(image.getResourceType(), "logo");
+        assertEquals(image.getExtensionType(), "png");
+        assertEquals(image.getOwner().getId(), userId);
+        assertEquals(image.getType(), "image/png");
+        assertEquals(image.getSize(), 66680.0);
     }
 
     private void enableUser(long id) throws Exception{
@@ -208,7 +239,7 @@ public class Users {
                 "info", "Bulgaria", 4.166666666666667, 3));
         user.setId(1);
 
-        checkDbForUser(user);
+        checkDBForUser(user);
     }
 
     @Test
@@ -232,6 +263,67 @@ public class Users {
                         .content(objectMapper.writeValueAsString(userSpec)))
                 .andExpect(content().string(objectMapper.writeValueAsString(userDto)));
 
-        checkDbForUser(userDto);
+        checkDBForUser(userDto);
+    }
+
+    @Test
+    void registerAdmin_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
+                        "username", "username@gmail.com", null))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void registerAdmin_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
+                        "username", "username@gmail.com", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void changeUserInfo_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(post("/api/users/auth/changeUserInfo"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void changeUserInfo_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(post("/api/users/auth/changeUserInfo")
+                        .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void searchForUsers_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/users/auth/searchForUsers/2"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void searchForUsers_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/users/auth/searchForUsers/2")
+                        .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void changePassword_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(post("/api/users/auth/changePassword"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void changePassword_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/users/auth/changePassword")
+                        .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
     }
 }

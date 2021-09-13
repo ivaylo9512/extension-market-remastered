@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.File;
-import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.services.base.FileService;
@@ -24,60 +23,48 @@ public class FileServiceImpl implements FileService {
     private final Path fileLocation;
     private final FileRepository fileRepository;
 
-    public FileServiceImpl(FileRepository fileRepository) {
+    public FileServiceImpl(FileRepository fileRepository) throws IOException {
         this.fileRepository = fileRepository;
         this.fileLocation = Paths.get("./uploads")
                 .toAbsolutePath().normalize();
 
-        try {
-            Files.createDirectories(this.fileLocation);
-        } catch (Exception e) {
-            throw new FileStorageException("Couldn't create directory");
-        }
+        Files.createDirectories(this.fileLocation);
     }
 
     @Override
-    public void save(String name, MultipartFile receivedFile) {
-        try {
-            String extension = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
-            String fileName = name + "." + extension;
+    public void save(String name, MultipartFile receivedFile) throws IOException {
+        String extension = FilenameUtils.getExtension(receivedFile.getOriginalFilename());
+        String fileName = name + "." + extension;
 
-            Path targetLocation = this.fileLocation.resolve(fileName);
-            Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new FileStorageException("Couldn't store the image.");
-        }
+        Path targetLocation = this.fileLocation.resolve(fileName);
+        Files.copy(receivedFile.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Override
-    public Resource getAsResource(String fileName){
-        try {
-            Path filePath = this.fileLocation.resolve(fileName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+    public Resource getAsResource(String fileName) throws MalformedURLException{
+        Path filePath = this.fileLocation.resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
 
-            if (!resource.exists()) {
-                throw new EntityNotFoundException("File not found");
-            }
-
-            return resource;
-        } catch (MalformedURLException e) {
-            throw new FileFormatException(e.getMessage());
+        if (!resource.exists()) {
+            throw new EntityNotFoundException("File not found");
         }
+
+        return resource;
     }
 
     @Override
-    public boolean delete(String resourceType, long ownerId, UserModel loggedUser) {
-        if(ownerId != loggedUser.getId()
+    public boolean delete(String resourceType, UserModel owner, UserModel loggedUser) {
+        if(owner.getId() != loggedUser.getId()
                 && !loggedUser.getRole().equals("ROLE_ADMIN")){
             throw new UnauthorizedException("Unauthorized");
         }
 
-        File file = findByName(resourceType, ownerId);
+        File file = findByName(resourceType, owner);
         if(file == null){
             throw new EntityNotFoundException("File not found.");
         }
 
-        boolean isDeleted = new java.io.File("./uploads/" + resourceType + ownerId + "." + file.getExtensionType()).delete();
+        boolean isDeleted = new java.io.File("./uploads/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
         if(isDeleted){
             fileRepository.delete(file);
             return true;
@@ -93,8 +80,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public File findByName(String resourceType, long ownerId){
-        return fileRepository.findByName(resourceType, ownerId);
+    public File findByName(String resourceType, UserModel owner){
+        return fileRepository.findByName(resourceType, owner);
     }
     @Override
     public File generate(MultipartFile receivedFile, String resourceType, String fileType) {

@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/tag")
 public class TagController {
-
     private final TagService tagService;
 
     @Autowired

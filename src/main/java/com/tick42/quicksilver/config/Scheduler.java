@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Scheduler {
-
     private ScheduledTask task;
 
     public Scheduler() {
