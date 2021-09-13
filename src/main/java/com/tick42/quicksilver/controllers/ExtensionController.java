@@ -11,7 +11,6 @@ import com.tick42.quicksilver.services.base.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -85,7 +84,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) {
+    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) throws IOException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -94,7 +93,7 @@ public class ExtensionController {
         Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
 
         Extension newExtension = new Extension(extensionSpec, user, tags);
-        generateFiles(extensionSpec, newExtension);
+        generateFiles(extensionSpec, newExtension, user);
 
         Extension extension = extensionService.save(newExtension);
 
@@ -117,7 +116,7 @@ public class ExtensionController {
         Extension extension = new Extension(extensionSpec, user, tags);
         extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
-        generateFiles(extensionSpec, extension);
+        generateFiles(extensionSpec, extension, user);
         saveFiles(extensionSpec, extension);
 
         if(extensionSpec.getGithub() != null)
@@ -130,24 +129,35 @@ public class ExtensionController {
         return extensionDto;
     }
 
-
-    private void generateFiles(ExtensionSpec extensionSpec, Extension extension) {
+    private void generateFiles(ExtensionSpec extensionSpec, Extension extension, UserModel owner) {
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            extension.setImage(fileService.generate(image, "image", "image"));
+            File imageModel = fileService.generate(image, "image", "image");
+
+            imageModel.setOwner(owner);
+            imageModel.setExtension(extension);
+            extension.setImage(imageModel);
         }
         if(file != null){
-            extension.setCover(fileService.generate(file, "file", ""));
+            File fileModel = fileService.generate(file, "file", "");
+
+            fileModel.setOwner(owner);
+            fileModel.setExtension(extension);
+            extension.setFile(fileModel);
         }
         if(cover != null){
-            extension.setCover(fileService.generate(cover, "cover", "image"));
+            File coverModel = fileService.generate(cover, "cover", "image");
+
+            coverModel.setOwner(owner);
+            coverModel.setExtension(extension);
+            extension.setCover(coverModel);
         }
     }
 
-    private void saveFiles(ExtensionSpec extensionSpec, Extension extension) {
+    private void saveFiles(ExtensionSpec extensionSpec, Extension extension) throws IOException {
         long id = extension.getId();
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
@@ -202,7 +212,7 @@ public class ExtensionController {
 
     @GetMapping(value = "/checkName")
     public boolean isNameAvailable(@RequestParam(name = "name") String name){
-        return extensionService.checkName(name);
+        return extensionService.isNameAvailable(name);
     }
 
     private List<ExtensionDto> generateExtensionDTOList(List<Extension> extensions) {

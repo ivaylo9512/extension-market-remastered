@@ -43,7 +43,7 @@ public class ExtensionService {
     @Test
     public void toggleFeaturedState() {
         Extension extension = new Extension();
-        extension.isFeatured(false);
+        extension.setFeatured(false);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
@@ -55,7 +55,7 @@ public class ExtensionService {
     @Test
     public void toggleFeaturedState_WhenFeatured() {
         Extension extension = new Extension();
-        extension.isFeatured(true);
+        extension.setFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
@@ -67,7 +67,7 @@ public class ExtensionService {
     @Test
     public void setFeaturedState_whenGivenInvalidParameter_shouldThrow() {
         Extension extension = new Extension();
-        extension.isFeatured(true);
+        extension.setFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
@@ -79,34 +79,32 @@ public class ExtensionService {
 
     @Test
     public void togglePending_WhenPending() {
-        // Arrange
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.setPending(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         Extension extensionShouldBePending = extensionService.setPublishedState(1, "publish");
 
-        assertFalse(extensionShouldBePending.getIsPending());
+        assertFalse(extensionShouldBePending.isPending());
     }
 
     @Test
     public void togglePending_WhenNotPending() {
         Extension extension = new Extension();
-        extension.setIsPending(false);
+        extension.setPending(false);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
         Extension extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
 
-        assertTrue(extensionShouldBeUnpublished.getIsPending());
+        assertTrue(extensionShouldBeUnpublished.isPending());
     }
 
     @Test
     public void setPublishedState_whenGivenInvalidParameter_shouldThrow() {
-        // Arrange
         Extension extension = new Extension();
-        extension.isFeatured(true);
+        extension.setFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
@@ -120,8 +118,8 @@ public class ExtensionService {
     public void findPending() {
         Extension extension1 = new Extension();
         Extension extension2 = new Extension();
-        extension1.setIsPending(true);
-        extension2.setIsPending(true);
+        extension1.setPending(true);
+        extension2.setPending(true);
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
         when(extensionRepository.findByPending(true)).thenReturn(extensions);
@@ -129,8 +127,8 @@ public class ExtensionService {
         List<Extension> pendingExtensionDtos = extensionService.findPending();
 
         assertEquals(2, pendingExtensionDtos.size());
-        assertTrue(pendingExtensionDtos.get(0).getIsPending());
-        assertTrue(pendingExtensionDtos.get(1).getIsPending());
+        assertTrue(pendingExtensionDtos.get(0).isPending());
+        assertTrue(pendingExtensionDtos.get(1).isPending());
     }
 
     @Test
@@ -145,6 +143,7 @@ public class ExtensionService {
         assertEquals(thrown.getMessage(), "Extension not found.");
     }
 
+    @Test
     public void findById_WhenOwnerIsInactiveAndUserIsNull_EntityUnavailable() {
         UserModel owner = new UserModel();
         owner.setActive(false);
@@ -188,7 +187,7 @@ public class ExtensionService {
         owner.setActive(true);
 
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.setPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
@@ -211,7 +210,7 @@ public class ExtensionService {
         owner.setId(2);
 
         Extension extension = new Extension();
-        extension.setIsPending(true);
+        extension.setPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
@@ -234,7 +233,7 @@ public class ExtensionService {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(true);
+        extension.setPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
@@ -256,7 +255,7 @@ public class ExtensionService {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(true);
+        extension.setPending(true);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
@@ -278,7 +277,7 @@ public class ExtensionService {
 
         Extension extension = new Extension();
         extension.setId(1);
-        extension.setIsPending(false);
+        extension.setPending(false);
         extension.setOwner(owner);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
@@ -492,4 +491,186 @@ public class ExtensionService {
         assertEquals(thrown.getMessage(), "\"orderType\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
     }
 
+    @Test
+    public void checkName(){
+        when(extensionRepository.findByName("name")).thenReturn(new Extension());
+
+        boolean isFound = extensionService.isNameAvailable("name");
+
+        assertFalse(isFound);
+    }
+
+    @Test
+    public void checkNameWhenNotFound(){
+        when(extensionRepository.findByName("name")).thenReturn(null);
+
+        boolean isFound = extensionService.isNameAvailable("name");
+
+        assertTrue(isFound);
+    }
+
+    @Test
+    public void findMostRecent(){
+        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(), new Extension(),
+                new Extension(), new Extension(), new Extension());
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+
+        extensionService.updateMostRecent();
+        List<Extension> mostRecent = extensionService.findMostRecent(3);
+
+        assertEquals(mostRecent.size(), 3);
+        assertEquals(extensions.get(0), mostRecent.get(0));
+        assertEquals(extensions.get(1), mostRecent.get(1));
+        assertEquals(extensions.get(2), mostRecent.get(2));
+    }
+
+    @Test
+    public void findFeatured() {
+        Extension extension = new Extension();
+        Extension extension1 = new Extension();
+        Extension extension2 = new Extension();
+
+        extension.setId(1);
+        extension1.setId(2);
+        extension2.setId(3);
+
+        List<Extension> extensions = List.of(extension, extension1, extension2);
+
+        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
+
+        extensionService.loadFeatured();
+        List<Extension> featured = extensionService.findFeatured();
+
+        assertEquals(extensions, featured);
+    }
+
+    @Test
+    public void findMostRecent_WhenCountIsMoreThanMaxCount(){
+        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension());
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 10,
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+
+        List<Extension> mostRecent = extensionService.findMostRecent(10);
+
+        assertEquals(extensions, mostRecent);
+        verify(extensionRepository, times(1)).findAllOrderedBy("", PageRequest.of(0, 10,
+                Sort.Direction.DESC, "uploadDate"));
+    }
+
+    @Test
+    public void findMostRecent_WhenCountIsNull(){
+        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(), new Extension(),
+                new Extension(), new Extension(), new Extension());
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+
+
+        extensionService.updateMostRecent();
+        List<Extension> mostRecent = extensionService.findMostRecent(null);
+
+        assertEquals(mostRecent.size(), 5);
+    }
+
+    @Test
+    public void findMostDownloaded(){
+        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(),
+                new Extension(), new Extension());
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
+                Sort.Direction.DESC, "timesDownloaded"))).thenReturn(extensions);
+
+        List<Extension> mostDownloaded = extensionService.findMostDownloaded(5);
+
+        assertEquals(extensions, mostDownloaded);
+    }
+
+    @Test
+    public void updateFeatured(){
+        Extension extension = new Extension();
+        extension.setId(2);
+        extension.setFeatured(true);
+
+        extensionService.updateFeatured(extension);
+        List<Extension> extensions = extensionService.findFeatured();
+
+        assertEquals(extensions.get(0), extension);
+    }
+
+    @Test
+    public void updateFeatured_WithUnfeatured(){
+        Extension extension = new Extension();
+        extension.setId(2);
+        extension.setFeatured(true);
+
+        when(extensionRepository.findByFeatured(true)).thenReturn(List.of(extension));
+        extensionService.loadFeatured();
+        List<Extension> extensions = extensionService.findFeatured();
+
+        assertEquals(extensions.get(0), extension);
+
+        extension.setFeatured(false);
+        extensionService.updateFeatured(extension);
+        List<Extension> featured = extensionService.findFeatured();
+
+        assertEquals(featured.size(), 0);
+    }
+
+    @Test
+    public void reloadExtension(){
+        Extension extension = new Extension();
+        extension.setId(2);
+        extension.setDescription("description");
+        extension.setFeatured(true);
+        List<Extension> extensions = List.of(extension);
+
+        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
+        extensionService.loadFeatured();
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+        extensionService.updateMostRecent();
+
+        extension.setDescription("newDescription");
+
+        extensionService.reloadExtension(extension);
+
+        List<Extension> featured = extensionService.findFeatured();
+        List<Extension> mostRecent = extensionService.findMostRecent(null);
+
+        assertEquals(featured.get(0).getDescription(), "newDescription");
+        assertEquals(mostRecent.get(0).getDescription(), "newDescription");
+    }
+
+    @Test
+    public void reloadFile() {
+        Extension extension = new Extension();
+        File file = new File();
+        file.setId(1);
+        file.setDownloadCount(2);
+        extension.setFile(file);
+        List<Extension> extensions = List.of(extension);
+
+        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
+        extensionService.loadFeatured();
+
+        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+        extensionService.updateMostRecent();
+
+        File newFile = new File();
+        newFile.setId(1);
+        newFile.setDownloadCount(5);
+
+        extensionService.reloadFile(newFile);
+
+        List<Extension> featured = extensionService.findFeatured();
+        List<Extension> mostRecent = extensionService.findMostRecent(null);
+
+        assertEquals(featured.get(0).getFile().getDownloadCount(), 5);
+        assertEquals(mostRecent.get(0).getFile().getDownloadCount(), 5);
+    }
 }

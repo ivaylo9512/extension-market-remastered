@@ -38,5 +38,5 @@ public interface ExtensionService {
 
     void reloadFile(File file);
 
-    boolean checkName(String name);
+    boolean isNameAvailable(String name);
 }

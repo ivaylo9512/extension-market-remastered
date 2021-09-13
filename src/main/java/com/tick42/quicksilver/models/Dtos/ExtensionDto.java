@@ -46,7 +46,7 @@ public class ExtensionDto {
         this.isFeatured = extension.isFeatured();
         this.ownerId = extension.getOwner().getId();
         this.ownerName = extension.getOwner().getUsername();
-        this.isPending = extension.getIsPending();
+        this.isPending = extension.isPending();
         this.tags = extension.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         this.timesDownloaded = extension.getFile().getDownloadCount();
         this.version = extension.getVersion();

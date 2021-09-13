@@ -81,9 +81,8 @@ public class Extension {
     @Override
     public boolean equals(Object obj) {
         if(obj == this) return true;
-        if(!(obj instanceof Extension)) return false;
+        if(!(obj instanceof Extension extension)) return false;
 
-        Extension extension = (Extension) obj;
         return extension.getId() == getId();
     }
 
@@ -135,11 +134,11 @@ public class Extension {
         this.owner = owner;
     }
 
-    public boolean getIsPending() {
+    public boolean isPending() {
         return pending;
     }
 
-    public void setIsPending(boolean pending) {
+    public void setPending(boolean pending) {
         this.pending = pending;
     }
 
@@ -155,7 +154,7 @@ public class Extension {
         return featured;
     }
 
-    public void isFeatured(boolean featured) {
+    public void setFeatured(boolean featured) {
         this.featured = featured;
     }
 

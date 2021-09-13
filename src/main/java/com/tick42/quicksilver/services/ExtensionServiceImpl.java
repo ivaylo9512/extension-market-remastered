@@ -32,7 +32,7 @@ public class ExtensionServiceImpl implements ExtensionService {
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         UserModel owner = extension.getOwner();
-        if(extension.getIsPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
+        if(extension.isPending() && (loggedUser == null || (!AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN") &&
                 (loggedUser.getId() != owner.getId() || !owner.isActive())))){
             throw new UnauthorizedException("Extension is not available.");
         }
@@ -73,15 +73,14 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public List<Extension> findMostRecent(Integer mostRecentCount){
-        List<Extension> mostRecentExtensions;
-        if(mostRecentCount == null){
-            mostRecentExtensions = new ArrayList<>(mostRecent);
-        }else if(mostRecentCount > mostRecentQueueLimit){
-            mostRecentExtensions = extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate"));
-        }else{
-            mostRecentExtensions = new ArrayList<>(mostRecent).subList(0, mostRecentCount);
+        mostRecentCount = mostRecentCount == null ?
+                mostRecentQueueLimit : mostRecentCount;
+
+        if(mostRecentCount > mostRecentQueueLimit){
+            return extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate"));
         }
-        return mostRecentExtensions;
+
+        return new ArrayList<>(mostRecent).subList(0, Math.min(mostRecent.size(), mostRecentCount));
     }
 
     @Override
@@ -137,16 +136,15 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public Extension setPublishedState(long extensionId, String state) {
-
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
         switch (state) {
-            case "publish" -> extension.setIsPending(false);
+            case "publish" -> extension.setPending(false);
             case "unpublish" -> {
                 featured.remove(extensionId);
-                extension.isFeatured(false);
-                extension.setIsPending(true);
+                extension.setFeatured(false);
+                extension.setPending(true);
             }
             default -> throw new InvalidInputException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
         }
@@ -167,13 +165,13 @@ public class ExtensionServiceImpl implements ExtensionService {
                 if (!extension.isFeatured() && featured.size() == featuredLimit) {
                     throw new FeaturedLimitException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
                 }
-                extension.isFeatured(true);
+                extension.setFeatured(true);
             }
-            case "unfeature" -> extension.isFeatured(false);
+            case "unfeature" -> extension.setFeatured(false);
             default -> throw new InvalidInputException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
         }
 
-        updateData(extension);
+        updateFeatured(extension);
 
         return extension;
     }
@@ -195,7 +193,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate")));
     }
 
-    private void updateData(Extension extension) {
+    public void updateFeatured(Extension extension) {
         if(extension.isFeatured()){
             featured.put(extension.getId(), extension);
         }else{
@@ -231,7 +229,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public boolean checkName(String name){
+    public boolean isNameAvailable(String name){
         return extensionRepository.findByName(name) == null;
     }
 }
