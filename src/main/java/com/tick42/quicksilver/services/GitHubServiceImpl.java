@@ -15,6 +15,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -26,7 +28,7 @@ public class GitHubServiceImpl implements GitHubService {
     private final GitHubRepository gitHubRepository;
     private final Scheduler scheduler;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
-    private SettingsRepository settingsRepository;
+    private final SettingsRepository settingsRepository;
     private Settings settings;
     private GitHub gitHub;
 
@@ -39,39 +41,13 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public void setRemoteDetails(GitHubModel gitHubModel) {
-        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Boolean> future = submitTask(gitHubModel);
+        executeFuture(future, gitHubModel, 50, LocalDateTime.now());
+    }
 
-        Future<Boolean> future = executor.submit(() -> {
-            try {
-
-                GHRepository repo = this.gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
-
-                int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
-                int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
-
-                LocalDateTime lastCommit = null;
-                List<GHCommit> commits = repo.listCommits().asList();
-                if (commits.size() > 0) {
-                    lastCommit = commits.get(0).getCommitDate().toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDateTime();
-
-                }
-
-                gitHubModel.setPullRequests(pulls);
-                gitHubModel.setOpenIssues(issues);
-                gitHubModel.setLastCommit(lastCommit);
-                gitHubModel.setLastSuccess(LocalDateTime.now());
-                return true;
-            } catch (GHException e) {
-                throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
-            } catch (IOException e) {
-                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
-            }
-        });
-
+    public void executeFuture(Future<Boolean> future, GitHubModel gitHubModel, int seconds, LocalDateTime time) {
         try {
-            future.get(50, TimeUnit.SECONDS);
+            future.get(seconds, TimeUnit.SECONDS);
 
         } catch (InterruptedException e) {
             throw new RuntimeException("New Settings are set. Current task canceled.");
@@ -79,17 +55,53 @@ public class GitHubServiceImpl implements GitHubService {
         } catch (ExecutionException e){
             e.printStackTrace();
             gitHubModel.setFailMessage(e.getMessage());
-            gitHubModel.setLastFail(LocalDateTime.now());
+            gitHubModel.setLastFail(time);
 
         } catch (TimeoutException e) {
-            tryGithub();
+            tryGithub(settings);
         }
     }
 
-    private void tryGithub(){
-        settings = settingsRepository.findById(settings.getId() + 1)
-                .orElse(settingsRepository.findById(1L)
-                        .orElseThrow(() -> new RuntimeException("No settings found.")));
+    public Future<Boolean> submitTask(GitHubModel gitHubModel) {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+
+        return executor.submit(() -> {
+            try {
+                GHRepository repo = this.gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
+
+                GHIssueState ghIssueState = GHIssueState.OPEN;
+                int pulls = repo.getPullRequests(ghIssueState).size();
+                int issues = repo.getIssues(ghIssueState).size() - pulls;
+
+                LocalDateTime lastCommit = null;
+                List<GHCommit> commits = repo.listCommits().asList();
+                if (commits.size() > 0) {
+                    lastCommit = commits.get(0).getCommitDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
+                }
+
+                gitHubModel.setPullRequests(pulls);
+                gitHubModel.setOpenIssues(issues);
+                gitHubModel.setLastCommit(lastCommit);
+                gitHubModel.setLastSuccess(LocalDateTime.now());
+
+                return true;
+            } catch (GHException e) {
+                throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
+            } catch (IOException e) {
+                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
+            }
+        });
+    }
+
+    public void tryGithub(Settings settings){
+        long settingsId = settings == null ? 1
+                : settings.getId() + 1;
+
+        this.settings = settings = settingsRepository.findById(settingsId)
+                .or(() -> settingsRepository.findById(1L))
+                        .orElseThrow(() -> new EntityNotFoundException("Settings not found."));
         try {
             gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
         } catch (IOException e) {
@@ -117,29 +129,33 @@ public class GitHubServiceImpl implements GitHubService {
         gitHubModel.setLastCommit(lastCommit);
         gitHubModel.setLastSuccess(LocalDateTime.now());
     }
+
     @Override
     public GitHubModel generateGitHub(String link) {
-        if(link == null){
-            return null;
-        }
-
-        String[] githubCred = link.replaceAll("https://github.com/", "").split("/");
-        String user = githubCred[0];
-        String repo = githubCred[1];
-        GitHubModel gitHubModel = new GitHubModel(link, user, repo);
+        GitHubModel gitHubModel = extractFromLink(link);
         setRemoteDetails(gitHubModel);
+
         return gitHubModel;
     }
 
+    public GitHubModel extractFromLink(String link) {
+        String[] githubCred = link.replaceAll("https://github.com/", "").split("/");
+        String user = githubCred[0];
+        String repo = githubCred[1];
+
+        return new GitHubModel(link, user, repo);
+    }
+
     @Override
-    public GitHubModel updateGithub(long githubId, String githubLink) {
+    public GitHubModel updateGitHub(long githubId, String githubLink) {
         GitHubModel newGitHubModel = generateGitHub(githubLink);
         newGitHubModel.setId(githubId);
 
         return newGitHubModel;
     }
+
     @Override
-    public void updateExtensionDetails() {
+    public void updateGitHubDetails() {
         List<GitHubModel> gitHubModels = gitHubRepository.findAll();
         gitHubModels.forEach(gitHub -> {
             setRemoteDetails(gitHub);
@@ -148,7 +164,7 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public Settings createScheduledTask(ScheduledTaskRegistrar taskRegistrar) {
+    public void createScheduledTask(ScheduledTaskRegistrar taskRegistrar) {
         try {
             gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
         } catch (IOException e) {
@@ -157,40 +173,32 @@ public class GitHubServiceImpl implements GitHubService {
 
         if (scheduler.getTask() != null) scheduler.getTask().cancel();
 
-        FixedRateTask updateGitHubData = new FixedRateTask(this::updateExtensionDetails, settings.getRate(), settings.getWait());
+        FixedRateTask updateGitHubData = new FixedRateTask(this::updateGitHubDetails, settings.getRate(), settings.getWait());
 
         taskRegistrar.setTaskScheduler(threadPoolTaskScheduler);
         scheduler.setTask(taskRegistrar.scheduleFixedRateTask(updateGitHubData));
+    }
 
+    @Override
+    public Settings initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec){
+        if (gitHubSettingSpec != null) {
+            long id = settings == null ? 0 : settings.getId();
+            settings = new Settings(gitHubSettingSpec, user, id);
+            settingsRepository.save(settings);
+        }
+
+        this.settings = settings;
         return settings;
     }
 
     @Override
-    public void initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec){
-        this.settings = settings;
-
-        if (gitHubSettingSpec != null) {
-            long id = settings == null ? 0 : settings.getId();
-            this.settings = new Settings(gitHubSettingSpec, user, id);
-            settingsRepository.save(this.settings);
-        }
-    }
-
-    @Override
     public Settings getSettings(UserModel user) {
-        Settings userSettings = settingsRepository.findByUser(user);
-
-        if(userSettings == null) userSettings = new Settings();
-
-        return userSettings;
+        return settingsRepository.findByUser(user)
+                .orElse(new Settings());
     }
 
     @Override
-    public GitHubModel fetchGitHub(GitHubModel gitHubModel, UserModel loggedUser) {
-        if (!loggedUser.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedException("You are not authorized to trigger a github refresh.");
-        }
-
+    public GitHubModel reloadGitHub(GitHubModel gitHubModel, UserModel loggedUser) {
         setRemoteDetails(gitHubModel);
         return gitHubRepository.save(gitHubModel);
     }

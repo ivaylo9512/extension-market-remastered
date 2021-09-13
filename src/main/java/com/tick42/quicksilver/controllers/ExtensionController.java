@@ -120,7 +120,7 @@ public class ExtensionController {
         saveFiles(extensionSpec, extension);
 
         if(extensionSpec.getGithub() != null)
-            extension.setGithub(gitHubService.updateGithub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
+            extension.setGithub(gitHubService.updateGitHub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
 
         ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension, user));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());

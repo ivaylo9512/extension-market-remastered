@@ -4,6 +4,8 @@ import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface SettingsRepository extends JpaRepository<Settings, Long> {
-    Settings findByUser(UserModel user);
+    Optional<Settings> findByUser(UserModel user);
 }

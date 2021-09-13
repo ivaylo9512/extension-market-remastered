@@ -11,20 +11,20 @@ public interface GitHubService {
 
     void getRepoDetails(GitHubModel gitHubModel) throws Exception;
 
-    GitHubModel updateGithub(long githubId, String githubLink);
+    GitHubModel updateGitHub(long githubId, String githubLink);
 
     GitHubModel generateGitHub(String link);
 
-    void updateExtensionDetails();
+    void updateGitHubDetails();
 
-    Settings createScheduledTask(ScheduledTaskRegistrar taskRegistrar);
+    void createScheduledTask(ScheduledTaskRegistrar taskRegistrar);
 
-    void initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec);
+    Settings initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec);
 
     Settings getSettings(UserModel user);
 
     void delete(GitHubModel gitHubModel);
 
-    GitHubModel fetchGitHub(GitHubModel gitHubModel, UserModel userModel);
+    GitHubModel reloadGitHub(GitHubModel gitHubModel, UserModel userModel);
 
 }

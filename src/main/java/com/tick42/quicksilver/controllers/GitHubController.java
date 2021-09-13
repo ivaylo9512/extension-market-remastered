@@ -19,7 +19,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(value = "/api/github")
 public class GitHubController {
-
     private final GitHubService gitHubService;
     private final ExtensionService extensionService;
     private final UserService userService;
@@ -31,20 +30,22 @@ public class GitHubController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping("/auth")
-    public GitHubSettingDto gitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
+    @PostMapping("/auth/setSettings")
+    public GitHubSettingDto setGitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel userModel = userService.findById(userId, loggedUser);
 
-        gitHubService.initializeSettings(userModel.getGitHubSettings(), userModel, gitHubSettingSpec);
-        return new GitHubSettingDto(gitHubService.createScheduledTask(taskRegistrar));
+        Settings settings = gitHubService.initializeSettings(userModel.getGitHubSettings(), userModel, gitHubSettingSpec);
+        gitHubService.createScheduledTask(taskRegistrar);
+
+        return new GitHubSettingDto(settings);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/auth")
+    @GetMapping("/auth/getSettings")
     public GitHubSettingDto getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -54,27 +55,17 @@ public class GitHubController {
         return new GitHubSettingDto(gitHubService.getSettings(user));
     }
 
-    @GetMapping("/getRepoDetails")
-    public GitHubDto getRepoDetails(@RequestParam(name = "link") String link){
-        GitHubModel gitHubModel = gitHubService.generateGitHub(link);
-        if(gitHubModel.getFailMessage() != null){
-            throw new GitHubRepositoryException("Couldn't connect to GitHubModel check the URL.");
-        }
-        return new GitHubDto(gitHubService.generateGitHub(link));
-    }
-
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/{id}/fetch")
-    public GitHubDto fetchGitHubData(@PathVariable("id") long id) {
+    @PatchMapping(value = "/auth/reload/{id}")
+    public GitHubDto reloadGitHubData(@PathVariable("id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         Extension extension = extensionService.findById(id, loggedUser);
+        UserModel user = userService.findById(userId, loggedUser);
 
-        UserModel user = userService.findById(userId, null);
-
-        return new GitHubDto(gitHubService.fetchGitHub(extension.getGithub(), user));
+        return new GitHubDto(gitHubService.reloadGitHub(extension.getGithub(), user));
     }
 
     @ExceptionHandler

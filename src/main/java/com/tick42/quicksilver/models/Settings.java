@@ -26,12 +26,22 @@ public class Settings {
     }
 
     public Settings(GitHubSettingSpec settingsSpec, UserModel user, long id) {
-        this.id = id;
-        this.rate = settingsSpec.getRate();
-        this.wait = settingsSpec.getWait();
-        this.token = settingsSpec.getToken();
-        this.username = settingsSpec.getUsername();
+        this(id, settingsSpec.getRate(), settingsSpec.getWait(), settingsSpec.getToken(),
+                settingsSpec.getUsername());
         this.user = user;
+    }
+
+    public Settings(String username, String token){
+        this.username = username;
+        this.token = token;
+    }
+
+    public Settings(long id, int rate, int wait, String token, String username) {
+        this.id = id;
+        this.rate = rate;
+        this.wait = wait;
+        this.token = token;
+        this.username = username;
     }
 
     public long getId() {
