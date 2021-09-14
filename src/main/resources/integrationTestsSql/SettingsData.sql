@@ -34,8 +34,10 @@ CREATE TABLE IF NOT EXISTS `settings` (
 -- Dumping data for table extensions-market-test.settings: ~2 rows (approximately)
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
 INSERT INTO `settings` (`id`, `rate`, `wait`, `git_token`, `user`, `git_username`) VALUES
-	(1, 500000, 5000, 'ghp_aiw47lLie3m9VnlQRWI2', 1, 'ivaylo9512'),
-	(8, 5000000, 5000, 'ghp_aiw47lLie3m9VnlQRWIPyOB', 2, 'ia9512');
+	(1, 500000, 9000, 'ghp_aiw47lLie3m9VnlQRWI2', 1, 'ivaylo9512'),
+	(3, 8000000, 6000, 'ghp_aiw47lLie3m9VnlQRWIPyOB', 2, 'ia9512'),
+	(7, 9000000, 6000, 'ghp_aiw47lLie3m9VnlQRWIPyOB', 3, 'im98122'),
+	(5, 10000000, 7000, 'ghp_aiw47lLie3m9VnlQRWIPyOB', 4, 'ib9212');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 
 SET FOREIGN_KEY_CHECKS = 1;

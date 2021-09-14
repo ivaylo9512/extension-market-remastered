@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.config;
 
-import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +19,24 @@ import java.io.IOException;
 public class TestScheduleConfig implements SchedulingConfigurer {
     @Autowired
     private GitHubService gitHubService;
+    private final UserService userService;
+
+    public TestScheduleConfig(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         String token = getTokenFromFile();
 
-        gitHubService.initializeSettings(null, null, new GitHubSettingSpec(token,
+        gitHubService.initializeSettings(null, null, new SettingsSpec(token,
                 500_000, 5000, "ivaylo9512"));
+        gitHubService.connectGithub();
         gitHubService.createScheduledTask(taskRegistrar);
     }
 
     private String getTokenFromFile() {
-        try(BufferedReader br = new BufferedReader(new FileReader("/gitToken.txt"))){
+        try(BufferedReader br = new BufferedReader(new FileReader("/adminUser.txt"))){
             return br.readLine();
         } catch (IOException e) {
             e.printStackTrace();

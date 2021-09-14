@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import javax.persistence.EntityNotFoundException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,9 +33,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
+        String model = Arrays.stream(e.getMessage().split("[ .]+"))
+                .filter(s -> s.equals("UserModel") || s.equals("File") || s.equals("Settings")
+                        || s.equals("GitHub")).findFirst().orElse("Entity");
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+                .body(model + " not found.");
     }
 
     @ExceptionHandler

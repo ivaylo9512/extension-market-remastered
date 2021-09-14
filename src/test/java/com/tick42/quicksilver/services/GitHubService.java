@@ -3,7 +3,7 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.UserModel;
-import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import javax.persistence.EntityNotFoundException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -49,7 +48,10 @@ public class GitHubService {
         Settings settings = new Settings();
         settings.setToken(token);
 
-        return gitHubService.connectGithub(settings);
+        when(settingsRepository.getNextAvailable(0L)).thenReturn(settings);
+        gitHubService.setNextSettings();
+
+        return gitHubService.connectGithub();
     }
 
     @BeforeAll
@@ -70,8 +72,11 @@ public class GitHubService {
         Settings settings = new Settings();
         settings.setToken("invalid");
 
+        when(settingsRepository.getNextAvailable(0L)).thenReturn(settings);
+        gitHubService.setNextSettings();
+
         GHException thrown = assertThrows(GHException.class,
-                () -> gitHubService.connectGithub(settings));
+                () -> gitHubService.connectGithub());
 
         assertEquals(thrown.getMessage(), "Couldn't connect to github.");
     }
@@ -135,10 +140,10 @@ public class GitHubService {
             return new GitHubModel();
         });
 
-        doNothing().when(gitHubService).tryGithub(null);
+        doNothing().when(gitHubService).tryGithub();
 
         gitHubService.executeFuture(future, new GitHubModel(),1);
-        verify(gitHubService, times(1)).tryGithub(null);
+        verify(gitHubService, times(1)).tryGithub();
     }
 
     @Test
@@ -154,56 +159,13 @@ public class GitHubService {
     public void tryGithub(){
         Settings settings = new Settings("ivaylo9512", "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");
 
-        when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
-        doReturn(null).when(gitHubService).connectGithub(settings);
+        when(settingsRepository.getNextAvailable(0L)).thenReturn(settings);
+        doReturn(null).when(gitHubService).connectGithub();
 
-        gitHubService.tryGithub(null);
+        gitHubService.tryGithub();
 
-        verify(gitHubService, times(1)).findAvailableSettings(null);
-        verify(gitHubService, times(1)).connectGithub(settings);
-    }
-
-    @Test
-    public void findAvailableSettings_WhenSettingsArePresent(){
-        Settings oldSettings = new Settings();
-        oldSettings.setId(2);
-
-        Settings settings = new Settings("ivaylo9512", "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");
-        settings.setId(3);
-
-        when(settingsRepository.findById(settings.getId())).thenReturn(Optional.of(settings));
-
-        Settings newSettings = gitHubService.findAvailableSettings(oldSettings);
-
-        assertEquals(settings, newSettings);
-    }
-
-    @Test
-    public void findAvailableSettings_WithNonExistent_ShouldReturnBackToFirst() {
-        Settings settings = new Settings("ivaylo9512", "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");
-        when(settingsRepository.findById(4L)).thenReturn(Optional.empty());
-        when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
-
-        Settings oldSettings = new Settings();
-        oldSettings.setId(3);
-
-        Settings newSettings = gitHubService.findAvailableSettings(oldSettings);
-
-        assertEquals(settings, newSettings);
-    }
-
-    @Test
-    public void findAvailableSettings_WithNonExistentFirst() {
-        when(settingsRepository.findById(4L)).thenReturn(Optional.empty());
-        when(settingsRepository.findById(1L)).thenReturn(Optional.empty());
-
-        Settings oldSettings = new Settings();
-        oldSettings.setId(3);
-
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
-                () -> gitHubService.findAvailableSettings(oldSettings));
-
-        assertEquals(thrown.getMessage(), "Settings not found.");
+        verify(gitHubService, times(1)).setNextSettings();
+        verify(gitHubService, times(1)).connectGithub();
     }
 
     @Test
@@ -264,9 +226,9 @@ public class GitHubService {
 
         Settings settings = new Settings(20, 30, 40, "token", "username");
         settings.setUser(oldUser);
-        GitHubSettingSpec gitHubSettingSpec = new GitHubSettingSpec("newToken", 50, 60, "newUsername");
+        SettingsSpec settingsSpec = new SettingsSpec("newToken", 50, 60, "newUsername");
 
-        Settings newSettings = gitHubService.initializeSettings(settings, newUser, gitHubSettingSpec);
+        Settings newSettings = gitHubService.initializeSettings(settings, newUser, settingsSpec);
 
         assertEquals(newSettings.getId(), 20);
         assertEquals(newSettings.getRate(), 50);
@@ -282,9 +244,9 @@ public class GitHubService {
         oldUser.setId(1);
         newUser.setId(2);
 
-        GitHubSettingSpec gitHubSettingSpec = new GitHubSettingSpec("newToken", 50, 60, "newUsername");
+        SettingsSpec settingsSpec = new SettingsSpec("newToken", 50, 60, "newUsername");
 
-        Settings newSettings = gitHubService.initializeSettings(null, newUser, gitHubSettingSpec);
+        Settings newSettings = gitHubService.initializeSettings(null, newUser, settingsSpec);
 
         assertEquals(newSettings.getId(), 0);
         assertEquals(newSettings.getRate(), 50);

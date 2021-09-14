@@ -6,9 +6,10 @@ import com.tick42.quicksilver.config.SecurityConfig;
 import com.tick42.quicksilver.config.TestWebConfig;
 import com.tick42.quicksilver.controllers.GitHubController;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
-import com.tick42.quicksilver.models.Dtos.GitHubSettingDto;
+import com.tick42.quicksilver.models.Dtos.SettingsDto;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.repositories.base.SettingsRepository;
 import com.tick42.quicksilver.security.Jwt;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -62,6 +64,9 @@ public class GitHub {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private SettingsRepository settingsRepository;
+
     private MockMvc mockMvc;
     private static String adminToken, userToken;
     private String githubToken;
@@ -79,6 +84,7 @@ public class GitHub {
         BufferedReader br = new BufferedReader(new FileReader("/adminUser.txt"));
         githubToken = br.readLine();
 
+
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
@@ -86,6 +92,23 @@ public class GitHub {
         rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
         rdp.execute(dataSource);
 
+        setOAuthTokenFromFile();
+        createJwtTokens();
+
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
+    }
+
+    private void setOAuthTokenFromFile() {
+        settingsRepository.findAll().forEach(settings -> {
+            settings.setToken(githubToken);
+            settingsRepository.save(settings);
+        });
+    }
+
+    private void createJwtTokens() {
         UserModel admin = new UserModel("adminUser", "password", "ROLE_ADMIN");
         admin.setId(1);
 
@@ -97,12 +120,8 @@ public class GitHub {
 
         userToken = "Token " + Jwt.generate(new UserDetails(user, Collections
                 .singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
-
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(webApplicationContext)
-                .apply(SecurityMockMvcConfigurers.springSecurity())
-                .build();
     }
+
 
     @Test
     public void assertConfig_assertGitHubController() {
@@ -137,15 +156,14 @@ public class GitHub {
 
     @Test
     public void getSettings() throws Exception {
-        GitHubSettingDto settings = settingsRequest();
+        SettingsDto settings = settingsRequest();
 
         assertEquals(settings.getRate(), 50_0000);
-        assertEquals(settings.getWait(), 5000);
-        assertEquals(settings.getToken(), "ghp_aiw47lLie3m9VnlQRWI2");
+        assertEquals(settings.getWait(), 9000);
         assertEquals(settings.getUsername(), "ivaylo9512");
     }
 
-    private GitHubSettingDto settingsRequest() throws Exception {
+    private SettingsDto settingsRequest() throws Exception {
         String response = mockMvc.perform(get("/api/github/auth/getSettings")
                 .header("Authorization", adminToken))
                 .andExpect(status().isOk())
@@ -153,8 +171,9 @@ public class GitHub {
                 .getResponse()
                 .getContentAsString();
 
-        return objectMapper.readValue(response, GitHubSettingDto.class);
+        return objectMapper.readValue(response, SettingsDto.class);
     }
+
     @Test
     public void getSettings_WithUserThatIsNotAdmin() throws Exception {
         mockMvc.perform(get("/api/github/auth/getSettings")
@@ -170,7 +189,7 @@ public class GitHub {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        GitHubSettingDto settings = settingsRequest();
+        SettingsDto settings = settingsRequest();
 
         assertEquals(settings.getRate(), 70_0000);
         assertEquals(settings.getWait(), 70_0000);
@@ -183,6 +202,69 @@ public class GitHub {
                 .header("Authorization", userToken)
                 .content(String.format("{\"username\":\"newUsername\", \"token\":\"%s\",\"rate\":\"700000\",\"wait\":\"700000\"}", githubToken))
                 .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void setNextSettings_AfterFinalReturnToFirst() throws Exception {
+        SettingsDto settings = nextSettingsRequest();
+        assertEquals(settings.getId(), 3);
+
+        settings = nextSettingsRequest();
+        assertEquals(settings.getId(), 5);
+
+        settings = nextSettingsRequest();
+        assertEquals(settings.getId(), 7);
+
+        settings = nextSettingsRequest();
+        assertEquals(settings.getId(), 1);
+    }
+
+    private SettingsDto nextSettingsRequest() throws Exception {
+        String result = mockMvc.perform(patch("/api/github/auth/setNextSettings")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse().
+                getContentAsString();
+
+        return objectMapper.readValue(result, SettingsDto.class);
+    }
+
+    @Test
+    public void setNextSettings_WithUserThatIsNotAdmin() throws Exception {
+        mockMvc.perform(patch("/api/github/auth/setNextSettings")
+                .header("Authorization", userToken))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deleteSettings() throws Exception {
+        mockMvc.perform(delete("/api/github/auth/delete/3")
+                .header("Authorization", adminToken))
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    public void delete_WithNonExistent() throws Exception {
+        mockMvc.perform(delete("/api/github/auth/delete/2")
+                .header("Authorization", adminToken))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("GitHub not found."));
+    }
+
+    @Test
+    public void delete_WithMasterAdmin() throws Exception {
+        mockMvc.perform(delete("/api/github/auth/delete/1")
+                .header("Authorization", adminToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Deleting master admin is not allowed."));
+    }
+
+    @Test
+    public void delete_WithUserThatIsNotAdmin() throws Exception {
+        mockMvc.perform(delete("/api/github/auth/delete/2")
+                        .header("Authorization", userToken))
                 .andExpect(status().isUnauthorized());
     }
 }

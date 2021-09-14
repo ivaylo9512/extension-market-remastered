@@ -2,8 +2,8 @@ package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
-import com.tick42.quicksilver.models.Dtos.GitHubSettingDto;
-import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
+import com.tick42.quicksilver.models.Dtos.SettingsDto;
+import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
@@ -28,28 +28,29 @@ public class GitHubController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/auth/setSettings")
-    public GitHubSettingDto setGitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody GitHubSettingSpec gitHubSettingSpec) {
+    public SettingsDto setGitHubSetting(ScheduledTaskRegistrar taskRegistrar, @Valid @RequestBody SettingsSpec settingsSpec) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel userModel = userService.findById(userId, loggedUser);
 
-        Settings settings = gitHubService.initializeSettings(userModel.getGitHubSettings(), userModel, gitHubSettingSpec);
+        Settings settings = gitHubService.initializeSettings(userModel.getGitHubSettings(), userModel, settingsSpec);
+        gitHubService.connectGithub();
         gitHubService.createScheduledTask(taskRegistrar);
 
-        return new GitHubSettingDto(settings);
+        return new SettingsDto(settings);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/auth/getSettings")
-    public GitHubSettingDto getGitHubSetting() {
+    public SettingsDto getGitHubSetting() {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        return new GitHubSettingDto(gitHubService.getSettings(user));
+        return new SettingsDto(gitHubService.getSettings(user));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -63,5 +64,22 @@ public class GitHubController {
         UserModel user = userService.findById(userId, loggedUser);
 
         return new GitHubDto(gitHubService.reloadGitHub(extension.getGithub(), user));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping(value = "/auth/setNextSettings")
+    public SettingsDto setNextSettings(ScheduledTaskRegistrar taskRegistrar){
+        SettingsDto settings = new SettingsDto(gitHubService.setNextSettings());
+        gitHubService.connectGithub();
+        gitHubService.createScheduledTask(taskRegistrar);
+
+        return settings;
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping(value = "/auth/delete/{id}")
+    public void delete(ScheduledTaskRegistrar taskRegistrar, @PathVariable("id") long id){
+        gitHubService.delete(id);
+        gitHubService.updateSettingsOnDelete(id, taskRegistrar);
     }
 }

@@ -4,7 +4,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-public class GitHubSettingSpec {
+public class SettingsSpec {
     @NotNull(message = "Provide a GitHubModel username.")
     @Size(min = 1, message = "Username should be filled in.")
     private String username;
@@ -21,10 +21,10 @@ public class GitHubSettingSpec {
     @Min(value = 1000, message = "Initial wait should be 1000 millisecond or more.")
     private int wait;
 
-    public GitHubSettingSpec() {
+    public SettingsSpec() {
     }
 
-    public GitHubSettingSpec(String token, int rate, int wait, String username) {
+    public SettingsSpec(String token, int rate, int wait, String username) {
         this.token = token;
         this.rate = rate;
         this.wait = wait;

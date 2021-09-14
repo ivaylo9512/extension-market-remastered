@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.models;
 
-import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.SettingsSpec;
 import javax.persistence.*;
 
 @Entity
@@ -26,7 +26,7 @@ public class Settings {
     public Settings() {
     }
 
-    public Settings(GitHubSettingSpec settingsSpec, UserModel user, long id) {
+    public Settings(SettingsSpec settingsSpec, UserModel user, long id) {
         this(id, settingsSpec.getRate(), settingsSpec.getWait(), settingsSpec.getToken(),
                 settingsSpec.getUsername());
         this.user = user;

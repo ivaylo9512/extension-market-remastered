@@ -1,9 +1,10 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.config.Scheduler;
+import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
-import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
+import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
@@ -13,11 +14,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
+
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 @Service
@@ -55,7 +58,7 @@ public class GitHubServiceImpl implements GitHubService {
             throw new GHException(e.getMessage());
 
         } catch (TimeoutException e) {
-            tryGithub(settings);
+            tryGithub();
         }
     }
 
@@ -84,55 +87,32 @@ public class GitHubServiceImpl implements GitHubService {
                 gitHubModel.setLastSuccess(LocalDateTime.now());
 
                 return gitHubModel;
-            } catch (GHException e) {
-                throw new GHException(String.format("Connected to repo: '%s' with user: '%s' but couldn't fetch data.", gitHubModel.getRepo(), gitHubModel.getUser()));
             } catch (IOException e) {
                 throw new GHException(String.format("Couldn't connect to repo: '%s' with user: '%s'. Check details.", gitHubModel.getRepo(), gitHubModel.getUser()));
             }
         });
     }
 
-    public void tryGithub(Settings settings) {
-        settings = findAvailableSettings(settings);
-        connectGithub(settings);
+    public void tryGithub() {
+        setNextSettings();
+        connectGithub();
     }
 
-    public Settings findAvailableSettings(Settings settings) {
-        long settingsId = settings == null ? 1
-                : settings.getId() + 1;
+    @Override
+    public Settings setNextSettings() {
+        long settingsId = settings == null ? 0
+                : settings.getId();
 
-        return this.settings = settingsRepository.findById(settingsId)
-                .or(() -> settingsRepository.findById(1L))
-                .orElseThrow(() -> new EntityNotFoundException("Settings not found."));
+        return this.settings = settingsRepository.getNextAvailable(settingsId);
     }
 
-    public GitHub connectGithub(Settings settings) {
+    @Override
+    public GitHub connectGithub() {
         try {
             return gitHub = GitHub.connectUsingOAuth(settings.getToken());
         } catch (IOException e) {
             throw new GHException("Couldn't connect to github.");
         }
-    }
-
-    @Override
-    public void getRepoDetails(GitHubModel gitHubModel) throws IOException{
-        GHRepository repo = this.gitHub.getRepository(gitHubModel.getUser() + "/" + gitHubModel.getRepo());
-
-        int pulls = repo.getPullRequests(GHIssueState.OPEN).size();
-        int issues = repo.getIssues(GHIssueState.OPEN).size() - pulls;
-
-        LocalDateTime lastCommit = null;
-        List<GHCommit> commits = repo.listCommits().asList();
-        if (commits.size() > 0) {
-            lastCommit = commits.get(0).getCommitDate().toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        }
-
-        gitHubModel.setPullRequests(pulls);
-        gitHubModel.setOpenIssues(issues);
-        gitHubModel.setLastCommit(lastCommit);
-        gitHubModel.setLastSuccess(LocalDateTime.now());
     }
 
     @Override
@@ -170,12 +150,6 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public void createScheduledTask(ScheduledTaskRegistrar taskRegistrar) {
-        try {
-            gitHub = GitHub.connectUsingOAuth(settings.getToken());
-        } catch (IOException e) {
-            throw new RuntimeException("Couldn't connect to github.");
-        }
-
         if (scheduler.getTask() != null) scheduler.getTask().cancel();
 
         FixedRateTask updateGitHubData = new FixedRateTask(this::updateGitHubDetails, settings.getRate(), settings.getWait());
@@ -185,10 +159,10 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public Settings initializeSettings(Settings settings, UserModel user, GitHubSettingSpec gitHubSettingSpec){
-        if (gitHubSettingSpec != null) {
+    public Settings initializeSettings(Settings settings, UserModel user, SettingsSpec settingsSpec){
+        if (settingsSpec != null) {
             long id = settings == null ? 0 : settings.getId();
-            settings = new Settings(gitHubSettingSpec, user, id);
+            settings = new Settings(settingsSpec, user, id);
             settingsRepository.save(settings);
         }
 
@@ -209,7 +183,23 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     @Override
-    public void delete(GitHubModel gitHubModel){
-        gitHubRepository.delete(gitHubModel);
+    public void delete(long id){
+        if(id == 1){
+            throw new UnauthorizedException("Deleting master admin is not allowed.");
+        }
+        Settings settings = settingsRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("GitHub not found"));
+        settingsRepository.delete(settings);
+    }
+
+    @Override
+    public void updateSettingsOnDelete(long id, ScheduledTaskRegistrar taskRegistrar){
+        if(id != settings.getId()){
+            return;
+        }
+
+        setNextSettings();
+        connectGithub();
+        createScheduledTask(taskRegistrar);
     }
 }

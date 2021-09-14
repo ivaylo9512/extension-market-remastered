@@ -2,21 +2,19 @@ package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.Settings;
 
-public class GitHubSettingDto {
-
+public class SettingsDto {
+    private long id;
     private String username;
-
     private String token;
-
     private int rate;
-
     private int wait;
 
-    public GitHubSettingDto() {
+    public SettingsDto() {
 
     }
 
-    public GitHubSettingDto(Settings settings) {
+    public SettingsDto(Settings settings) {
+        this.id = settings.getId();
         this.username = settings.getUsername();
         this.token = settings.getToken();
         this.rate = settings.getRate();
@@ -53,5 +51,13 @@ public class GitHubSettingDto {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }
