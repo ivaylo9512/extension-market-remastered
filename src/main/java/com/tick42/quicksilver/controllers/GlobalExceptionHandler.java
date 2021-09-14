@@ -3,6 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.exceptions.*;
+import org.kohsuke.github.GHException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -92,6 +93,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<String> handleBlockedUserException(BlockedUserException e){
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity<String> handleGHException(GHException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
 }

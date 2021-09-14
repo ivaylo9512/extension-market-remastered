@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.controllers;
 
-import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
 import com.tick42.quicksilver.models.Dtos.GitHubSettingDto;
@@ -8,8 +7,6 @@ import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,12 +63,5 @@ public class GitHubController {
         UserModel user = userService.findById(userId, loggedUser);
 
         return new GitHubDto(gitHubService.reloadGitHub(extension.getGithub(), user));
-    }
-
-    @ExceptionHandler
-    ResponseEntity<String> handleGitHubRepositoryExceptionException(GitHubRepositoryException e){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
     }
 }

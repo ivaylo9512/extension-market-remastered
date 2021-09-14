@@ -6,17 +6,20 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHException;
 import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import javax.persistence.EntityNotFoundException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -33,21 +36,87 @@ public class GitHubService {
     SettingsRepository settingsRepository;
 
     @Mock
-    Future<Boolean> future;
+    Future<GitHubModel> future;
 
     @Spy
     @InjectMocks
     private GitHubServiceImpl gitHubService;
 
     private final CountDownLatch waiter = new CountDownLatch(1);
-    private final LocalDateTime dateTime = LocalDateTime.of(2021, Month.SEPTEMBER, 9, 9, 9);
+    private static String token;
+
+    private GitHub connectToGitHub(){
+        Settings settings = new Settings();
+        settings.setToken(token);
+
+        return gitHubService.connectGithub(settings);
+    }
+
+    @BeforeAll
+    private static void setToken() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader("/gitToken.txt"));
+        token = br.readLine();
+    }
+
+    @Test
+    public void connectGitHub() throws IOException {
+        GitHub gitHub = connectToGitHub();
+
+        assertTrue(gitHub.isCredentialValid());
+    }
+
+    @Test
+    public void connectGitHub_WithWrongToken_GitHubException() throws IOException {
+        Settings settings = new Settings();
+        settings.setToken("invalid");
+
+        GHException thrown = assertThrows(GHException.class,
+                () -> gitHubService.connectGithub(settings));
+
+        assertEquals(thrown.getMessage(), "Couldn't connect to github.");
+    }
+
+    @Test
+    public void setDetails() {
+        connectToGitHub();
+
+        GitHubModel gitHubModel = new GitHubModel();
+        gitHubModel.setUser("ivaylo9512");
+        gitHubModel.setRepo("extension-market-remastered");
+
+        gitHubService.setRemoteDetails(gitHubModel);
+
+        assertTrue(gitHubModel.getLastCommit().isAfter(LocalDateTime.of(2021, Month.SEPTEMBER, 9, 0, 0)));
+        verify(gitHubService, times(1)).submitTask(gitHubModel);
+        verify(gitHubService, times(1))
+                .executeFuture(any(Future.class), eq(gitHubModel), eq(50));
+    }
+
+    @Test
+    public void setDetailsWithInvalidRepo() {
+        connectToGitHub();
+
+        String user = "ivaylo9512";
+        String repo = "invalid";
+        GitHubModel gitHubModel = new GitHubModel();
+        gitHubModel.setUser(user);
+        gitHubModel.setRepo(repo);
+
+        GHException thrown = assertThrows(GHException.class,
+                () -> gitHubService.setRemoteDetails(gitHubModel));
+
+        String message = String.format("org.kohsuke.github.GHException: Couldn't connect to repo: '%s' with user: '%s'. " +
+                        "Check details.", repo, user);
+        assertEquals(thrown.getMessage(), message);
+        assertEquals(gitHubModel.getFailMessage(), message);
+    }
 
     @Test
     public void executeFutureOnInterruptedException() throws Exception {
         when(future.get(1, TimeUnit.SECONDS)).thenThrow(InterruptedException.class);
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> gitHubService.executeFuture(future, new GitHubModel(), 1, dateTime));
+                () -> gitHubService.executeFuture(future, new GitHubModel(), 1));
 
         assertEquals(thrown.getMessage(), "New Settings are set. Current task canceled.");
     }
@@ -57,46 +126,19 @@ public class GitHubService {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         waiter.await(2, TimeUnit.SECONDS);
 
-        Future<Boolean> future = executor.submit(() -> {
+        Future<GitHubModel> future = executor.submit(() -> {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return true;
+            return new GitHubModel();
         });
 
         doNothing().when(gitHubService).tryGithub(null);
 
-        gitHubService.executeFuture(future, new GitHubModel(),1, dateTime);
+        gitHubService.executeFuture(future, new GitHubModel(),1);
         verify(gitHubService, times(1)).tryGithub(null);
-    }
-
-    @Test
-    public void executeFutureOnSetMessageOnExecutionException() throws Exception {
-        GitHubModel gitHubModel = new GitHubModel();
-
-        when(future.get(1, TimeUnit.SECONDS)).thenThrow(new ExecutionException(
-                new RuntimeException("Github error.")));
-
-        gitHubService.executeFuture(future, gitHubModel, 1, dateTime);
-
-        assertEquals(gitHubModel.getFailMessage(), "java.lang.RuntimeException: Github error.");
-        assertEquals(gitHubModel.getLastFail(), dateTime);
-    }
-
-    @Test
-    public void setRemoteDetails(){
-        GitHubModel gitHubModel = new GitHubModel();
-
-        when(gitHubService.submitTask(gitHubModel)).thenReturn(future);
-        doNothing().when(gitHubService).executeFuture(eq(future), eq(gitHubModel), eq(50), any(LocalDateTime.class));
-
-        gitHubService.setRemoteDetails(gitHubModel);
-
-        verify(gitHubService, times(1)).submitTask(gitHubModel);
-        verify(gitHubService, times(1))
-                .executeFuture(eq(future), eq(gitHubModel), eq(50), any(LocalDateTime.class));
     }
 
     @Test
@@ -112,19 +154,18 @@ public class GitHubService {
     @Test
     public void tryGithub(){
         Settings settings = new Settings("ivaylo9512", "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");
+
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
+        doReturn(null).when(gitHubService).connectGithub(settings);
 
         gitHubService.tryGithub(null);
 
-        try (MockedStatic<GitHub> mocked = mockStatic(GitHub.class)) {
-            gitHubService.tryGithub(settings);
-
-            mocked.verify(() -> GitHub.connect(settings.getUsername(), settings.getToken()), times(1));
-        }
+        verify(gitHubService, times(1)).findAvailableSettings(null);
+        verify(gitHubService, times(1)).connectGithub(settings);
     }
 
     @Test
-    public void tryGithub_WhenSettingsArePresent(){
+    public void findAvailableSettings_WhenSettingsArePresent(){
         Settings oldSettings = new Settings();
         oldSettings.setId(2);
 
@@ -133,15 +174,13 @@ public class GitHubService {
 
         when(settingsRepository.findById(settings.getId())).thenReturn(Optional.of(settings));
 
-        try (MockedStatic<GitHub> mocked = mockStatic(GitHub.class)) {
-            gitHubService.tryGithub(oldSettings);
+        Settings newSettings = gitHubService.findAvailableSettings(oldSettings);
 
-            mocked.verify(() -> GitHub.connect(settings.getUsername(), settings.getToken()), times(1));
-        }
+        assertEquals(settings, newSettings);
     }
 
     @Test
-    public void tryGithub_WithNonExistent_ShouldReturnBackToFirst() {
+    public void findAvailableSettings_WithNonExistent_ShouldReturnBackToFirst() {
         Settings settings = new Settings("ivaylo9512", "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");
         when(settingsRepository.findById(4L)).thenReturn(Optional.empty());
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
@@ -149,15 +188,13 @@ public class GitHubService {
         Settings oldSettings = new Settings();
         oldSettings.setId(3);
 
-        try (MockedStatic<GitHub> mocked = mockStatic(GitHub.class)) {
-            gitHubService.tryGithub(oldSettings);
+        Settings newSettings = gitHubService.findAvailableSettings(oldSettings);
 
-            mocked.verify(() -> GitHub.connect(settings.getUsername(), settings.getToken()), times(1));
-        }
+        assertEquals(settings, newSettings);
     }
 
     @Test
-    public void tryGithub_WithNonExistentFirst() {
+    public void findAvailableSettings_WithNonExistentFirst() {
         when(settingsRepository.findById(4L)).thenReturn(Optional.empty());
         when(settingsRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -165,7 +202,7 @@ public class GitHubService {
         oldSettings.setId(3);
 
         EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
-                () -> gitHubService.tryGithub(oldSettings));
+                () -> gitHubService.findAvailableSettings(oldSettings));
 
         assertEquals(thrown.getMessage(), "Settings not found.");
     }
@@ -174,20 +211,23 @@ public class GitHubService {
     public void updateGitHubDetails() {
         GitHubModel gitHubModel1 = new GitHubModel();
         GitHubModel gitHubModel2 = new GitHubModel();
+
         gitHubModel1.setUser("username");
         gitHubModel1.setRepo("repo");
         gitHubModel2.setUser("username1");
         gitHubModel2.setRepo("repo1");
-        List<GitHubModel> gitHubModels = Arrays.asList(gitHubModel1, gitHubModel2);
+
+        List<GitHubModel> gitHubModels = List.of(gitHubModel1, gitHubModel2);
 
         when(gitHubRepository.findAll()).thenReturn(gitHubModels);
         doNothing().when(gitHubService).setRemoteDetails(any(GitHubModel.class));
 
         gitHubService.updateGitHubDetails();
 
-        verify(gitHubRepository, times(2)).save(isA(GitHubModel.class));
         verify(gitHubService, times(1)).setRemoteDetails(gitHubModel1);
         verify(gitHubService, times(1)).setRemoteDetails(gitHubModel2);
+        verify(gitHubRepository, times(1)).save(gitHubModel1);
+        verify(gitHubRepository, times(1)).save(gitHubModel2);
     }
 
     @Test
@@ -307,6 +347,7 @@ public class GitHubService {
         GitHubModel savedGitHub = gitHubService.reloadGitHub(gitHubModel, loggedUser);
 
         verify(gitHubService, times(1)).setRemoteDetails(gitHubModel);
+        verify(gitHubRepository, times(1)).save(gitHubModel);
         assertEquals(savedGitHub, gitHubModel);
     }
 }

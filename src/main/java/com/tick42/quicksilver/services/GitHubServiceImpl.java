@@ -41,11 +41,11 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public void setRemoteDetails(GitHubModel gitHubModel) {
-        Future<Boolean> future = submitTask(gitHubModel);
-        executeFuture(future, gitHubModel, 50, LocalDateTime.now());
+        Future<GitHubModel> future = submitTask(gitHubModel);
+        executeFuture(future, gitHubModel, 50);
     }
 
-    public void executeFuture(Future<Boolean> future, GitHubModel gitHubModel, int seconds, LocalDateTime time) {
+    public void executeFuture(Future<GitHubModel> future, GitHubModel gitHubModel, int seconds) {
         try {
             future.get(seconds, TimeUnit.SECONDS);
 
@@ -53,16 +53,16 @@ public class GitHubServiceImpl implements GitHubService {
             throw new RuntimeException("New Settings are set. Current task canceled.");
 
         } catch (ExecutionException e){
-            e.printStackTrace();
             gitHubModel.setFailMessage(e.getMessage());
-            gitHubModel.setLastFail(time);
+            gitHubModel.setLastFail(LocalDateTime.now());
+            throw new GHException(e.getMessage());
 
         } catch (TimeoutException e) {
             tryGithub(settings);
         }
     }
 
-    public Future<Boolean> submitTask(GitHubModel gitHubModel) {
+    public Future<GitHubModel> submitTask(GitHubModel gitHubModel) {
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
         return executor.submit(() -> {
@@ -86,26 +86,34 @@ public class GitHubServiceImpl implements GitHubService {
                 gitHubModel.setLastCommit(lastCommit);
                 gitHubModel.setLastSuccess(LocalDateTime.now());
 
-                return true;
+                return gitHubModel;
             } catch (GHException e) {
-                throw new GitHubRepositoryException("Connected to " + gitHubModel.getLink() + " but couldn't fetch data.");
+                throw new GHException(String.format("Connected to repo: '%s' with user: '%s' but couldn't fetch data.", gitHubModel.getRepo(), gitHubModel.getUser()));
             } catch (IOException e) {
-                throw new GitHubRepositoryException("Couldn't connect to " + gitHubModel.getLink() + ". Check URL.");
+                throw new GHException(String.format("Couldn't connect to repo: '%s' with user: '%s'. Check details.", gitHubModel.getRepo(), gitHubModel.getUser()));
             }
         });
     }
 
-    public void tryGithub(Settings settings){
+    public void tryGithub(Settings settings) {
+        settings = findAvailableSettings(settings);
+        connectGithub(settings);
+    }
+
+    public Settings findAvailableSettings(Settings settings) {
         long settingsId = settings == null ? 1
                 : settings.getId() + 1;
 
-        this.settings = settings = settingsRepository.findById(settingsId)
+        return this.settings = settingsRepository.findById(settingsId)
                 .or(() -> settingsRepository.findById(1L))
-                        .orElseThrow(() -> new EntityNotFoundException("Settings not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Settings not found."));
+    }
+
+    public GitHub connectGithub(Settings settings) {
         try {
-            gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
+            return gitHub = GitHub.connectUsingOAuth(settings.getToken());
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't connect to github.");
+            throw new GHException("Couldn't connect to github.");
         }
     }
 
