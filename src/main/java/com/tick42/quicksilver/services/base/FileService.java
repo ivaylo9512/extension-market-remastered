@@ -2,10 +2,8 @@ package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
-import org.h2.engine.User;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 

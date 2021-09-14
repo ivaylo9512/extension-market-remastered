@@ -264,7 +264,82 @@ public class GitHub {
     @Test
     public void delete_WithUserThatIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/api/github/auth/delete/2")
-                        .header("Authorization", userToken))
+                .header("Authorization", userToken))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void delete_WithoutToken() throws Exception{
+        mockMvc.perform(delete("/api/github/auth/delete/2"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void delete_WithIncorrectToken() throws Exception{
+        mockMvc.perform(delete("/api/github/auth/delete/2")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void setNextSettings_WithoutToken() throws Exception{
+        mockMvc.perform(patch("/api/github/auth/setNextSettings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void setNextSettings_WithIncorrectToken() throws Exception{
+        mockMvc.perform(patch("/api/github/auth/setNextSettings")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void setSettings_WithoutToken() throws Exception{
+        mockMvc.perform(post("/api/github/auth/setSettings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void setSettings_WithIncorrectToken() throws Exception{
+        mockMvc.perform(post("/api/github/auth/setSettings")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void reload_WithoutToken() throws Exception{
+        mockMvc.perform(patch("/api/github/auth/reload/1"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void reload_WithIncorrectToken() throws Exception{
+        mockMvc.perform(patch("/api/github/auth/reload/1")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void getSettings_WithoutToken() throws Exception{
+        mockMvc.perform(get("/api/github/auth/getSettings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void getSettings_WithIncorrectToken() throws Exception{
+        mockMvc.perform(get("/api/github/auth/getSettings")
+                        .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
     }
 }

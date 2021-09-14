@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.services;
 
+import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.UserModel;
@@ -15,6 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+
+import javax.persistence.EntityNotFoundException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,7 +52,7 @@ public class GitHubService {
         Settings settings = new Settings();
         settings.setToken(token);
 
-        when(settingsRepository.getNextAvailable(0L)).thenReturn(settings);
+        when(settingsRepository.getNextAvailable(0)).thenReturn(settings);
         gitHubService.setNextSettings();
 
         return gitHubService.connectGithub();
@@ -310,5 +314,64 @@ public class GitHubService {
         verify(gitHubService, times(1)).setRemoteDetails(gitHubModel);
         verify(gitHubRepository, times(1)).save(gitHubModel);
         assertEquals(savedGitHub, gitHubModel);
+    }
+
+    @Test
+    public void delete_WithMaster(){
+        UnauthorizedException thrown = assertThrows(UnauthorizedException.class,
+                () -> gitHubService.delete(1));
+
+        assertEquals(thrown.getMessage(), "Deleting master admin is not allowed.");
+    }
+
+    @Test
+    public void delete_WithNonExistent(){
+        when(settingsRepository.findById(2L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> gitHubService.delete(2));
+
+        assertEquals(thrown.getMessage(), "GitHub not found");
+    }
+
+    @Test
+    public void delete(){
+        Settings settings = new Settings();
+        when(settingsRepository.findById(2L)).thenReturn(Optional.of(settings));
+
+        gitHubService.delete(2);
+
+        verify(settingsRepository, times(1)).delete(settings);
+    }
+
+    @Test
+    public void updateSettingsOnDelete() throws IOException {
+        ScheduledTaskRegistrar taskRegistrar = new ScheduledTaskRegistrar();
+        Settings settings = new Settings(20, 30, 40, "token", "username");
+        gitHubService.initializeSettings(settings, new UserModel(), null);
+        GitHub gitHub = GitHub.connectUsingOAuth(token);
+
+        doNothing().when(gitHubService).createScheduledTask(taskRegistrar);
+        doReturn(new Settings()).when(gitHubService).setNextSettings();
+        doReturn(gitHub).when(gitHubService).connectGithub();
+
+        gitHubService.updateSettingsOnDelete(20, taskRegistrar);
+
+        verify(gitHubService, times(1)).createScheduledTask(taskRegistrar);
+        verify(gitHubService, times(1)).setNextSettings();
+        verify(gitHubService, times(1)).connectGithub();
+    }
+
+    @Test
+    public void updateSettingsOnDelete_WhenSettingsAreNotEqual() {
+        Settings settings = new Settings(20, 30, 40, "token", "username");
+        gitHubService.initializeSettings(settings, new UserModel(), null);
+
+        ScheduledTaskRegistrar taskRegistrar = new ScheduledTaskRegistrar();
+        gitHubService.updateSettingsOnDelete(10, taskRegistrar);
+
+        verify(gitHubService, times(0)).createScheduledTask(taskRegistrar);
+        verify(gitHubService, times(0)).setNextSettings();
+        verify(gitHubService, times(0)).connectGithub();
     }
 }

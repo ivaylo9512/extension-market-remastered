@@ -20,6 +20,7 @@ import javax.persistence.EntityNotFoundException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -121,7 +122,7 @@ public class FileService {
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, owner);
 
@@ -142,7 +143,7 @@ public class FileService {
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, loggedUser);
 
@@ -158,7 +159,7 @@ public class FileService {
         UserModel owner = new UserModel();
         owner.setId(11);
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(null);
+        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(
                 EntityNotFoundException.class,
@@ -179,7 +180,7 @@ public class FileService {
         File file = new File();
         file.setOwner(owner);
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(file);
+        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, loggedUser);
         assertFalse(isDeleted);

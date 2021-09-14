@@ -223,7 +223,7 @@ public class ExtensionServiceImpl implements ExtensionService {
         });
 
         mostRecent.forEach(extension -> {
-            if (extension.getFile() == file)
+            if (extension.getFile().equals(file))
                 extension.getFile().setDownloadCount(file.getDownloadCount());
         });
     }

@@ -91,12 +91,13 @@ public class UserController {
 
     @GetMapping(value = "/findById/{id}")
     public UserDto findById(@PathVariable(name = "id") int id, HttpServletRequest request) {
-        UserDetails loggedUser;
-        try {
-            loggedUser = Jwt.validate(request.getHeader("Authorization").substring(6));
-        } catch (Exception e) {
-            loggedUser = null;
+        UserDetails loggedUser = null;
+        String authorization = request.getHeader("Authorization");
+
+        if(authorization != null){
+            loggedUser = Jwt.validate(authorization.substring(6));
         }
+
         UserModel user = userService.findById(id, loggedUser);
         return new UserDto(user);
     }

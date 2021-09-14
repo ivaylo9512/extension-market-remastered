@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,6 +37,7 @@ public class ExtensionService {
     @Mock
     private GitHubService gitHubService;
 
+    @Spy
     @InjectMocks
     private ExtensionServiceImpl extensionService;
 
@@ -651,26 +653,52 @@ public class ExtensionService {
         File file = new File();
         file.setId(1);
         file.setDownloadCount(2);
+
+        Extension extension2 = new Extension();
+        File file2 = new File();
+        file2.setId(2);
+        file2.setDownloadCount(2);
+
         extension.setFile(file);
+        extension2.setFile(file2);
+
         List<Extension> extensions = List.of(extension);
+        List<Extension> extensions2 = List.of(extension2);
 
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
         extensionService.loadFeatured();
 
         when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions2);
         extensionService.updateMostRecent();
 
         File newFile = new File();
         newFile.setId(1);
         newFile.setDownloadCount(5);
 
+        File newFile2 = new File();
+        newFile2.setId(2);
+        newFile2.setDownloadCount(5);
+
         extensionService.reloadFile(newFile);
+        extensionService.reloadFile(newFile2);
 
         List<Extension> featured = extensionService.findFeatured();
         List<Extension> mostRecent = extensionService.findMostRecent(null);
 
         assertEquals(featured.get(0).getFile().getDownloadCount(), 5);
         assertEquals(mostRecent.get(0).getFile().getDownloadCount(), 5);
+    }
+
+    @Test
+    public void save(){
+        Extension extension = new Extension();
+
+        when(extensionRepository.save(extension)).thenReturn(extension);
+
+        Extension savedExtension = extensionService.save(extension);
+
+        verify(extensionService, times(1)).save(extension);
+        assertEquals(extension, savedExtension);
     }
 }

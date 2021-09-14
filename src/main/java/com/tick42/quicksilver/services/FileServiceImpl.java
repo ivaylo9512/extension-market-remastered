@@ -60,9 +60,6 @@ public class FileServiceImpl implements FileService {
         }
 
         File file = findByName(resourceType, owner);
-        if(file == null){
-            throw new EntityNotFoundException("File not found.");
-        }
 
         boolean isDeleted = new java.io.File("./uploads/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
         if(isDeleted){
@@ -81,7 +78,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public File findByName(String resourceType, UserModel owner){
-        return fileRepository.findByName(resourceType, owner);
+        return fileRepository.findByName(resourceType, owner).orElseThrow(() ->
+                new EntityNotFoundException("File not found."));
     }
     @Override
     public File generate(MultipartFile receivedFile, String resourceType, String fileType) {

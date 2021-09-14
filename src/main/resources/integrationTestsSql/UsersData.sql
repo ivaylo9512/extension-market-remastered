@@ -47,7 +47,7 @@ INSERT INTO `users` (`id`, `country`, `info`, `password`, `role`, `username`, `e
 	(5, 'Italy', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'firstTest', 'firstTest@gmail.com', NULL, true, true, 4.75, 2),
 	(6, 'Spain', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'secondTest', 'secondTest@gmail.com', NULL, true, true, 0, 0),
 	(7, 'Italy', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'testThird', 'testThird@gmail.com', NULL, true, true, 0, 0),
-	(8, 'Italy', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'testForth', 'testForth@gmail.com', NULL, true, true, 0, 0),
+	(8, 'Italy', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'testForth', 'testForth@gmail.com', NULL, true, false, 0, 0),
 	(9, 'Spain', 'info', '$2a$04$CMuyMiF6Wo5a4lbSdA68X.pj7jzYD6OPtv2KMLm.jl.B61waR/e9W', 'ROLE_USER', 'testFifth', 'testFifth@gmail.com', NULL, true, true, 0, 0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 

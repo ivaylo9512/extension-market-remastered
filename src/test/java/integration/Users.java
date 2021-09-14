@@ -155,7 +155,7 @@ public class Users {
                 .andExpect(status().isOk());
 
         enableUser(userDto.getId());
-        checkDBForUser(userDto);
+        checkDBForUser(userDto, null);
         checkDBForImage("logo", userDto.getId());
     }
 
@@ -168,7 +168,7 @@ public class Users {
                 .andExpect(content().string(containsString(objectMapper.writeValueAsString(userDto))));
 
         enableUser(userDto.getId());
-        checkDBForUser(userDto);
+        checkDBForUser(userDto, null);
         checkDBForImage("logo", userDto.getId());
     }
 
@@ -188,9 +188,16 @@ public class Users {
                 .andExpect(content().string(containsString("Username is already taken.")));
     }
 
-    private void checkDBForUser(UserDto user) throws Exception{
-        mockMvc.perform(get("/api/users/findById/" + user.getId()))
-                .andExpect(content().string(objectMapper.writeValueAsString(user)));
+    private void checkDBForUser(UserDto user, String token) throws Exception{
+        MockHttpServletRequestBuilder request = get("/api/users/findById/" + user.getId());
+        if(token != null){
+            request.header("Authorization", token);
+        }
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content()
+                .string(objectMapper.writeValueAsString(user)));
     }
 
     private void checkDBForImage(String resourceType, long userId) throws Exception{
@@ -245,13 +252,58 @@ public class Users {
                 "info", "Bulgaria", 4.166666666666667, 3));
         user.setId(1);
 
-        checkDBForUser(user);
+        checkDBForUser(user, null);
+    }
+
+    @Test
+    void findById_WithNotActive_WithLoggedUserAdmin() throws Exception {
+        UserDto user = new UserDto(new UserModel("testForth", "testForth@gmail.com", "password", "ROLE_USER",
+                "info", "Italy", 0, 0));
+        user.setId(8);
+        user.setIsActive(false);
+
+        checkDBForUser(user, adminToken);
+    }
+
+    @Test
+    void findById_WithNotActive_WithLoggedUserNotAdmin() throws Exception {
+        mockMvc.perform(get("/api/users/findById/8"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("User is unavailable."));
     }
 
     @Test
     void findById_WithNonExistentId() throws Exception {
         mockMvc.perform(get("/api/users/findById/222"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void setState() throws Exception {
+        UserDto user = new UserDto(new UserModel("testForth", "testForth@gmail.com", "password", "ROLE_USER",
+                "info", "Italy", 0, 0));
+        user.setId(8);
+        user.setIsActive(true);
+
+        mockMvc.perform(patch("/api/users/auth/setState/8/enable")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        checkDBForUser(user, null);
+
+        mockMvc.perform(patch("/api/users/auth/setState/8/block")
+                        .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        user.setIsActive(false);
+        checkDBForUser(user, adminToken);
+    }
+
+    @Test
+    void setState_WithLoggedUserNotAdmin() throws Exception {
+        mockMvc.perform(patch("/api/users/auth/setState/8/true")
+                .header("Authorization", userToken))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -269,7 +321,7 @@ public class Users {
                         .content(objectMapper.writeValueAsString(userSpec)))
                 .andExpect(content().string(objectMapper.writeValueAsString(userDto)));
 
-        checkDBForUser(userDto);
+        checkDBForUser(userDto, null);
     }
 
     @Test
