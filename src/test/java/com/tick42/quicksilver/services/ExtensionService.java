@@ -334,7 +334,7 @@ public class ExtensionService {
 
         Extension extension = new Extension("name", "description", "version", owner);
         extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
-        extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
+        extension.setGithub(new GitHubModel("username", "repo"));
         extension.setId(1);
 
         Extension foundExtension = new Extension();
@@ -361,7 +361,7 @@ public class ExtensionService {
 
         Extension extension = new Extension("name", "description", "version", owner);
         extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
-        extension.setGithub(new GitHubModel("gitHubLink", "username", "repo"));
+        extension.setGithub(new GitHubModel("username", "repo"));
         extension.setId(1);
 
         Extension foundExtension = new Extension();

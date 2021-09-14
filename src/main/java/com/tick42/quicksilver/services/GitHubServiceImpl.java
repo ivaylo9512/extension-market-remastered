@@ -1,8 +1,6 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.config.Scheduler;
-import com.tick42.quicksilver.exceptions.GitHubRepositoryException;
-import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Settings;
 import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
@@ -15,7 +13,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -151,7 +148,7 @@ public class GitHubServiceImpl implements GitHubService {
         String user = githubCred[0];
         String repo = githubCred[1];
 
-        return new GitHubModel(link, user, repo);
+        return new GitHubModel(user, repo);
     }
 
     @Override
@@ -174,7 +171,7 @@ public class GitHubServiceImpl implements GitHubService {
     @Override
     public void createScheduledTask(ScheduledTaskRegistrar taskRegistrar) {
         try {
-            gitHub = org.kohsuke.github.GitHub.connect(settings.getUsername(), settings.getToken());
+            gitHub = GitHub.connectUsingOAuth(settings.getToken());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't connect to github.");
         }

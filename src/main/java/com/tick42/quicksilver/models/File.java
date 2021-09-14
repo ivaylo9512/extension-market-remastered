@@ -13,9 +13,11 @@ public class File {
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "extension")
     private Extension extension;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner")
     private UserModel owner;
 
     @Column(name = "download_count")
@@ -24,7 +26,9 @@ public class File {
     @Column(name = "resource_type")
     private String resourceType;
 
+    @Column(name = "extension_type")
     private String extensionType;
+
     private String type;
     private double size;
 

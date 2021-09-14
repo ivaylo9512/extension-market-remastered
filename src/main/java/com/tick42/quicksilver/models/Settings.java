@@ -4,6 +4,7 @@ import com.tick42.quicksilver.models.specs.GitHubSettingSpec;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "settings")
 public class Settings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -73,6 +73,7 @@ public class Users {
     public void setupData() {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
         rdp.execute(dataSource);
     }
 
@@ -83,6 +84,11 @@ public class Users {
 
     @BeforeAll
     public void setup() {
+        ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
+        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
+        rdp.execute(dataSource);
+
         UserModel admin = new UserModel("adminUser", "password", "ROLE_ADMIN");
         admin.setId(1);
 

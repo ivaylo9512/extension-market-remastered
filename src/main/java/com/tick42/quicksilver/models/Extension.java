@@ -41,8 +41,10 @@ public class Extension {
             inverseJoinColumns = @JoinColumn(name = "tag"))
     private Set<Tag> tags = new HashSet<>();
 
-    private String name;
+    @Column(columnDefinition = "text")
     private String description;
+
+    private String name;
     private String version;
     private boolean pending = true;
     private boolean featured;

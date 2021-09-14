@@ -10,11 +10,11 @@
 /*!50503 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- Dumping database structure for extensions-market-test
 CREATE DATABASE IF NOT EXISTS `extensions-market-test` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `extensions-market-test`;
-SET FOREIGN_KEY_CHECKS = 0;
 
 -- Dumping structure for table extensions-market-test.users
 DELETE FROM `users`;

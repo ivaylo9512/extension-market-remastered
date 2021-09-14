@@ -32,7 +32,6 @@ public class GitHubModel {
     @Column(name = "fail_message")
     private String failMessage;
 
-    private String link;
     private String user;
     private String repo;
 
@@ -40,8 +39,7 @@ public class GitHubModel {
 
     }
 
-    public GitHubModel(String link, String user, String repo) {
-        this.link = link;
+    public GitHubModel(String user, String repo) {
         this.user = user;
         this.repo = repo;
     }
@@ -52,14 +50,6 @@ public class GitHubModel {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
     }
 
     public String getUser() {

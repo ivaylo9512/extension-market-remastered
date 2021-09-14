@@ -10,7 +10,6 @@ public class GitHubDto {
 
     private String user;
     private String repo;
-    private String link;
     private String failMessage;
 
     private String lastCommit;
@@ -38,14 +37,6 @@ public class GitHubDto {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
     }
 
     public String getUser() {

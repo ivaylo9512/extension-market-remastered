@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
             throw new EmailExistsException("Email is already taken.");
         }
 
-        user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(4)));
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(4)));
         return userRepository.save(user);
     }
 

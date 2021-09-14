@@ -54,7 +54,7 @@ public class GitHubService {
 
     @BeforeAll
     private static void setToken() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader("/gitToken.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("/adminUser.txt"));
         token = br.readLine();
     }
 
@@ -148,7 +148,6 @@ public class GitHubService {
 
         assertEquals(gitHub.getRepo(), "repo");
         assertEquals(gitHub.getUser(), "user");
-        assertEquals(gitHub.getLink(), link);
     }
 
     @Test
