@@ -56,14 +56,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(e.getMessage());
     }
 
-    @ExceptionHandler
-    ResponseEntity<String> handleGitHubRepositoryException(GitHubRepositoryException e) {
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException e,
