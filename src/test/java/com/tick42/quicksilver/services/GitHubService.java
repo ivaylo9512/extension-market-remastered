@@ -72,7 +72,7 @@ public class GitHubService {
     }
 
     @Test
-    public void connectGitHub_WithWrongToken_GitHubException() throws IOException {
+    public void connectGitHub_WithWrongToken_GitHubException() {
         Settings settings = new Settings();
         settings.setToken("invalid");
 

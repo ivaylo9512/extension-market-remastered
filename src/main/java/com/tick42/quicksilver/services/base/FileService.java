@@ -12,7 +12,7 @@ public interface FileService {
 
     Resource getAsResource(String fileName) throws MalformedURLException;
 
-    File findByName(String resourceType, UserModel owner);
+    File findByType(String resourceType, UserModel owner);
 
     void save(String name, MultipartFile receivedFile) throws IOException;
 

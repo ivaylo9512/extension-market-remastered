@@ -92,7 +92,7 @@ public class UserDto {
 
     public void setProfileImage(File profileImage) {
         if(profileImage != null){
-            this.profileImage = "logo" + profileImage.getOwner().getId() + "." + profileImage.getExtensionType();
+            this.profileImage = "profileImage" + profileImage.getOwner().getId() + "." + profileImage.getExtensionType();
         }
     }
 

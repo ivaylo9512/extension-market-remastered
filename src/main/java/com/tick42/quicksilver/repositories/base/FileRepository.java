@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<File, Long> {
     @Query("from File where resource_type LIKE :resourceType AND owner LIKE :owner")
-    Optional<File> findByName(String resourceType, @Param("owner") UserModel owner);
+    Optional<File> findByType(String resourceType, @Param("owner") UserModel owner);
 }

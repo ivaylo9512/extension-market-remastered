@@ -46,7 +46,7 @@ public class UserController {
         File file = null;
 
         if(profileImage != null){
-            file = fileService.generate(profileImage,"logo", "image/png");
+            file = fileService.generate(profileImage,"profileImage", "image/png");
         }
 
         UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_USER"));
@@ -76,7 +76,7 @@ public class UserController {
         File file = null;
 
         if(profileImage != null){
-            file = fileService.generate(profileImage,"logo", "image/png");
+            file = fileService.generate(profileImage,"profileImage", "image/png");
         }
 
         UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_ADMIN"));

@@ -8,14 +8,16 @@ public class FileDto {
     private String resourceType;
     private long ownerId;
     private String extensionType;
-    private long extensionId;
+    private Long extensionId;
     private String type;
     private double size;
+    private long download;
 
     public FileDto(){}
 
     public FileDto(File file) {
         this.id = file.getId();
+        this.download = file.getDownloadCount();
         this.resourceType = file.getResourceType();
         this.ownerId = file.getOwner().getId();
         this.extensionType = file.getExtensionType();
@@ -64,7 +66,7 @@ public class FileDto {
         this.size = size;
     }
 
-    public long getExtensionId() {
+    public Long getExtensionId() {
         return extensionId;
     }
 
@@ -80,5 +82,13 @@ public class FileDto {
 
     public void setExtensionType(String extensionType) {
         this.extensionType = extensionType;
+    }
+
+    public long getDownload() {
+        return download;
+    }
+
+    public void setDownload(long download) {
+        this.download = download;
     }
 }

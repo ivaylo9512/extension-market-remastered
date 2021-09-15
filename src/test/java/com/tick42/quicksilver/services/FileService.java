@@ -122,7 +122,7 @@ public class FileService {
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
+        when(fileRepository.findByType("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, owner);
 
@@ -143,7 +143,7 @@ public class FileService {
         file.setOwner(owner);
         file.setExtensionType("txt");
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
+        when(fileRepository.findByType("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, loggedUser);
 
@@ -159,7 +159,7 @@ public class FileService {
         UserModel owner = new UserModel();
         owner.setId(11);
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.empty());
+        when(fileRepository.findByType("logo", owner)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(
                 EntityNotFoundException.class,
@@ -180,7 +180,7 @@ public class FileService {
         File file = new File();
         file.setOwner(owner);
 
-        when(fileRepository.findByName("logo", owner)).thenReturn(Optional.of(file));
+        when(fileRepository.findByType("logo", owner)).thenReturn(Optional.of(file));
 
         boolean isDeleted = fileService.delete("logo", owner, loggedUser);
         assertFalse(isDeleted);

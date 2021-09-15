@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `files` (
 
 -- Dumping data for table extensions-market-test.files: ~8 rows (approximately)
 /*!40000 ALTER TABLE `files` DISABLE KEYS */;
-INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_type`, `type`, download_count, `size`) VALUES
+INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_type`, `type`, `download_count`, `size`) VALUES
 	(1, 'profileImage', 1, NULL, 'png', 'image/png', 0, 43250),
 	(2, 'profileImage', 2, NULL, 'png', 'image/png', 0, 46000),
 	(3, 'profileImage', 3, NULL, 'png', 'image/png', 0, 32000),

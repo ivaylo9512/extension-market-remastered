@@ -5,6 +5,7 @@ import com.tick42.quicksilver.config.AppConfig;
 import com.tick42.quicksilver.config.SecurityConfig;
 import com.tick42.quicksilver.config.TestWebConfig;
 import com.tick42.quicksilver.controllers.UserController;
+import com.tick42.quicksilver.models.Dtos.FileDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -68,6 +70,7 @@ public class Users {
     private MockMvc mockMvc;
     private static String adminToken, userToken;
     private ObjectMapper objectMapper;
+    private MockMultipartFile profileImage;
 
     @BeforeEach
     public void setupData() {
@@ -78,16 +81,21 @@ public class Users {
     }
 
     @AfterEach
-    public void reset(){
+    public void reset() {
         new File("./uploads/logo.png").delete();
     }
 
     @BeforeAll
-    public void setup() {
+    public void setup() throws IOException {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
         rdp.execute(dataSource);
+
+        FileInputStream input = new FileInputStream("./uploads/test.png");
+        profileImage = new MockMultipartFile("profileImage", "test.png", "image/png",
+                IOUtils.toByteArray(input));
+        input.close();
 
         UserModel admin = new UserModel("adminUser", "password", "ROLE_ADMIN");
         admin.setId(1);
@@ -117,15 +125,10 @@ public class Users {
         assertNotNull(webApplicationContext.getBean("userController"));
     }
 
-    private UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "Bulgaria", "info");
+    private UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "info", "Bulgaria");
     private UserDto userDto = new UserDto(user);
 
     private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token) throws IOException {
-        FileInputStream input = new FileInputStream("./uploads/test.png");
-        MockMultipartFile profileImage = new MockMultipartFile("profileImage", "test.png", "image/png",
-                IOUtils.toByteArray(input));
-        input.close();
-
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart(url)
                 .file(profileImage)
                 .param("username", username)
@@ -139,7 +142,7 @@ public class Users {
         }
 
         userDto.setRole(role);
-        userDto.setProfileImage("logo10.png");
+        userDto.setProfileImage("profileImage10.png");
         userDto.setId(10);
         userDto.setEmail(email);
         userDto.setUsername(username);
@@ -150,13 +153,18 @@ public class Users {
     @WithMockUser(value = "spring")
     @Test
     public void register() throws Exception {
-        mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
+        MockHttpServletResponse response = mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
                         "username", "username@gmail.com", null))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
 
+        String token = response.getHeader("Authorization");
+
+        assertNotNull(token);
         enableUser(userDto.getId());
         checkDBForUser(userDto, null);
-        checkDBForImage("logo", userDto.getId());
+        checkDBForImage("profileImage", userDto.getId());
     }
 
     @WithMockUser(value = "spring")
@@ -169,7 +177,7 @@ public class Users {
 
         enableUser(userDto.getId());
         checkDBForUser(userDto, null);
-        checkDBForImage("logo", userDto.getId());
+        checkDBForImage("profileImage", userDto.getId());
     }
 
     @WithMockUser(value = "spring")
@@ -201,15 +209,15 @@ public class Users {
     }
 
     private void checkDBForImage(String resourceType, long userId) throws Exception{
-        MvcResult result = mockMvc.perform(get(String.format("/api/files/findByName/%s/%s", resourceType, userId)))
+        MvcResult result = mockMvc.perform(get(String.format("/api/files/findByType/%s/%s", resourceType, userId)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        com.tick42.quicksilver.models.File image = objectMapper.readValue(result.getResponse().getContentAsString(), com.tick42.quicksilver.models.File.class);
+        FileDto image = objectMapper.readValue(result.getResponse().getContentAsString(), FileDto.class);
 
-        assertEquals(image.getResourceType(), "logo");
+        assertEquals(image.getResourceType(), "profileImage");
         assertEquals(image.getExtensionType(), "png");
-        assertEquals(image.getOwner().getId(), userId);
+        assertEquals(image.getOwnerId(), userId);
         assertEquals(image.getType(), "image/png");
         assertEquals(image.getSize(), 66680.0);
     }

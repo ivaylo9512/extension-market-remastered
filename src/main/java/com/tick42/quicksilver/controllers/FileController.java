@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
+import com.tick42.quicksilver.models.Dtos.FileDto;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -45,10 +46,10 @@ public class FileController {
             contentType = "application/octet-stream";
         }
 
-        if(fileName.contains("file")) {
+        if(fileName.startsWith("file")) {
             String[] result = Arrays.stream(fileName.split("[file|.]")).filter(s -> !s.equals("")).toArray(String[]::new);
 
-            File file = fileService.findByName("file", userService.getById(Long.parseLong(result[0])));
+            File file = fileService.findByType("file", userService.getById(Long.parseLong(result[0])));
             fileService.increaseCount(file);
             extensionService.reloadFile(file);
         }
@@ -60,9 +61,9 @@ public class FileController {
                 .body(resource);
     }
 
-    @GetMapping("/findByName/{resourceType}/{ownerId}")
-    public File findByName(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
-        return fileService.findByName(resourceType, userService.getById(ownerId));
+    @GetMapping("/findByType/{resourceType}/{ownerId}")
+    public FileDto findByType(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
+        return new FileDto(fileService.findByType(resourceType, userService.getById(ownerId)));
     }
 
     @DeleteMapping("/auth/delete/{resourceType}/{ownerId}")
