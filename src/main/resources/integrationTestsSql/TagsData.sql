@@ -21,7 +21,7 @@ DELETE FROM `extension_tags`;
 ALTER TABLE `extension_tags` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `extension_tags` (
   `tag` char(50) NOT NULL,
-  `extension_id` int NOT NULL,
+  `extension_id` bigint(20) NOT NULL,
   UNIQUE KEY `tag_id_extension_id` (`tag`,`extension_id`),
   KEY `FK_extension_tags_extensions` (`extension_id`),
   CONSTRAINT `FK_extension_tags_extensions` FOREIGN KEY (`extension_id`) REFERENCES `extensions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,

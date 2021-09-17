@@ -8,6 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<File, Long> {
-    @Query("from File where resource_type LIKE :resourceType AND owner LIKE :owner")
-    Optional<File> findByType(String resourceType, @Param("owner") UserModel owner);
+    @Query("from File where resource_type LIKE :resourceType AND owner = :owner")
+    Optional<File> findByType(@Param("resourceType") String resourceType, @Param("owner") UserModel owner);
 }

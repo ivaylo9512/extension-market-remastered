@@ -2,6 +2,8 @@ package com.tick42.quicksilver.models;
 
 import javax.persistence.*;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +25,7 @@ public class UserModel {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_image")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private File profileImage;
 
     @Column(name = "is_enabled")
@@ -59,6 +62,12 @@ public class UserModel {
         this.country = country;
     }
 
+    public UserModel(long id, String username, String email, String password, String role,
+                     String info, String country) {
+        this(username, email, password, role, info, country);
+        this.id = id;
+    }
+
     public UserModel(String username, String password, String role) {
         this.username = username;
         this.password = password;
@@ -78,7 +87,8 @@ public class UserModel {
         setProfileImage(profileImage);
     }
 
-    public UserModel(String username, String email, String password, String role, String info, String country, double rating, int extensionsRated) {
+    public UserModel(String username, String email, String password, String role, String info,
+                     String country, double rating, int extensionsRated) {
         this(username, email, password, role, info, country);
         this.rating = rating;
         this.extensionsRated = extensionsRated;

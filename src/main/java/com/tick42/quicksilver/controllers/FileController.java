@@ -17,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 
 @RestController
@@ -36,15 +35,11 @@ public class FileController {
     }
 
     @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> getAsResource(@PathVariable("fileName") String fileName, HttpServletRequest request) throws MalformedURLException {
+    public ResponseEntity<Resource> getAsResource(@PathVariable("fileName") String fileName, HttpServletRequest request) throws IOException {
         Resource resource = fileService.getAsResource(fileName);
         String contentType;
 
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException e) {
-            contentType = "application/octet-stream";
-        }
+        contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
 
         if(fileName.startsWith("file")) {
             String[] result = Arrays.stream(fileName.split("[file|.]")).filter(s -> !s.equals("")).toArray(String[]::new);

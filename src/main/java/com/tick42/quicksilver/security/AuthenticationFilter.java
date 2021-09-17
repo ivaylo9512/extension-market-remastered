@@ -1,7 +1,6 @@
 package com.tick42.quicksilver.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 

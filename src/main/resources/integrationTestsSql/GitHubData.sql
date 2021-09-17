@@ -20,7 +20,7 @@ USE `extensions-market-test`;
 DELETE FROM `github`;
 ALTER TABLE `github` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `github` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user` varchar(512) DEFAULT NULL,
   `repo` varchar(512) DEFAULT NULL,
   `last_commit` datetime DEFAULT NULL,

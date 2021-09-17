@@ -18,7 +18,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -59,7 +58,7 @@ public class UserController {
                 Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
         response.addHeader("Authorization", "Token " + token);
 
-        return new UserDto(userService.save(newUser));
+        return new UserDto(newUser);
     }
 
     @PostMapping("/login")
@@ -86,11 +85,11 @@ public class UserController {
             fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
         }
 
-        return new UserDto(userService.save(newUser));
+        return new UserDto(newUser);
     }
 
     @GetMapping(value = "/findById/{id}")
-    public UserDto findById(@PathVariable(name = "id") int id, HttpServletRequest request) {
+    public UserDto findById(@PathVariable(name = "id") long id, HttpServletRequest request) {
         UserDetails loggedUser = null;
         String authorization = request.getHeader("Authorization");
 
@@ -105,7 +104,7 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/setState/{id}/{newState}")
     public UserDto setState(@PathVariable("newState") String state,
-                            @PathVariable("id") int id) {
+                            @PathVariable("id") long id) {
         return new UserDto(userService.setState(id, state));
     }
 
@@ -119,7 +118,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
-    public UserDto changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec, HttpServletRequest request){
+    public UserDto changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec){
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
 

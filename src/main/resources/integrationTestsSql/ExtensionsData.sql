@@ -20,12 +20,12 @@ USE `extensions-market-test`;
 DELETE FROM `extensions`;
 ALTER TABLE `extensions` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `extensions` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `times_rated` int NOT NULL DEFAULT '0',
   `rating` double NOT NULL DEFAULT '0',
   `name` char(255) NOT NULL,
   `version` varchar(50) NOT NULL,
-  `owner` int NOT NULL,
+  `owner` bigint(20) NOT NULL,
   `github_id` int DEFAULT NULL,
   `file_id` int DEFAULT NULL,
   `image_id` int DEFAULT NULL,

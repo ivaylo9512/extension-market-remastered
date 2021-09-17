@@ -1,23 +1,23 @@
 package com.tick42.quicksilver.models;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "files")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = File.class)
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     @JoinColumn(name = "extension")
     private Extension extension;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     @JoinColumn(name = "owner")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserModel owner;
 
     @Column(name = "download_count")
@@ -41,6 +41,14 @@ public class File {
         this.size = size;
         this.type = type;
         this.extensionType = extensionType;
+    }
+
+    public File(String resourceType, double size, String type, String extensionType, UserModel owner){
+        this.resourceType = resourceType;
+        this.size = size;
+        this.type = type;
+        this.extensionType = extensionType;
+        this.owner = owner;
     }
 
     @Override

@@ -20,11 +20,11 @@ USE `extensions-market-test`;
 DELETE FROM `settings`;
 ALTER TABLE `settings` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `settings` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `rate` int DEFAULT NULL,
   `wait` int DEFAULT NULL,
   `git_token` varchar(512) DEFAULT NULL,
-  `user` int DEFAULT NULL,
+  `user` bigint(20) DEFAULT NULL,
   `git_username` tinytext,
   PRIMARY KEY (`id`),
   KEY `FK_settings_users` (`user`),

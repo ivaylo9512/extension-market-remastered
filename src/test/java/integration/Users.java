@@ -147,7 +147,7 @@ public class Users {
         userDto.setEmail(email);
         userDto.setUsername(username);
 
-        return  request;
+        return request;
     }
 
     @WithMockUser(value = "spring")
@@ -230,10 +230,18 @@ public class Users {
 
     @Test
     public void login() throws Exception {
+        UserModel user = new UserModel("adminUser", "adminUser@gmail.com", "password","ROLE_ADMIN", "info",
+                "Bulgaria", 4.166666666666667, 3);
+        UserDto userDto = new UserDto(user);
+        userDto.setId(1);
+        userDto.setActive(true);
+        userDto.setProfileImage("profileImage1.png");
+
         mockMvc.perform(post("/api/users/login")
-                        .contentType("Application/json")
-                        .content("{\"username\": \"adminUser\", \"password\": \"password\"}"))
-                .andExpect(status().isOk());
+                .contentType("Application/json")
+                .content("{\"username\": \"adminUser\", \"password\": \"password\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(userDto)));
     }
 
     @Test
@@ -259,6 +267,7 @@ public class Users {
         UserDto user = new UserDto(new UserModel("adminUser", "adminUser@gmail.com", "password", "ROLE_ADMIN",
                 "info", "Bulgaria", 4.166666666666667, 3));
         user.setId(1);
+        user.setProfileImage("profileImage1.png");
 
         checkDBForUser(user, null);
     }
@@ -268,7 +277,8 @@ public class Users {
         UserDto user = new UserDto(new UserModel("testForth", "testForth@gmail.com", "password", "ROLE_USER",
                 "info", "Italy", 0, 0));
         user.setId(8);
-        user.setIsActive(false);
+        user.setActive(false);
+        user.setProfileImage("profileImage8.png");
 
         checkDBForUser(user, adminToken);
     }
@@ -291,7 +301,8 @@ public class Users {
         UserDto user = new UserDto(new UserModel("testForth", "testForth@gmail.com", "password", "ROLE_USER",
                 "info", "Italy", 0, 0));
         user.setId(8);
-        user.setIsActive(true);
+        user.setActive(true);
+        user.setProfileImage("profileImage8.png");
 
         mockMvc.perform(patch("/api/users/auth/setState/8/enable")
                 .header("Authorization", adminToken))
@@ -303,7 +314,7 @@ public class Users {
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk());
 
-        user.setIsActive(false);
+        user.setActive(false);
         checkDBForUser(user, adminToken);
     }
 
@@ -319,9 +330,10 @@ public class Users {
         UserSpec userSpec = new UserSpec(1, "newUsername", "newUsername@gmail.com",
                 "Bulgaria", "info");
         UserDto userDto = new UserDto(userSpec, "ROLE_ADMIN");
-        userDto.setIsActive(true);
+        userDto.setActive(true);
         userDto.setRating(4.166666666666667);
         userDto.setExtensionsRated(3);
+        userDto.setProfileImage("profileImage1.png");
 
         mockMvc.perform(post("/api/users/auth/changeUserInfo")
                         .header("Authorization", adminToken)

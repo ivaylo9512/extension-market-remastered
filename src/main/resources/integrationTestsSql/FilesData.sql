@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `files` (
   `extension` bigint(20) NOT NULL,
   `extension_type` tinytext NOT NULL,
   `type` varchar(50) NOT NULL DEFAULT '0',
-  `extension_id` int DEFAULT NULL,
+  `extension_id` bigint(20) DEFAULT NULL,
   `download_count` int NOT NULL DEFAULT 0,
   `size` double NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
@@ -41,15 +41,15 @@ CREATE TABLE IF NOT EXISTS `files` (
 INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_type`, `type`, `download_count`, `size`) VALUES
 	(1, 'profileImage', 1, NULL, 'png', 'image/png', 0, 43250),
 	(2, 'profileImage', 2, NULL, 'png', 'image/png', 0, 46000),
-	(3, 'profileImage', 3, NULL, 'png', 'image/png', 0, 32000),
+	(3, 'profileImage', 4, NULL, 'png', 'image/png', 0, 32000),
 	(4, 'profileImage', 4, NULL, 'png', 'image/png', 0, 37000),
 	(5, 'profileImage', 5, NULL, 'png', 'image/png', 0, 50000),
 	(6, 'profileImage', 6, NULL, 'png', 'image/png', 0, 20000),
 	(7, 'profileImage', 7, NULL, 'png', 'image/png', 0, 31500),
 	(8, 'profileImage', 8, NULL, 'png', 'image/png', 0, 31200),
-	(9, 'test', 3, 1, 'png', 'image/png', 0, 66800),
+	(9, 'test', 3, NULL , 'png', 'image/png', 0, 66800),
 	(10, 'file', 8, 2, 'text', 'plain/text', 2, 31200),
-	(11, 'file', 8, 3, 'text', 'plain/text', 3, 31200),
+	(11, 'file', 8, 4, 'text', 'plain/text', 3, 31200),
 	(12, 'file', 8, 4, 'text', 'plain/text', 5, 31200),
 	(13, 'file', 8, 5, 'text', 'plain/text', 3, 31200),
 	(14, 'file', 8, 6, 'text', 'plain/text', 6, 31200),
@@ -57,7 +57,8 @@ INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_typ
 	(16, 'file', 8, 8, 'text', 'plain/text', 3, 31200),
 	(17, 'file', 8, 9, 'text', 'plain/text', 7, 31200),
 	(18, 'file', 8, 10, 'text', 'plain/text', 2, 31200),
-	(19, 'file', 8, 11, 'text', 'plain/text', 7, 31200);
+	(19, 'file', 8, 11, 'text', 'plain/text', 7, 31200),
+	(20, 'file', 8, 1, 'text', 'plain/text', 9, 31200);
 /*!40000 ALTER TABLE `files` ENABLE KEYS */;
 
 SET FOREIGN_KEY_CHECKS = 1;
