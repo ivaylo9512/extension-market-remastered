@@ -70,6 +70,7 @@ public class GitHubController {
     @PatchMapping(value = "/auth/setNextSettings")
     public SettingsDto setNextSettings(ScheduledTaskRegistrar taskRegistrar){
         SettingsDto settings = new SettingsDto(gitHubService.setNextSettings());
+
         gitHubService.connectGithub();
         gitHubService.createScheduledTask(taskRegistrar);
 

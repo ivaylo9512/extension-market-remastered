@@ -23,6 +23,7 @@ public class GitHubDto {
     public GitHubDto(GitHubModel gitHubModel) {
         this.id = gitHubModel.getId();
         this.user = gitHubModel.getUser();
+        this.repo = gitHubModel.getRepo();
         this.pullRequests = gitHubModel.getPullRequests();
         this.openIssues = gitHubModel.getOpenIssues();
         setLastCommit(gitHubModel.getLastCommit());
