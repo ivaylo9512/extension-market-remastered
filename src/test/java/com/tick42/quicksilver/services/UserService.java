@@ -272,7 +272,7 @@ public class UserService {
     }
 
     @Test
-    public void ChangePassword(){
+    public void changePassword(){
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         UserDetails loggedUser = new UserDetails("test", "test", authorities, 1);
 
@@ -280,7 +280,7 @@ public class UserService {
                 "currentPassword", "newTestPassword");
 
         UserModel userModel = new UserModel();
-        userModel.setPassword("currentPassword");
+        userModel.setPassword(BCrypt.hashpw(passwordSpec.getCurrentPassword(),BCrypt.gensalt(4)));
         userModel.setEnabled(true);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
@@ -300,7 +300,7 @@ public class UserService {
                 "incorrect", "newTestPassword");
 
         UserModel userModel = new UserModel();
-        userModel.setPassword("currentPassword");
+        userModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
         userModel.setEnabled(true);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(userModel));

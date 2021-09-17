@@ -29,9 +29,13 @@ public class RegisterSpec {
     public RegisterSpec() {
     }
 
-    public RegisterSpec(String username, String password) {
+    public RegisterSpec(String username, String email, String password, MultipartFile profileImage, String country, String info) {
         this.username = username;
+        this.email = email;
         this.password = password;
+        this.profileImage = profileImage;
+        this.country = country;
+        this.info = info;
     }
 
     public String getUsername() {
