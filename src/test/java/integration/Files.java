@@ -75,7 +75,7 @@ public class Files {
 
     @AfterEach
     public void resetState() throws IOException {
-        java.nio.file.Files.copy(Paths.get("./uploads/test4.png"), Paths.get("./uploads/test3.png"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test.png"), Paths.get("./uploads/test3.png"), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @BeforeAll

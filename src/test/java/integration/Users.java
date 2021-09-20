@@ -1,5 +1,6 @@
 package integration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tick42.quicksilver.config.AppConfig;
 import com.tick42.quicksilver.config.SecurityConfig;
@@ -9,6 +10,7 @@ import com.tick42.quicksilver.models.Dtos.FileDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.security.Jwt;
 import org.apache.commons.io.IOUtils;
@@ -19,8 +21,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,6 +46,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,7 +71,7 @@ public class Users {
     private DataSource dataSource;
 
     private MockMvc mockMvc;
-    private static String adminToken, userToken;
+    private static String adminToken, userToken, expiredToken;
     private ObjectMapper objectMapper;
     private MockMultipartFile profileImage;
 
@@ -81,8 +84,8 @@ public class Users {
     }
 
     @AfterEach
-    public void reset() {
-        new File("./uploads/logo.png").delete();
+    public void reset(){
+        new File("./uploads/profileImage10.png").delete();
     }
 
     @BeforeAll
@@ -109,6 +112,14 @@ public class Users {
         userToken = "Token " + Jwt.generate(new UserDetails(user, Collections
                 .singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
+        int expiration = Jwt.getJwtExpirationInMs();
+        Jwt.setJwtExpirationInMs(-20);
+
+        expiredToken = "Token " + Jwt.generate(new UserDetails(admin, Collections
+                .singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))));
+
+        Jwt.setJwtExpirationInMs(expiration);
+
         objectMapper = new ObjectMapper();
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
@@ -128,9 +139,10 @@ public class Users {
     private UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "info", "Bulgaria");
     private UserDto userDto = new UserDto(user);
 
-    private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token) throws IOException {
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart(url)
-                .file(profileImage)
+    private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token, boolean isWithImage) throws IOException {
+        MockHttpServletRequestBuilder request = (isWithImage
+                ? MockMvcRequestBuilders.multipart(url).file(profileImage)
+                : MockMvcRequestBuilders.multipart(url))
                 .param("username", username)
                 .param("email", email)
                 .param("password", user.getPassword())
@@ -142,10 +154,12 @@ public class Users {
         }
 
         userDto.setRole(role);
-        userDto.setProfileImage("profileImage10.png");
         userDto.setId(10);
         userDto.setEmail(email);
         userDto.setUsername(username);
+        userDto.setProfileImage(isWithImage
+                ? "profileImage10.png"
+                : null);
 
         return request;
     }
@@ -153,15 +167,10 @@ public class Users {
     @WithMockUser(value = "spring")
     @Test
     public void register() throws Exception {
-        MockHttpServletResponse response = mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
-                        "username", "username@gmail.com", null))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
+        mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
+                        "username", "username@gmail.com", null, true))
+                .andExpect(status().isOk());
 
-        String token = response.getHeader("Authorization");
-
-        assertNotNull(token);
         enableUser(userDto.getId());
         checkDBForUser(userDto, null);
         checkDBForImage("profileImage", userDto.getId());
@@ -171,7 +180,7 @@ public class Users {
     @Test
     public void registerAdmin() throws Exception {
         mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
-                        "username", "username@gmail.com", adminToken))
+                        "username", "username@gmail.com", adminToken, true))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(objectMapper.writeValueAsString(userDto))));
 
@@ -184,7 +193,7 @@ public class Users {
     @Test
     public void registerAdmin_WithUserThatIsNotAdmin_Unauthorized() throws Exception {
         mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
-                        "username", "username@gmail.com", userToken))
+                        "username", "username@gmail.com", userToken, true))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Access is denied"));
     }
@@ -192,7 +201,7 @@ public class Users {
     @Test
     public void register_WhenUsernameIsTaken() throws Exception {
         mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
-                        "testUser", "username@gmail.com", null))
+                        "testUser", "username@gmail.com", null, true))
                 .andExpect(content().string(containsString("Username is already taken.")));
     }
 
@@ -345,9 +354,110 @@ public class Users {
     }
 
     @Test
+    public void changePassword() throws Exception {
+        NewPasswordSpec passwordSpec = new NewPasswordSpec("adminUser", "password", "newPassword");
+        UserModel user = new UserModel("adminUser", "adminUser@gmail.com", "password","ROLE_ADMIN", "info",
+                "Bulgaria", 4.166666666666667, 3);
+
+        UserDto userDto = new UserDto(user);
+        userDto.setId(1);
+        userDto.setProfileImage("profileImage1.png");
+
+        mockMvc.perform(patch("/api/users/auth/changePassword")
+                        .header("Authorization", adminToken)
+                        .contentType("Application/json")
+                        .content(objectMapper.writeValueAsString(passwordSpec)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType("Application/json")
+                        .content("{\"username\": \"adminUser\", \"password\": \"newPassword\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(userDto)));
+    }
+
+    @Test
+    public void register_WithWrongFileType() throws Exception {
+        FileInputStream input = new FileInputStream("./uploads/test.txt");
+        MockMultipartFile profileImage = new MockMultipartFile("profileImage", "test.txt", "text/plain",
+                IOUtils.toByteArray(input));
+        input.close();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/users/register")
+                .file(profileImage)
+                .param("username", "username")
+                .param("email", "email@gmail.com")
+                .param("password", user.getPassword())
+                .param("country", user.getCountry())
+                .param("info", user.getInfo());
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("File should be of type image"));
+    }
+
+    @Test
+    public void register_WithoutProfileImage() throws Exception {
+        mockMvc.perform(createMediaRegisterRequest("/api/users/register", "ROLE_USER",
+                        "username", "username@gmail.com", null, false))
+                .andExpect(status().isOk());
+
+        enableUser(userDto.getId());
+        checkDBForUser(userDto, adminToken);
+    }
+
+    @Test
+    public void registerAdmin_WithoutProfileImage() throws Exception {
+        mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
+                        "username", "username@gmail.com", adminToken, false))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(objectMapper.writeValueAsString(userDto))));
+
+        checkDBForUser(userDto, adminToken);
+    }
+
+    @Test
+    public void register_WithWrongFields() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/users/register")
+                .param("password", "short")
+                .param("username", "short");
+
+        String response = mockMvc.perform(request)
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Map<String, String> errors = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(errors.get("username"), "Username must be between 8 and 20 characters.");
+        assertEquals(errors.get("password"), "Password must be between 10 and 25 characters.");
+        assertEquals(errors.get("country"), "You must provide country.");
+        assertEquals(errors.get("info"), "You must provide info.");
+    }
+
+    @Test
+    public void changePassword_WithWrongFields() throws Exception {
+        String response = mockMvc.perform(patch("/api/users/auth/changePassword")
+                        .content("{\"newPassword\": \"short\"}")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", adminToken))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Map<String, String> errors = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(errors.get("newPassword"), "Password must be between 10 and 25 characters.");
+        assertEquals(errors.get("currentPassword"), "You must provide current password.");
+        assertEquals(errors.get("username"), "You must provide username.");
+    }
+
+    @Test
     void registerAdmin_WithoutToken_Unauthorized() throws Exception{
         mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
-                        "username", "username@gmail.com", null))
+                        "username", "username@gmail.com", null, true))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Jwt token is missing"));
     }
@@ -355,9 +465,17 @@ public class Users {
     @Test
     void registerAdmin_WithIncorrectToken_Unauthorized() throws Exception{
         mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
-                        "username", "username@gmail.com", "Token incorrect"))
+                        "username", "username@gmail.com", "Token incorrect", true))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void registerAdmin_WithExpiredToken() throws Exception{
+        mockMvc.perform(createMediaRegisterRequest("/api/users/auth/registerAdmin", "ROLE_ADMIN",
+                        "username", "username@gmail.com", expiredToken, true))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token has expired."));
     }
 
     @Test
@@ -373,6 +491,14 @@ public class Users {
                         .header("Authorization", "Token incorrect"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void changeUserInfo_WithTokenWithoutPrefix() throws Exception{
+        mockMvc.perform(post("/api/users/auth/changeUserInfo")
+                        .header("Authorization", "Incorrect token"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
     }
 
     @Test

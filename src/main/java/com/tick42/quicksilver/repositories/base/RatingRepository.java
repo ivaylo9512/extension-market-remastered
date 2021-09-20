@@ -7,7 +7,4 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface RatingRepository extends JpaRepository<Rating, RatingPK> {
-
-    @Query(value = "select rating from Rating where extension like :extensionId and user like :userId")
-    int findRatingByUser(@Param("extensionId") int extensionId, @Param("userId")int userId);
 }

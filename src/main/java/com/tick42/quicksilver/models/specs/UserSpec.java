@@ -8,18 +8,18 @@ public class UserSpec {
     @NotNull(message = "Id is required")
     private long id;
 
-    @NotNull(message = "Username is required")
+    @NotNull(message = "Username must be between 8 and 20 characters.")
     @Length(min = 8, max = 18, message = ("Password must be between 8 and 18 characters"))
     private String username;
 
-    @NotNull(message = "Email is required")
+    @NotNull(message = "You must provide email.")
     @Email(message = "Must be a valid email")
     private String email;
 
-    @NotNull(message = "Country is required")
+    @NotNull(message = "You must provide country.")
     private String country;
 
-    @NotNull(message = "Info is required")
+    @NotNull(message = "You must provide info.")
     private String info;
 
     public UserSpec() {

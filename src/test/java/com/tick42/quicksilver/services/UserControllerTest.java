@@ -75,15 +75,9 @@ public class UserControllerTest {
 
         ArgumentCaptor<UserModel> captor = ArgumentCaptor.forClass(UserModel.class);
         when(userService.create(any(UserModel.class))).thenReturn(userModel);
-        when(fileService.generate(multipartFile, "profileImage", "image/png")).thenReturn(profileImage);
+        when(fileService.generate(multipartFile, "profileImage", "image")).thenReturn(profileImage);
 
-        UserDto registeredUser = userController.register(register, response);
-
-        assertEquals(registeredUser.getId(), userModel.getId());
-        assertEquals(registeredUser.getUsername(), userModel.getUsername());
-        assertEquals(registeredUser.getCountry(), userModel.getCountry());
-        assertEquals(registeredUser.getRole(), userModel.getRole());
-        assertEquals(registeredUser.getEmail(), userModel.getEmail());
+        userController.register(register, response);
 
         verify(fileService, times(1)).save("profileImage1", multipartFile);
         verify(userService).create(captor.capture());
@@ -93,13 +87,6 @@ public class UserControllerTest {
         assertEquals(passedToCreate.getProfileImage(), profileImage);
         assertEquals(passedToCreate.getProfileImage().getOwner().getUsername(), userModel.getUsername());
         assertEquals(passedToCreate.getRole(), userModel.getRole());
-
-        String token = response.getHeader("Authorization");
-        assertNotNull(token);
-
-        UserDetails userDetails = Jwt.validate(token.substring(6));
-        assertEquals(userDetails.getId(), userModel.getId());
-        assertEquals(userDetails.getAuthorities().stream().toList().get(0), new SimpleGrantedAuthority(userModel.getRole()));
     }
 
     @Test
@@ -111,7 +98,7 @@ public class UserControllerTest {
 
         ArgumentCaptor<UserModel> captor = ArgumentCaptor.forClass(UserModel.class);
         when(userService.create(any(UserModel.class))).thenReturn(userModel);
-        when(fileService.generate(multipartFile, "profileImage", "image/png")).thenReturn(profileImage);
+        when(fileService.generate(multipartFile, "profileImage", "image")).thenReturn(profileImage);
 
         UserDto registeredUser = userController.registerAdmin(register);
 

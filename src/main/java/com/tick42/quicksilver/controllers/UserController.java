@@ -40,12 +40,12 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    public UserDto register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException {
+    public void register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException {
         MultipartFile profileImage = registerSpec.getProfileImage();
         File file = null;
 
         if(profileImage != null){
-            file = fileService.generate(profileImage,"profileImage", "image/png");
+            file = fileService.generate(profileImage,"profileImage", "image");
         }
 
         UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_USER"));
@@ -53,12 +53,6 @@ public class UserController {
         if(file != null){
             fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
         }
-
-        String token = Jwt.generate(new UserDetails(newUser, new ArrayList<>(
-                Collections.singletonList(new SimpleGrantedAuthority(newUser.getRole())))));
-        response.addHeader("Authorization", "Token " + token);
-
-        return new UserDto(newUser);
     }
 
     @PostMapping("/login")
@@ -75,7 +69,7 @@ public class UserController {
         File file = null;
 
         if(profileImage != null){
-            file = fileService.generate(profileImage,"profileImage", "image/png");
+            file = fileService.generate(profileImage,"profileImage", "image");
         }
 
         UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_ADMIN"));

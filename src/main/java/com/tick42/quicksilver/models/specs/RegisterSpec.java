@@ -6,24 +6,24 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 public class RegisterSpec {
-    @NotNull(message = "Username is required")
-    @Length(min = 8, max = 18, message = ("Password must be between 8 and 18 characters"))
+    @NotNull(message = "You must provide username.")
+    @Length(min = 8, max = 18, message = ("Username must be between 8 and 20 characters."))
     private String username;
 
-    @NotNull(message = "Email is required")
-    @Email(message = "Must be a valid email")
+    @NotNull(message = "You must provide email.")
+    @Email(message = "Must be a valid email.")
     private String email;
 
-    @NotNull(message = "Password is required")
-    @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters"))
+    @NotNull(message = "You must provide password.")
+    @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters."))
     private String password;
 
     private MultipartFile profileImage;
 
-    @NotNull(message = "Country is required")
+    @NotNull(message = "You must provide country.")
     private String country;
 
-    @NotNull(message = "Info is required")
+    @NotNull(message = "You must provide info.")
     private String info;
 
     public RegisterSpec() {

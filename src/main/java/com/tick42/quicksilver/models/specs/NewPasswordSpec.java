@@ -5,15 +5,18 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotNull;
 
 public class NewPasswordSpec {
-    @NotNull(message = "Username is required")
+    @NotNull(message = "You must provide username.")
     private String username;
 
-    @NotNull(message = ("Old password is required"))
+    @NotNull(message = ("You must provide current password."))
     private String currentPassword;
 
     @NotNull(message = ("New password is required"))
-    @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters"))
+    @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters."))
     private String newPassword;
+
+    public NewPasswordSpec(){
+    }
 
     public NewPasswordSpec(String username, String currentPassword, String newPassword) {
         this.username = username;
