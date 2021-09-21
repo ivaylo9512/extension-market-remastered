@@ -137,13 +137,16 @@ public class UserServiceImpl implements UserService {
         }
 
         UserModel user = userRepository.findById(userSpec.getId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+                .orElseThrow(() -> new EntityNotFoundException("UserModel not found."));
 
-        if(!user.getUsername().equals(userSpec.getUsername())){
-            UserModel existingUser = userRepository.findByUsername(userSpec.getUsername());
+        if(!user.getUsername().equals(userSpec.getUsername()) || !user.getEmail().equals(userSpec.getEmail())){
+            UserModel existingUser = userRepository.findByUsernameOrEmail(userSpec.getUsername(), userSpec.getEmail());
 
             if(existingUser != null){
-                throw new UsernameExistsException("Username is already taken.");
+                if(existingUser.getUsername().equals(userSpec.getUsername())){
+                    throw new UsernameExistsException("Username is already taken.");
+                }
+                throw new EmailExistsException("Email is already taken.");
             }
         }
 
@@ -157,9 +160,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setEnabled(boolean state, long id){
-        UserModel user = userRepository.getById(id);
-        user.setEnabled(true);
+        UserModel user = userRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("UserModel not found."));
+        user.setEnabled(state);
 
         userRepository.save(user);
+    }
+
+    @Override
+    public void delete(long id, UserDetails loggedUser) {
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("UserModel not found."));
+
+        if(id != loggedUser.getId() &&
+                !AuthorityUtils.authorityListToSet(loggedUser.getAuthorities()).contains("ROLE_ADMIN")){
+            throw new UnauthorizedException("You are not allowed to modify the user.");
+        }
+
+        userRepository.delete(user);
     }
 }

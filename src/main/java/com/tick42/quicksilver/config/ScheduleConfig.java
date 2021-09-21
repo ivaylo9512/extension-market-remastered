@@ -23,13 +23,9 @@ public class ScheduleConfig implements SchedulingConfigurer {
     private GitHubService gitHubService;
 
     private final UserRepository userRepository;
-    private final SettingsRepository settingsRepository;
-    private final Environment env;
 
-    public ScheduleConfig(UserRepository userRepository, SettingsRepository settingsRepository, Environment env) {
+    public ScheduleConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.settingsRepository = settingsRepository;
-        this.env = env;
     }
 
     @Override

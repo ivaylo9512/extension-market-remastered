@@ -9,11 +9,11 @@ public class UserSpec {
     private long id;
 
     @NotNull(message = "Username must be between 8 and 20 characters.")
-    @Length(min = 8, max = 18, message = ("Password must be between 8 and 18 characters"))
+    @Length(min = 8, max = 18, message = ("Username must be between 8 and 20 characters."))
     private String username;
 
     @NotNull(message = "You must provide email.")
-    @Email(message = "Must be a valid email")
+    @Email(message = "Must be a valid email.")
     private String email;
 
     @NotNull(message = "You must provide country.")

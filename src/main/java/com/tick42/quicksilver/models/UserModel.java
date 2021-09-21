@@ -94,6 +94,11 @@ public class UserModel {
         this.extensionsRated = extensionsRated;
     }
 
+    public UserModel(long id, String username, String password, String role){
+        this(username, password, role);
+        this.id = id;
+    }
+
     public String getUsername() {
         return username;
     }
