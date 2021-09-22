@@ -40,7 +40,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         String model = Arrays.stream(e.getMessage().split("[ .]+"))
                 .filter(s -> s.equals("UserModel") || s.equals("File") || s.equals("Settings")
-                        || s.equals("GitHub")).findFirst().orElse("Entity");
+                        || s.equals("GitHub") || s.equals("Extension")).findFirst().orElse("Entity");
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)

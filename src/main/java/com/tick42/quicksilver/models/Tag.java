@@ -10,7 +10,7 @@ public class Tag {
     @Id
     private String name;
 
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private Set<Extension> extensions = new HashSet<>();
 
     public Tag() {

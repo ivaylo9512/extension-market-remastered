@@ -227,6 +227,15 @@ public class ExtensionController {
         return new ExtensionDto(extensionService.setFeaturedState(id, state));
     }
 
+    @GetMapping(value = { "/findByTag/{name}/{pageSize}/{lastId}", "/findByTag/{name}/{pageSize}/" })
+    public PageDto<ExtensionDto> findByName(@PathVariable(name = "name") String name,
+                                            @PathVariable(name = "pageSize") int pageSize,
+                                            @PathVariable(name = "lastId", required = false) Long lastId) {
+        Page<Extension> page = extensionService.findByTag(name, pageSize, lastId == null ? 0 : lastId);
+
+        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
+    }
+
     @GetMapping(value = "/checkName")
     public boolean isNameAvailable(@RequestParam(name = "name") String name){
         return extensionService.isNameAvailable(name);

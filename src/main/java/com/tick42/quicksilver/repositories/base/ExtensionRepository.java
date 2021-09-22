@@ -25,4 +25,8 @@ public interface ExtensionRepository extends JpaRepository<Extension, Long> {
 
     @Query(value = "FROM Extension as e WHERE owner LIKE :owner AND id > :lastId")
     Page<Extension> findUserExtensions(@Param("owner") UserModel owner, @Param("lastId") long lastId, Pageable pageRequest);
+
+    @Query(value = "SELECT * FROM extensions as e LEFT JOIN extension_tags on id = extension_tags.extension WHERE extension_tags.tag LIKE :name AND id > :lastId", nativeQuery = true)
+    Page<Extension> findByTag(@Param("name") String name, @Param("lastId") long lastId, Pageable pageRequest);
+
 }

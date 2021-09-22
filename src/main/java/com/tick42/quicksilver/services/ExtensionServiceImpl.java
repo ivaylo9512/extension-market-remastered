@@ -237,6 +237,11 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
+    public Page<Extension> findByTag(String name, int pageSize, long lastId) {
+        return extensionRepository.findByTag(name, lastId, PageRequest.of(0, pageSize, Sort.Direction.ASC, "id"));
+    }
+
+    @Override
     public boolean isNameAvailable(String name){
         return extensionRepository.findByName(name) == null;
     }

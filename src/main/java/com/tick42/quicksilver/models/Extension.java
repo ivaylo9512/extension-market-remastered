@@ -37,7 +37,7 @@ public class Extension {
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinTable(
             name = "extension_tags",
-            joinColumns = @JoinColumn(name = "extension_id"),
+            joinColumns = @JoinColumn(name = "extension"),
             inverseJoinColumns = @JoinColumn(name = "tag"))
     private Set<Tag> tags = new HashSet<>();
 

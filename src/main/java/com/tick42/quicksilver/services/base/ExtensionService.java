@@ -44,4 +44,6 @@ public interface ExtensionService {
     boolean isNameAvailable(String name);
 
     Page<Extension> findUserExtensions(int pageSize, long lastId, UserModel user);
+
+    Page<Extension> findByTag(String name, int pageSize, long lastId);
 }
