@@ -17,11 +17,6 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Tag findByName(String name) {
-        return tagRepository.findById(name).orElseThrow(() -> new RuntimeException("Tag not found."));
-    }
-
-    @Override
     public String normalize(String name) {
         name = name.trim().replaceAll(" +", "-");
         name = name.toLowerCase();
