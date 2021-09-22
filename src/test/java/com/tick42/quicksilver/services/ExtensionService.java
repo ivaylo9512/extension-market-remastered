@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
@@ -124,13 +126,14 @@ public class ExtensionService {
         extension2.setPending(true);
         List<Extension> extensions = Arrays.asList(extension1, extension2);
 
-        when(extensionRepository.findByPending(true)).thenReturn(extensions);
+        when(extensionRepository.findByPending(true, 1, PageRequest.of(0, 2,
+                Sort.Direction.ASC, "id"))).thenReturn(new PageImpl<>(extensions));
 
-        List<Extension> pendingExtensionDtos = extensionService.findPending();
+        Page<Extension> pending = extensionService.findByPending(true, 2, 1);
 
-        assertEquals(2, pendingExtensionDtos.size());
-        assertTrue(pendingExtensionDtos.get(0).isPending());
-        assertTrue(pendingExtensionDtos.get(1).isPending());
+        assertEquals(2, pending.getContent().size());
+        assertTrue(pending.getContent().get(0).isPending());
+        assertTrue(pending.getContent().get(1).isPending());
     }
 
     @Test
@@ -471,7 +474,7 @@ public class ExtensionService {
 
         PageDto<Extension> pageDto = extensionService.findPageWithCriteria("extension", "name", page, pageSize);
 
-        assertEquals(pageDto.getExtensions(), extensions);
+        assertEquals(pageDto.getData(), extensions);
         assertEquals(pageDto.getTotalResults(), totalResults);
         assertEquals(pageDto.getCurrentPage(), page);
     }

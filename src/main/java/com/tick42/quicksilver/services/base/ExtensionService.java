@@ -1,7 +1,10 @@
 package com.tick42.quicksilver.services.base;
 
 import com.tick42.quicksilver.models.*;
+import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.Dtos.PageDto;
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 public interface ExtensionService {
@@ -28,7 +31,7 @@ public interface ExtensionService {
 
     Extension setFeaturedState(long id, String newState);
 
-    List<Extension> findPending();
+    Page<Extension> findByPending(boolean state, int pageSize, long lastId);
 
     void loadFeatured();
 
@@ -39,4 +42,6 @@ public interface ExtensionService {
     void reloadFile(File file);
 
     boolean isNameAvailable(String name);
+
+    Page<Extension> findUserExtensions(int pageSize, long lastId, UserModel user);
 }

@@ -11,6 +11,7 @@ import com.tick42.quicksilver.services.base.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -62,7 +63,7 @@ public class ExtensionController {
 
         PageDto<Extension> page = extensionService.findPageWithCriteria(name, orderBy, requestedPage, perPage);
         PageDto<ExtensionDto> pageDto = new PageDto<>(page);
-        pageDto.setExtensions(generateExtensionDTOList(page.getExtensions()));
+        pageDto.setData(generateExtensionDTOList(page.getData()));
         return pageDto;
     }
 
@@ -192,10 +193,26 @@ public class ExtensionController {
         ratingService.updateRatingOnExtensionDelete(extension);
     }
 
+    @GetMapping(value = { "/auth/findUserExtensions/{pageSize}/{lastId}", "/auth/findUserExtensions/{pageSize}" })
+    public PageDto<ExtensionDto> findUserExtensions(@PathVariable("pageSize") int pageSize,
+                                                    @PathVariable(value = "lastId", required = false) Long lastId){
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+
+        Page<Extension> page = extensionService.findUserExtensions(pageSize, lastId == null
+                ? 0 : lastId, userService.getById(loggedUser.getId()));
+
+        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "/auth/unpublished")
-    public List<ExtensionDto> getPending() {
-        return generateExtensionDTOList(extensionService.findPending());
+    @GetMapping(value = { "/auth/findPending/{state}/{pageSize}/", "/auth/findPending/{state}/{pageSize}/{lastId}" })
+    public PageDto<ExtensionDto> findByPending(@PathVariable("state") boolean state,
+                                         @PathVariable("pageSize") int pageSize,
+                                         @PathVariable(name = "lastId", required = false) Long lastId) {
+        Page<Extension> page = extensionService.findByPending(state, pageSize, lastId == null ? 0 : lastId);
+
+        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

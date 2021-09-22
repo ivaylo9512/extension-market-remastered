@@ -58,13 +58,13 @@ public class ExtensionDto {
         setFileName(extension.getFile());
         setUploadDate(extension.getUploadDate());
     }
+
     @Override
-    public boolean equals(Object o){
-        if(o instanceof ExtensionDto){
-            ExtensionDto compare = (ExtensionDto) o;
-            return this.id == compare.getId();
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ExtensionDto that = (ExtensionDto) o;
+        return id == that.id;
     }
 
     @Override
@@ -246,7 +246,7 @@ public class ExtensionDto {
 
     public void setFileName(File file) {
         if(file != null){
-            this.fileName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
+            this.fileName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
         }
     }
 
@@ -256,7 +256,7 @@ public class ExtensionDto {
 
     public void setImageName(File file) {
         if(file != null){
-            this.imageName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
+            this.imageName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
         }
     }
 
@@ -266,7 +266,7 @@ public class ExtensionDto {
 
     public void setCoverName(File file) {
         if(file != null){
-            this.coverName = file.getExtensionType() + file.getExtension().getId() + file.getExtensionType();
+            this.coverName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
         }
     }
 

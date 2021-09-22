@@ -5,6 +5,7 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -177,8 +178,15 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public List<Extension> findPending() {
-        return extensionRepository.findByPending(true);
+    public Page<Extension> findUserExtensions(int pageSize, long lastId, UserModel user) {
+        return extensionRepository.findUserExtensions(user, lastId,
+                PageRequest.of(0, pageSize, Sort.Direction.ASC, "id"));
+    }
+
+    @Override
+    public Page<Extension> findByPending(boolean state, int pageSize, long lastId) {
+        return extensionRepository.findByPending(state, lastId,
+                PageRequest.of(0, pageSize, Sort.Direction.ASC, "id"));
     }
 
     @Override
