@@ -136,42 +136,35 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension setPublishedState(long extensionId, String state) {
+    public Extension setPending(long extensionId, boolean state) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
-        switch (state) {
-            case "publish" -> extension.setPending(false);
-            case "unpublish" -> {
-                featured.remove(extensionId);
-                extension.setFeatured(false);
-                extension.setPending(true);
-            }
-            default -> throw new InvalidInputException("\"" + state + "\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
+        if(state){
+            featured.remove(extensionId);
+            mostRecent.remove(extension);
+            extension.setFeatured(false);
         }
 
+        extension.setPending(state);
         extensionRepository.save(extension);
         updateMostRecent();
+
         return extension;
     }
 
     @Override
-    public Extension setFeaturedState(long extensionId, String state) {
+    public Extension setFeatured(long extensionId, boolean state) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
 
 
-        switch (state) {
-            case "feature" -> {
-                if (!extension.isFeatured() && featured.size() == featuredLimit) {
-                    throw new FeaturedLimitException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
-                }
-                extension.setFeatured(true);
-            }
-            case "unfeature" -> extension.setFeatured(false);
-            default -> throw new InvalidInputException("\"" + state + "\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
+        if (!extension.isFeatured() && state && featured.size() == featuredLimit) {
+            throw new FeaturedLimitException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
         }
 
+        extension.setFeatured(state);
+        extensionRepository.save(extension);
         updateFeatured(extension);
 
         return extension;

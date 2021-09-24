@@ -45,77 +45,58 @@ public class ExtensionService {
 
 
     @Test
-    public void toggleFeaturedState() {
+    public void setFeatured_WithTrue() {
         Extension extension = new Extension();
         extension.setFeatured(false);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        Extension newExtension = extensionService.setFeaturedState(1, "feature");
+        Extension newExtension = extensionService.setFeatured(1, true);
 
         assertTrue(newExtension.isFeatured());
+        verify(extensionService, times(1)).updateFeatured(extension);
     }
 
     @Test
-    public void toggleFeaturedState_WhenFeatured() {
+    public void setFeatured_WithFalse() {
         Extension extension = new Extension();
         extension.setFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        Extension newExtension = extensionService.setFeaturedState(1, "unfeature");
+        Extension newState = extensionService.setFeatured(1, false);
 
-        assertFalse(extension.isFeatured());
+        assertFalse(newState.isFeatured());
+        verify(extensionService, times(1)).updateFeatured(extension);
     }
 
     @Test
-    public void setFeaturedState_whenGivenInvalidParameter_shouldThrow() {
-        Extension extension = new Extension();
-        extension.setFeatured(true);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        InvalidInputException thrown = assertThrows(InvalidInputException.class,
-                () -> extensionService.setFeaturedState(1, "invalidInput"));
-
-        assertEquals(thrown.getMessage(), "\"invalidInput\" is not a valid featured state. Use \"feature\" or \"unfeature\".");
-    }
-
-    @Test
-    public void togglePending_WhenPending() {
+    public void setPublished_WithFalse() {
         Extension extension = new Extension();
         extension.setPending(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        Extension extensionShouldBePending = extensionService.setPublishedState(1, "publish");
+        Extension newState = extensionService.setPending(1, false);
 
-        assertFalse(extensionShouldBePending.isPending());
+        assertFalse(newState.isPending());
+        verify(extensionService, times(1)).updateMostRecent();
     }
 
     @Test
-    public void togglePending_WhenNotPending() {
+    public void setPublished_WithTrue() {
         Extension extension = new Extension();
         extension.setPending(false);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        Extension extensionShouldBeUnpublished = extensionService.setPublishedState(1, "unpublish");
-
-        assertTrue(extensionShouldBeUnpublished.isPending());
-    }
-
-    @Test
-    public void setPublishedState_whenGivenInvalidParameter_shouldThrow() {
-        Extension extension = new Extension();
         extension.setFeatured(true);
 
         when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
 
-        InvalidInputException thrown = assertThrows(InvalidInputException.class,
-                () -> extensionService.setPublishedState(1, "invalidInput"));
+        Extension newState = extensionService.setPending(1, true);
 
-        assertEquals(thrown.getMessage(), "\"invalidInput\" is not a valid extension state. Use \"publish\" or \"unpublish\".");
+        assertTrue(newState.isPending());
+        assertFalse(newState.isFeatured());
+        verify(extensionRepository, times(1)).save(extension);
+        verify(extensionService, times(1)).updateMostRecent();
     }
 
     @Test

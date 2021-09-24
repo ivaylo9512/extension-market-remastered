@@ -7,6 +7,9 @@ import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.repositories.base.UserRepository;
 import com.tick42.quicksilver.services.base.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,16 +29,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserModel setState(long userId, String state) {
+    public UserModel setActive(long userId, boolean state) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        switch (state) {
-            case "enable" -> user.setActive(true);
-            case "block" -> user.setActive(false);
-            default -> throw new InvalidInputException("\"" + state + "\" is not a valid userModel state. Use \"enable\" or \"block\".");
-        }
-
+        user.setActive(state);
         return userRepository.save(user);
     }
 
@@ -59,21 +57,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserModel> findAll(String state) {
-        List<UserModel> user;
+    public Page<UserModel> findByName(String name, String lastName, int pageSize) {
+        return userRepository.findByName(name, lastName, PageRequest.of(0, pageSize, Sort.Direction.ASC, "username"));
+    }
 
-        if (state == null) {
-            throw new InvalidInputException("State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
-        }
-
-        user = switch (state) {
-            case "active" -> userRepository.findByIsActive(true);
-            case "blocked" -> userRepository.findByIsActive(false);
-            case "all" -> userRepository.findAll();
-            default -> throw new InvalidInputException("\"" + state + "\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
-        };
-
-        return user;
+    @Override
+    public Page<UserModel> findByActive(boolean isActive, String name, String lastName, int pageSize) {
+        return userRepository.findByActive(isActive, name, lastName, PageRequest.of(0, pageSize, Sort.Direction.ASC, "username"));
     }
 
     @Override

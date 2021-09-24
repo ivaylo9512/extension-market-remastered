@@ -4,16 +4,15 @@ import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.UserSpec;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
 public interface UserService extends UserDetailsService {
-    UserModel setState(long id, String state);
+    UserModel setActive(long id, boolean state);
 
     UserModel create(UserModel user);
-
-    List<UserModel> findAll(String state);
 
     UserModel save(UserModel user);
 
@@ -28,4 +27,8 @@ public interface UserService extends UserDetailsService {
     void setEnabled(boolean state, long id);
 
     void delete(long id, UserDetails loggedUser);
+
+    Page<UserModel> findByName(String name, String lastName, int pageSize);
+
+    Page<UserModel> findByActive(boolean isActive, String name, String lastName, int pageSize);
 }

@@ -174,9 +174,9 @@ public class UserControllerTest {
 
     @Test
     public void setState(){
-        when(userService.setState(1L, "state")).thenReturn(userModel);
+        when(userService.setActive(1L, true)).thenReturn(userModel);
 
-        UserDto userDto = userController.setState("state", 1L);
+        UserDto userDto = userController.setActive(true, 1L);
 
         assertUser(userDto, userModel);
     }

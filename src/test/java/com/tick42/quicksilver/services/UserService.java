@@ -109,63 +109,8 @@ public class UserService {
         assertEquals(user.getUsername(), blockedUser.getUsername());
     }
 
-    @Test
-    public void findBlockedUsers() {
-        UserModel userModel = new UserModel();
-        UserModel userModel1 = new UserModel();
-        userModel.setActive(false);
-        userModel1.setActive(false);
-        List<UserModel> userModels = List.of(userModel, userModel1);
-
-        when(userRepository.findByIsActive(false)).thenReturn(userModels);
-
-        List<UserModel> usersDTO = userService.findAll("blocked");
-
-        assertEquals(2, usersDTO.size());
-        assertFalse(usersDTO.get(0).isActive());
-        assertFalse(usersDTO.get(1).isActive());
-    }
-
-    @Test
-    public void findActiveUsers() {
-        UserModel userModel = new UserModel();
-        UserModel userModel1 = new UserModel();
-        userModel.setActive(true);
-        userModel1.setActive(true);
-        List<UserModel> userModels = Arrays.asList(userModel, userModel1);
-
-        when(userRepository.findByIsActive(true)).thenReturn(userModels);
-
-        List<UserModel> usersDTO = userService.findAll("active");
-
-        assertEquals(2, usersDTO.size());
-        assertTrue(usersDTO.get(0).isActive());
-        assertTrue(usersDTO.get(1).isActive());
-    }
-
-    @Test
-    public void findAll_WhenStateNull_InvalidInput() {
-        InvalidInputException thrown = assertThrows(
-                InvalidInputException.class,
-                () -> userService.findAll(null)
-        );
-
-        assertEquals(thrown.getMessage(), "State is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
-    }
-
-    @Test
-    public void findAllUsers_WithWrongState(){
-        InvalidInputException thrown = assertThrows(
-                InvalidInputException.class,
-                () -> userService.findAll("invalid")
-        );
-
-        assertEquals(thrown.getMessage(), "\"invalid\" is not a valid user state. Use \"active\" , \"blocked\" or \"all\".");
-
-    }
-
     @Test()
-    public void setUserState_Enable(){
+    public void setActive_True(){
         UserModel userModel = new UserModel();
         userModel.setActive(false);
         userModel.setId(1);
@@ -173,13 +118,13 @@ public class UserService {
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
-        UserModel user = userService.setState(1,"enable");
+        UserModel user = userService.setActive(1,true);
 
         assertTrue(user.isActive());
     }
 
     @Test()
-    public void setUserState_Block(){
+    public void setActive_False(){
         UserModel userModel = new UserModel();
         userModel.setActive(true);
         userModel.setId(1);
@@ -187,7 +132,7 @@ public class UserService {
         when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
-        UserModel user = userService.setState(1,"block");
+        UserModel user = userService.setActive(1,false);
 
         assertFalse(user.isActive());
     }
@@ -217,25 +162,11 @@ public class UserService {
     }
 
     @Test
-    public void setUserState_WithWrongState(){
-        UserModel userModel = new UserModel();
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userModel));
-
-        InvalidInputException thrown = assertThrows(
-                InvalidInputException.class,
-                () -> userService.setState(1,"invalid")
-        );
-
-        assertEquals(thrown.getMessage(), "\"invalid\" is not a valid userModel state. Use \"enable\" or \"block\".");
-    }
-
-    @Test
-    public void setUserState_WithNonExistingUser(){
+    public void setActive_WithNonExistingUser(){
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
-                () -> userService.setState(1,"Active"));
+                () -> userService.setActive(1,true));
 
         assertEquals(thrown.getMessage(), "User not found.");
     }

@@ -20,12 +20,6 @@ public class ExtensionDto {
     private String ownerName;
     private long ownerId;
     private String gitHubLink;
-    private String lastCommit;
-    private int openIssues;
-    private int pullRequests;
-    private String lastSuccessfulPullOfData;
-    private String lastFailedAttemptToCollectData;
-    private String lastErrorMessage;
     private String fileName;
     private String imageName;
     private String coverName;
@@ -33,7 +27,7 @@ public class ExtensionDto {
     private double rating;
     private int timesRated;
     private int currentUserRatingValue;
-    private long githubId;
+    private GitHubDto github;
 
     public ExtensionDto() {
 
@@ -52,6 +46,7 @@ public class ExtensionDto {
         this.version = extension.getVersion();
         this.rating = extension.getRating();
         this.timesRated = extension.getTimesRated();
+        this.github = new GitHubDto(extension.getGithub());
 
         setImageName(extension.getImage());
         setCoverName(extension.getCover());
@@ -112,11 +107,11 @@ public class ExtensionDto {
         this.timesDownloaded = timesDownloaded;
     }
 
-    public boolean getIsPending() {
+    public boolean isPending() {
         return isPending;
     }
 
-    public void setIsPending(boolean pending) {
+    public void setPending(boolean pending) {
         isPending = pending;
     }
 
@@ -160,30 +155,6 @@ public class ExtensionDto {
         this.gitHubLink = gitHubLink;
     }
 
-    public String getLastCommit() {
-        return lastCommit;
-    }
-
-    public void setLastCommit(LocalDateTime lastCommit) {
-        this.lastCommit = lastCommit.toString();
-    }
-
-    public int getOpenIssues() {
-        return openIssues;
-    }
-
-    public void setOpenIssues(int openIssues) {
-        this.openIssues = openIssues;
-    }
-
-    public int getPullRequests() {
-        return pullRequests;
-    }
-
-    public void setPullRequests(int pullRequests) {
-        this.pullRequests = pullRequests;
-    }
-
     public List<String> getTags() {
         return tags;
     }
@@ -206,30 +177,6 @@ public class ExtensionDto {
 
     public void setTimesRated(int timesRated) {
         this.timesRated = timesRated;
-    }
-
-    public String getLastSuccessfulPullOfData() {
-        return lastSuccessfulPullOfData;
-    }
-
-    public void setLastSuccessfulPullOfData(LocalDateTime lastSuccessfulPullOfData) {
-        this.lastSuccessfulPullOfData = lastSuccessfulPullOfData.toString();
-    }
-
-    public String getLastFailedAttemptToCollectData() {
-        return lastFailedAttemptToCollectData;
-    }
-
-    public void setLastFailedAttemptToCollectData(LocalDateTime lastFailedAttemptToCollectData) {
-        this.lastFailedAttemptToCollectData = lastFailedAttemptToCollectData.toString();
-    }
-
-    public String getLastErrorMessage() {
-        return lastErrorMessage;
-    }
-
-    public void setLastErrorMessage(String lastErrorMessage) {
-        this.lastErrorMessage = lastErrorMessage;
     }
 
     public int getCurrentUserRatingValue() {
@@ -270,11 +217,11 @@ public class ExtensionDto {
         }
     }
 
-    public long getGithubId() {
-        return githubId;
+    public GitHubDto getGithub() {
+        return github;
     }
 
-    public void setGithubId(long githubId) {
-        this.githubId = githubId;
+    public void setGithub(GitHubDto github) {
+        this.github = github;
     }
 }

@@ -27,9 +27,9 @@ public interface ExtensionService {
 
     long findTotalResults(String name);
 
-    Extension setPublishedState(long id, String newState);
+    Extension setPending(long id, boolean state);
 
-    Extension setFeaturedState(long id, String newState);
+    Extension setFeatured(long id, boolean state);
 
     Page<Extension> findByPending(boolean state, int pageSize, long lastId);
 

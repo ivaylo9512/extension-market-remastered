@@ -15,7 +15,7 @@ public class UserModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
     @OrderBy(value = "upload_date DESC")
     private Set<Extension> extensions = new HashSet<>();
 

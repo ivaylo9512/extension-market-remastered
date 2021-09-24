@@ -216,19 +216,19 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/{id}/status/{state}")
-    public ExtensionDto setPublishedState(@PathVariable(name = "id") long id, @PathVariable("state") String state) {
-        return new ExtensionDto(extensionService.setPublishedState(id, state));
+    @PatchMapping(value = "/auth/setPending/{id}/{state}")
+    public ExtensionDto setPending(@PathVariable(name = "id") long id, @PathVariable("state") boolean state) {
+        return new ExtensionDto(extensionService.setPending(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/{id}/featured/{state}")
-    public ExtensionDto setFeaturedState(@PathVariable("id") long id, @PathVariable("state") String state) {
-        return new ExtensionDto(extensionService.setFeaturedState(id, state));
+    @PatchMapping(value = "/auth/setFeatured/{id}/{state}")
+    public ExtensionDto setFeatured(@PathVariable("id") long id, @PathVariable("state") boolean state) {
+        return new ExtensionDto(extensionService.setFeatured(id, state));
     }
 
     @GetMapping(value = { "/findByTag/{name}/{pageSize}/{lastId}", "/findByTag/{name}/{pageSize}/" })
-    public PageDto<ExtensionDto> findByName(@PathVariable(name = "name") String name,
+    public PageDto<ExtensionDto> findByTag(@PathVariable(name = "name") String name,
                                             @PathVariable(name = "pageSize") int pageSize,
                                             @PathVariable(name = "lastId", required = false) Long lastId) {
         Page<Extension> page = extensionService.findByTag(name, pageSize, lastId == null ? 0 : lastId);

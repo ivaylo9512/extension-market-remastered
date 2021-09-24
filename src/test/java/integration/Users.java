@@ -306,20 +306,20 @@ public class Users {
     }
 
     @Test
-    void setState() throws Exception {
+    void setActive() throws Exception {
         UserDto user = new UserDto(new UserModel("testForth", "testForth@gmail.com", "password", "ROLE_USER",
                 "info", "Italy", 0, 0));
         user.setId(8);
         user.setActive(true);
         user.setProfileImage("profileImage8.png");
 
-        mockMvc.perform(patch("/api/users/auth/setState/8/enable")
+        mockMvc.perform(patch("/api/users/auth/setActive/8/true")
                 .header("Authorization", adminToken))
                 .andExpect(status().isOk());
 
         checkDBForUser(user, null);
 
-        mockMvc.perform(patch("/api/users/auth/setState/8/block")
+        mockMvc.perform(patch("/api/users/auth/setActive/8/false")
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk());
 
@@ -328,8 +328,8 @@ public class Users {
     }
 
     @Test
-    void setState_WithLoggedUserNotAdmin() throws Exception {
-        mockMvc.perform(patch("/api/users/auth/setState/8/true")
+    void setActive_WithLoggedUserNotAdmin() throws Exception {
+        mockMvc.perform(patch("/api/users/auth/setActive/8/true")
                 .header("Authorization", userToken))
                 .andExpect(status().isUnauthorized());
     }
@@ -570,6 +570,21 @@ public class Users {
     @Test
     void changePassword_WithIncorrectToken_Unauthorized() throws Exception{
         mockMvc.perform(patch("/api/users/auth/changePassword")
+                        .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void setActive_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/users/auth/setActive"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void setActive_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/users/auth/setActive")
                         .header("Authorization", "Token incorrect"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Jwt token is incorrect"));

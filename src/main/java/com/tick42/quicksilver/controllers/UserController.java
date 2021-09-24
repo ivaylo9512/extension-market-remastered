@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.controllers;
 
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
@@ -11,10 +12,10 @@ import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,8 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,18 +95,25 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping(value = "/auth/setState/{id}/{newState}")
-    public UserDto setState(@PathVariable("newState") String state,
+    @PatchMapping(value = "/auth/setActive/{id}/{newState}")
+    public UserDto setActive(@PathVariable("newState") boolean state,
                             @PathVariable("id") long id) {
-        return new UserDto(userService.setState(id, state));
+        return new UserDto(userService.setActive(id, state));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "/auth/all")
-    public List<UserDto> findAll(@RequestParam(name = "state", required = false) String state) {
-        return userService.findAll(state).stream()
-                .map(UserDto::new)
-                .collect(Collectors.toList());
+    @GetMapping("/auth/findAll")
+    public PageDto<UserDto> findAll(@RequestParam(name = "isActive", required = false) Boolean isActive,
+                                 @RequestParam(name = "name", required = false, defaultValue = "") String name,
+                                 @RequestParam(name = "pageSize") int pageSize,
+                                 @RequestParam(name = "lastName", required = false, defaultValue = "") String lastName) {
+        if(isActive != null){
+            Page<UserModel> page = userService.findByActive(isActive, name, lastName, pageSize);
+            return new PageDto<>(page.getTotalElements(), page.stream().map(UserDto::new).collect(Collectors.toList()));
+        }
+
+        Page<UserModel> page = userService.findByName(name, lastName, pageSize);
+        return new PageDto<>(page.getTotalElements(), page.stream().map(UserDto::new).collect(Collectors.toList()));
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")

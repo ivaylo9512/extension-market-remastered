@@ -21,7 +21,7 @@ public class RatingController {
     }
 
     @PatchMapping(value = "/auth/rate/{id}/{rating}")
-    public double rating(@PathVariable("id") long id, @PathVariable("rating") int rating) {
+    public double rate(@PathVariable("id") long id, @PathVariable("rating") int rating) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
