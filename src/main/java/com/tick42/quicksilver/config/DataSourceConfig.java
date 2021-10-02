@@ -44,7 +44,7 @@ public class DataSourceConfig {
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl(String.format("jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306/extensions-market%s?serverTimezone=UTC",
+        dataSource.setUrl(String.format("jdbc:mysql://database-2.cdad4jowljyd.eu-central-1.rds.amazonaws.com:3306/extensions-market%s?serverTimezone=UTC",
                 env.acceptsProfiles(Profiles.of("test")) ? "-test" : ""));
         dataSource.setUsername("admin");
         dataSource.setPassword("Admin1234");

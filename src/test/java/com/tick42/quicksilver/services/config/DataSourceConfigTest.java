@@ -47,7 +47,7 @@ public class DataSourceConfigTest {
 
         DriverManagerDataSource dataSource = (DriverManagerDataSource) dataSourceConfig.dataSource();
 
-        assertEquals(dataSource.getUrl(), "jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306" +
+        assertEquals(dataSource.getUrl(), "jdbc:mysql://database-2.cdad4jowljyd.eu-central-1.rds.amazonaws.com:3306" +
                 "/extensions-market-test?serverTimezone=UTC");
     }
 
@@ -57,7 +57,7 @@ public class DataSourceConfigTest {
 
         DriverManagerDataSource dataSource = (DriverManagerDataSource) dataSourceConfig.dataSource();
 
-        assertEquals(dataSource.getUrl(), "jdbc:mysql://database-2.cd3qhxwxyvzj.eu-west-2.rds.amazonaws.com:3306" +
+        assertEquals(dataSource.getUrl(), "jdbc:mysql://database-2.cdad4jowljyd.eu-central-1.rds.amazonaws.com:3306" +
                 "/extensions-market?serverTimezone=UTC");
     }
 }
