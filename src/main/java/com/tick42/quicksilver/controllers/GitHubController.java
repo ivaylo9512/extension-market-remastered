@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import com.tick42.quicksilver.services.base.GitHubService;
 import com.tick42.quicksilver.services.base.UserService;
+import org.kohsuke.github.GHException;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -64,6 +65,17 @@ public class GitHubController {
         UserModel user = userService.findById(userId, loggedUser);
 
         return new GitHubDto(gitHubService.reloadGitHub(extension.getGithub(), user));
+    }
+
+    @GetMapping("/getRepoDetails")
+    public GitHubDto getRepoDetails(@RequestParam(name = "link") String link){
+        GitHubModel gitHub = gitHubService.generateGitHub(link);
+
+        if(gitHub.getLastFail() != null){
+            throw new GHException(gitHub.getFailMessage().split("Exception:")[1]);
+        }
+
+        return new GitHubDto(gitHub);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

@@ -111,13 +111,10 @@ public class GitHubService {
         gitHubModel.setUser(user);
         gitHubModel.setRepo(repo);
 
-        GHException thrown = assertThrows(GHException.class,
-                () -> gitHubService.setRemoteDetails(gitHubModel));
+        gitHubService.setRemoteDetails(gitHubModel);
 
-        String message = String.format("org.kohsuke.github.GHException: Couldn't connect to repo: '%s' with user: '%s'. " +
-                        "Check details.", repo, user);
-        assertEquals(thrown.getMessage(), message);
-        assertEquals(gitHubModel.getFailMessage(), message);
+        assertEquals(gitHubModel.getFailMessage(), String.format("org.kohsuke.github.GHException: Couldn't connect to repo: '%s'. " +
+                "Check details.", repo));
     }
 
     @Test

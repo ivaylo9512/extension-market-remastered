@@ -20,7 +20,7 @@ public class GitHubModel {
     @Column(name = "open_issues")
     private int openIssues;
 
-    @Column(name = "last_commit")
+    @Column(name = "last_commit", columnDefinition = "DATETIME(6)")
     private LocalDateTime lastCommit;
 
     @Column(name = "last_success")

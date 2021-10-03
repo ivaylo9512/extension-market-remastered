@@ -14,13 +14,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.FixedRateTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.*;
 
 @Service
@@ -55,8 +53,6 @@ public class GitHubServiceImpl implements GitHubService {
         } catch (ExecutionException e){
             gitHubModel.setFailMessage(e.getMessage());
             gitHubModel.setLastFail(LocalDateTime.now());
-            throw new GHException(e.getMessage());
-
         } catch (TimeoutException e) {
             tryGithub();
         }
@@ -88,7 +84,7 @@ public class GitHubServiceImpl implements GitHubService {
 
                 return gitHubModel;
             } catch (IOException e) {
-                throw new GHException(String.format("Couldn't connect to repo: '%s' with user: '%s'. Check details.", gitHubModel.getRepo(), gitHubModel.getUser()));
+                throw new GHException(String.format("Couldn't connect to repo: '%s'. Check details.", gitHubModel.getRepo()));
             }
         });
     }
