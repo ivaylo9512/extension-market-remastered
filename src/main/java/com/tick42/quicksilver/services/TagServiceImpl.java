@@ -25,12 +25,11 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Set<Tag> saveTags(String tagString){
-        Set<String> tags = generateTags(tagString);
-
-        if(tagString.equals("")){
-            throw new InvalidInputException("Tags can't be an empty string.");
+        if(tagString == null || tagString.equals("")){
+            return null;
         }
-        return tags.stream().map(tagName -> tagRepository.save(new Tag(tagName)))
+
+        return generateTags(tagString).stream().map(tagName -> tagRepository.save(new Tag(tagName)))
                 .collect(Collectors.toSet());
     }
 

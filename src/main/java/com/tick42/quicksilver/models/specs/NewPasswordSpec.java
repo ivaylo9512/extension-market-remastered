@@ -2,16 +2,16 @@ package com.tick42.quicksilver.models.specs;
 
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 public class NewPasswordSpec {
-    @NotNull(message = "You must provide username.")
+    @NotBlank(message = "You must provide username.")
     private String username;
 
-    @NotNull(message = ("You must provide current password."))
+    @NotBlank(message = ("You must provide current password."))
     private String currentPassword;
 
-    @NotNull(message = ("New password is required"))
+    @NotBlank(message = ("New password is required"))
     @Length(min = 10, max = 25, message = ("Password must be between 10 and 25 characters."))
     private String newPassword;
 

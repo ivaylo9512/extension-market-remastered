@@ -218,7 +218,7 @@ public class Users {
     }
 
     private void checkDBForImage(String resourceType, long userId) throws Exception{
-        MvcResult result = mockMvc.perform(get(String.format("/api/files/findByType/%s/%s", resourceType, userId)))
+        MvcResult result = mockMvc.perform(get(String.format("/api/files/findByOwner/%s/%s", resourceType, userId)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -361,8 +361,8 @@ public class Users {
                         .header("Authorization", adminToken)
                         .contentType("Application/json")
                         .content(objectMapper.writeValueAsString(userSpec)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Username is already taken."));
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().string("{ \"username\": \"Username is already taken.\" }"));
     }
 
     @Test
@@ -373,8 +373,8 @@ public class Users {
                         .header("Authorization", adminToken)
                         .contentType("Application/json")
                         .content(objectMapper.writeValueAsString(userSpec)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Email is already taken."));
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().string("{ \"email\": \"Email is already taken.\" }"));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.Dtos.PageDto;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ExtensionService {
@@ -19,13 +20,17 @@ public interface ExtensionService {
 
     List<Extension> findMostRecent(Integer mostRecentCount);
 
+    Extension getById(long id);
+
     List<Extension> findFeatured();
 
-    List<Extension> findMostDownloaded(Integer mostDownloadedCount);
+    Page<Extension> findAllByDownloaded(int lastDownloadCount, int pageSize, String name, long lastId);
 
-    PageDto<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer perPage);
+    Page<Extension> findAllByCommitDate(LocalDateTime lastDate, int pageSize, String name, long lastId);
 
-    long findTotalResults(String name);
+    Page<Extension> findAllByUploadDate(LocalDateTime lastDate, int pageSize, String name, long lastId);
+
+    Page<Extension> findAllByName(String lastName, int pageSize, String name);
 
     Extension setPending(long id, boolean state);
 

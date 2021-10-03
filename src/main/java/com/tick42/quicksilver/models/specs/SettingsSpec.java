@@ -1,15 +1,16 @@
 package com.tick42.quicksilver.models.specs;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class SettingsSpec {
-    @NotNull(message = "Provide a GitHubModel username.")
+    @NotBlank(message = "Provide a GitHubModel username.")
     @Size(min = 1, message = "Username should be filled in.")
     private String username;
 
-    @NotNull(message = "Provide a token, associated with the username")
+    @NotBlank(message = "Provide a token, associated with the username")
     @Size(min = 1, message = "Token should be filled in.")
     private String token;
 

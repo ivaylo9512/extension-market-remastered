@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.services.base;
 
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.core.io.Resource;
@@ -12,7 +13,9 @@ public interface FileService {
 
     Resource getAsResource(String fileName) throws MalformedURLException;
 
-    File findByType(String resourceType, UserModel owner);
+    File findByOwner(String resourceType, UserModel owner);
+
+    File findByExtension(String resourceType, Extension extension);
 
     void save(String name, MultipartFile receivedFile) throws IOException;
 

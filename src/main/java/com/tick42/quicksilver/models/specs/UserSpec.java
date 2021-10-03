@@ -2,24 +2,25 @@ package com.tick42.quicksilver.models.specs;
 
 import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public class UserSpec {
     @NotNull(message = "Id is required")
     private long id;
 
-    @NotNull(message = "Username must be between 8 and 20 characters.")
+    @NotBlank(message = "Username must be between 8 and 20 characters.")
     @Length(min = 8, max = 18, message = ("Username must be between 8 and 20 characters."))
     private String username;
 
-    @NotNull(message = "You must provide email.")
+    @NotBlank(message = "You must provide email.")
     @Email(message = "Must be a valid email.")
     private String email;
 
-    @NotNull(message = "You must provide country.")
+    @NotBlank(message = "You must provide country.")
     private String country;
 
-    @NotNull(message = "You must provide info.")
+    @NotBlank(message = "You must provide info.")
     private String info;
 
     public UserSpec() {

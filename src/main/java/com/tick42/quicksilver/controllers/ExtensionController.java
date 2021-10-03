@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,25 +49,62 @@ public class ExtensionController {
     @GetMapping("/getHomeExtensions")
     public HomePageDto getHomeExtensions(
             @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
-            @RequestParam(name = "mostDownloadedCount") Integer mostDownloadedCount){
+            @RequestParam(name = "mostDownloadedCount") int mostDownloadedCount){
 
         List<ExtensionDto> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
         List<ExtensionDto> featured = generateExtensionDTOList(extensionService.findFeatured());
-        List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findMostDownloaded(mostDownloadedCount));
+        List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findAllByDownloaded(mostDownloadedCount, Integer.MAX_VALUE, "", 0).getContent());
+
         return new HomePageDto(mostRecent, featured, mostDownloaded);
     }
 
-    @GetMapping("/filter")
-    public PageDto<ExtensionDto> findPageWithCriteria(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "orderBy", required = false) String orderBy,
-            @RequestParam(name = "page", required = false) Integer requestedPage,
-            @RequestParam(name = "perPage", required = false) Integer perPage) {
+    @GetMapping("/findAllByCommitDate")
+    public PageDto<ExtensionDto> findAllByCommitDate(
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "lastDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastDate,
+            @RequestParam(name = "lastId", required = false, defaultValue = "0") int lastId,
+            @RequestParam(name = "pageSize") int pageSize
+            ){
 
-        PageDto<Extension> page = extensionService.findPageWithCriteria(name, orderBy, requestedPage, perPage);
-        PageDto<ExtensionDto> pageDto = new PageDto<>(page);
-        pageDto.setData(generateExtensionDTOList(page.getData()));
-        return pageDto;
+        Page<Extension> page = extensionService.findAllByCommitDate(lastDate == null ? LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59) : lastDate, pageSize, name, lastId);
+
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @GetMapping("/findAllByUploadDate")
+    public PageDto<ExtensionDto> findAllByUploadDate(
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "lastDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastDate,
+            @RequestParam(name = "lastId", required = false, defaultValue = "0") int lastId,
+            @RequestParam(name = "pageSize") int pageSize
+    ){
+
+        Page<Extension> page = extensionService.findAllByUploadDate(lastDate == null ? LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59) : lastDate, pageSize, name, lastId);
+
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @GetMapping("/findAllByName")
+    public PageDto<ExtensionDto> findAllByName(
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "lastName", required = false, defaultValue = "") String lastName,
+            @RequestParam(name = "pageSize") int pageSize
+    ){
+        Page<Extension> page = extensionService.findAllByName(lastName, pageSize, name);
+
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @GetMapping("/findAllByDownloadCount")
+    public PageDto<ExtensionDto> findAllByDownloadCount(
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "lastDownloadCount", required = false, defaultValue = Integer.MAX_VALUE + "") int lastDownloadCount,
+            @RequestParam(name = "pageSize") int pageSize,
+            @RequestParam(name = "lastId", required = false, defaultValue = "0") int lastId
+    ){
+        Page<Extension> page = extensionService.findAllByDownloaded(lastDownloadCount, pageSize, name, lastId);
+
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
@@ -92,16 +132,14 @@ public class ExtensionController {
 
         UserModel user = userService.findById(userId, loggedUser);
         Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
-
         Extension newExtension = new Extension(extensionSpec, user, tags);
         generateFiles(extensionSpec, newExtension, user);
+        newExtension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
         Extension extension = extensionService.save(newExtension);
-
         saveFiles(extensionSpec, extension);
-        extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
-        return new ExtensionDto(extensionService.save(extension));
+        return new ExtensionDto(extension);
     }
 
     @PostMapping("/auth/edit")
@@ -115,7 +153,6 @@ public class ExtensionController {
         Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
 
         Extension extension = new Extension(extensionSpec, user, tags);
-        extension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
 
         generateFiles(extensionSpec, extension, user);
         saveFiles(extensionSpec, extension);
@@ -169,7 +206,6 @@ public class ExtensionController {
         }
         if(file != null){
             fileService.save("file" + id, file);
-            extension.setCover(fileService.generate(cover, "file", ""));
         }
         if(cover != null){
             fileService.save("cover" + id, cover);
@@ -202,7 +238,7 @@ public class ExtensionController {
         Page<Extension> page = extensionService.findUserExtensions(pageSize, lastId == null
                 ? 0 : lastId, userService.getById(loggedUser.getId()));
 
-        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -212,7 +248,7 @@ public class ExtensionController {
                                          @PathVariable(name = "lastId", required = false) Long lastId) {
         Page<Extension> page = extensionService.findByPending(state, pageSize, lastId == null ? 0 : lastId);
 
-        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -233,7 +269,7 @@ public class ExtensionController {
                                             @PathVariable(name = "lastId", required = false) Long lastId) {
         Page<Extension> page = extensionService.findByTag(name, pageSize, lastId == null ? 0 : lastId);
 
-        return new PageDto<>(page.getTotalElements(), generateExtensionDTOList(page.getContent()));
+        return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
     }
 
     @GetMapping(value = "/checkName")

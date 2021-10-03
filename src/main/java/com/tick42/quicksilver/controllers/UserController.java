@@ -109,11 +109,11 @@ public class UserController {
                                  @RequestParam(name = "lastName", required = false, defaultValue = "") String lastName) {
         if(isActive != null){
             Page<UserModel> page = userService.findByActive(isActive, name, lastName, pageSize);
-            return new PageDto<>(page.getTotalElements(), page.stream().map(UserDto::new).collect(Collectors.toList()));
+            return new PageDto<>(page.stream().map(UserDto::new).collect(Collectors.toList()), page.getTotalPages(), page.getTotalElements());
         }
 
         Page<UserModel> page = userService.findByName(name, lastName, pageSize);
-        return new PageDto<>(page.getTotalElements(), page.stream().map(UserDto::new).collect(Collectors.toList()));
+        return new PageDto<>(page.stream().map(UserDto::new).collect(Collectors.toList()), page.getTotalPages(), page.getTotalElements());
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
@@ -143,14 +143,14 @@ public class UserController {
     @ExceptionHandler
     ResponseEntity<String> handleUsernameExistsException(UsernameExistsException e) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(e.getMessage());
     }
 
     @ExceptionHandler
     ResponseEntity<String> handleEmailExistsException(EmailExistsException e) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(e.getMessage());
     }
 }

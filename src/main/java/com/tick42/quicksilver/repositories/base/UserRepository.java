@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<UserModel, Long> {
     UserModel findByUsername(String username);
 
-    UserModel findByUsernameOrEmail(String username, String email);
+    UserModel findFirstByUsernameOrEmail(String username, String email);
 
     @Query(value = "FROM UserModel as u WHERE lower(username) LIKE lower(concat(:name, '%')) AND username > :lastName")
     Page<UserModel> findByName(@Param("name") String name,

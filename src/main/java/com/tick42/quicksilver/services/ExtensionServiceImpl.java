@@ -2,7 +2,6 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import com.tick42.quicksilver.services.base.ExtensionService;
 import org.springframework.data.domain.Page;
@@ -11,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 
 @Service
@@ -50,7 +51,11 @@ public class ExtensionServiceImpl implements ExtensionService {
             throw new UnauthorizedException("You are not authorized to edit this extension.");
         }
 
-        return extensionRepository.save(newExtension);
+        extensionRepository.save(newExtension);
+        newExtension.setOwner(extension.getOwner());
+        reloadExtension(newExtension);
+
+        return newExtension;
     }
 
     @Override
@@ -78,10 +83,10 @@ public class ExtensionServiceImpl implements ExtensionService {
                 mostRecentQueueLimit : mostRecentCount;
 
         if(mostRecentCount > mostRecentQueueLimit){
-            return extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostRecentCount, Sort.Direction.DESC, "uploadDate"));
+            return extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, mostRecentCount)).getContent();
         }
 
-        return new ArrayList<>(mostRecent).subList(0, Math.min(mostRecent.size(), mostRecentCount));
+        return mostRecent.subList(0, Math.min(mostRecent.size(), mostRecentCount));
     }
 
     @Override
@@ -90,49 +95,27 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public List<Extension> findMostDownloaded(Integer mostDownloadedCount){
-        return extensionRepository.findAllOrderedBy("", PageRequest.of(0, mostDownloadedCount, Sort.Direction.DESC, "timesDownloaded"));
+    public Page<Extension> findAllByDownloaded(int lastDownloadCount, int pageSize, String name, long lastId){
+        return extensionRepository.findAllByDownloaded(lastDownloadCount, name, lastId,
+                PageRequest.of(0, pageSize));
     }
 
     @Override
-    public long findTotalResults(String name){
-        return extensionRepository.getTotalResults(name);
+    public Page<Extension> findAllByCommitDate(LocalDateTime lastDate, int pageSize, String name, long lastId){
+        return extensionRepository.findAllByCommitDate(lastDate, name, lastId,
+                PageRequest.of(0, pageSize));
     }
 
     @Override
-    public PageDto<Extension> findPageWithCriteria(String name, String orderBy, Integer page, Integer pageSize) {
-        if (page == null || page < 0) {
-            page = 0;
-        }
+    public Page<Extension> findAllByUploadDate(LocalDateTime lastDate, int pageSize, String name, long lastId){
+        return extensionRepository.findAllByUploadDate(lastDate, name, lastId,
+                PageRequest.of(0, pageSize));
+    }
 
-        if (pageSize == null || pageSize < 1) {
-            pageSize = 10;
-        }
-
-        if (name == null) {
-            name = "";
-        }
-
-        if (orderBy == null) {
-            orderBy = "date";
-        }
-
-        long totalResults = findTotalResults(name);
-        int totalPages = (int) Math.ceil(totalResults * 1.0 / pageSize);
-
-        if (page > totalPages && totalResults != 0) {
-            throw new InvalidInputException("Page " + totalPages + " is the last page. Page " + page + " is invalid.");
-        }
-
-        List<Extension> extensions = switch (orderBy) {
-            case "date" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "uploadDate"));
-            case "commits" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "github.lastCommit"));
-            case "name" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.ASC, "name"));
-            case "downloads" -> extensionRepository.findAllOrderedBy(name, PageRequest.of(page, pageSize, Sort.Direction.DESC, "timesDownloaded"));
-            default -> throw new InvalidInputException("\"" + orderBy + "\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
-        };
-
-        return new PageDto<>(extensions, page, totalPages, totalResults);
+    @Override
+    public Page<Extension> findAllByName(String lastName, int pageSize, String name){
+        return extensionRepository.findAllByName(name, lastName,
+                PageRequest.of(0, pageSize));
     }
 
     @Override
@@ -191,7 +174,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public void updateMostRecent(){
         mostRecent.clear();
-        mostRecent.addAll(extensionRepository.findAllOrderedBy("",PageRequest.of(0, mostRecentQueueLimit, Sort.Direction.DESC, "uploadDate")));
+        mostRecent.addAll(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, mostRecentQueueLimit)).getContent());
     }
 
     public void updateFeatured(Extension extension) {
@@ -235,7 +218,16 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
+    public Extension getById(long id) {
+        return extensionRepository.getById(id);
+    }
+
+    @Override
     public boolean isNameAvailable(String name){
         return extensionRepository.findByName(name) == null;
+    }
+
+    public int getMostRecentQueueLimit(){
+        return mostRecentQueueLimit;
     }
 }

@@ -6,6 +6,7 @@ import com.tick42.quicksilver.models.Tag;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExtensionDto {
@@ -41,13 +42,13 @@ public class ExtensionDto {
         this.ownerId = extension.getOwner().getId();
         this.ownerName = extension.getOwner().getUsername();
         this.isPending = extension.isPending();
-        this.tags = extension.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         this.timesDownloaded = extension.getFile().getDownloadCount();
         this.version = extension.getVersion();
         this.rating = extension.getRating();
         this.timesRated = extension.getTimesRated();
         this.github = new GitHubDto(extension.getGithub());
 
+        toTagsDto(extension.getTags());
         setImageName(extension.getImage());
         setCoverName(extension.getCover());
         setFileName(extension.getFile());
@@ -193,7 +194,7 @@ public class ExtensionDto {
 
     public void setFileName(File file) {
         if(file != null){
-            this.fileName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
+            this.fileName = file.getResourceType() + id + "." + file.getExtensionType();
         }
     }
 
@@ -203,7 +204,7 @@ public class ExtensionDto {
 
     public void setImageName(File file) {
         if(file != null){
-            this.imageName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
+            this.imageName = file.getResourceType() + id + "." + file.getExtensionType();
         }
     }
 
@@ -213,7 +214,7 @@ public class ExtensionDto {
 
     public void setCoverName(File file) {
         if(file != null){
-            this.coverName = file.getResourceType() + file.getExtension().getId() + "." + file.getExtensionType();
+            this.coverName = file.getResourceType() + id + "." + file.getExtensionType();
         }
     }
 
@@ -223,5 +224,11 @@ public class ExtensionDto {
 
     public void setGithub(GitHubDto github) {
         this.github = github;
+    }
+
+    private void toTagsDto(Set<Tag> tags) {
+        if(tags != null){
+            this.tags = tags.stream().map(Tag::getName).collect(Collectors.toList());
+        }
     }
 }

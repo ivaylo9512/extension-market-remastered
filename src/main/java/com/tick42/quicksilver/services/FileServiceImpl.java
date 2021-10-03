@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
@@ -59,7 +60,7 @@ public class FileServiceImpl implements FileService {
             throw new UnauthorizedException("Unauthorized");
         }
 
-        File file = findByType(resourceType, owner);
+        File file = findByOwner(resourceType, owner);
 
         boolean isDeleted = new java.io.File("./uploads/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
         if(isDeleted){
@@ -76,9 +77,14 @@ public class FileServiceImpl implements FileService {
         return fileRepository.save(file);
     }
 
+    public File findByOwner(String resourceType, UserModel owner) {
+        return fileRepository.findByOwner(resourceType, owner).orElseThrow(() ->
+                new EntityNotFoundException("File not found."));
+    }
+
     @Override
-    public File findByType(String resourceType, UserModel owner){
-        return fileRepository.findByType(resourceType, owner).orElseThrow(() ->
+    public File findByExtension(String resourceType, Extension extension){
+        return fileRepository.findByExtension(resourceType, extension).orElseThrow(() ->
                 new EntityNotFoundException("File not found."));
     }
     @Override

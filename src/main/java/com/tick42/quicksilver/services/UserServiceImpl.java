@@ -39,12 +39,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel create(UserModel user) {
-        UserModel existingUser = userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail());
+        UserModel existingUser = userRepository.findFirstByUsernameOrEmail(user.getUsername(), user.getEmail());
         if (existingUser != null) {
             if(existingUser.getUsername().equals(user.getUsername())){
-                throw new UsernameExistsException("Username is already taken.");
+                throw new UsernameExistsException("{ \"username\": \"Username is already taken.\" }");
             }
-            throw new EmailExistsException("Email is already taken.");
+            throw new EmailExistsException("{ \"email\": \"Email is already taken.\" }");
         }
 
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(4)));
@@ -130,13 +130,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("UserModel not found."));
 
         if(!user.getUsername().equals(userSpec.getUsername()) || !user.getEmail().equals(userSpec.getEmail())){
-            UserModel existingUser = userRepository.findByUsernameOrEmail(userSpec.getUsername(), userSpec.getEmail());
+            UserModel existingUser = userRepository.findFirstByUsernameOrEmail(userSpec.getUsername(), userSpec.getEmail());
 
             if(existingUser != null){
                 if(existingUser.getUsername().equals(userSpec.getUsername())){
-                    throw new UsernameExistsException("Username is already taken.");
+                    throw new UsernameExistsException("{ \"username\": \"Username is already taken.\" }");
                 }
-                throw new EmailExistsException("Email is already taken.");
+                throw new EmailExistsException("{ \"email\": \"Email is already taken.\" }");
             }
         }
 

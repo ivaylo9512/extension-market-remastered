@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.repositories.base;
 
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +10,8 @@ import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<File, Long> {
     @Query("from File where resource_type LIKE :resourceType AND owner = :owner")
-    Optional<File> findByType(@Param("resourceType") String resourceType, @Param("owner") UserModel owner);
+    Optional<File> findByOwner(@Param("resourceType") String resourceType, @Param("owner") UserModel owner);
+
+    @Query("from File where resource_type LIKE :resourceType AND extension = :extension")
+    Optional<File> findByExtension(@Param("resourceType") String resourceType, @Param("extension") Extension extension);
 }

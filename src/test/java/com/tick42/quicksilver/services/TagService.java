@@ -1,6 +1,6 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.InvalidInputException;
+import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.TagRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +11,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TagService {
@@ -42,10 +41,8 @@ public class TagService {
     }
 
     @Test
-    public void generateTagsWhenTagIsEmptyString_InvalidInput(){
-        InvalidInputException thrown = assertThrows(InvalidInputException.class,
-                () -> tagService.saveTags(""));
-
-        assertEquals(thrown.getMessage(), "Tags can't be an empty string.");
+    public void generateTagsWhenTagIsEmptyString(){
+        Set<Tag> tags = tagService.saveTags("");
+        assertNull(tags);
     }
 }

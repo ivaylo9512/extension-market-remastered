@@ -71,9 +71,9 @@ public class FileControllerTest {
     @Test
     public void findByType(){
         when(userService.getById(1L)).thenReturn(userModel);
-        when(fileService.findByType("profileImage", userModel)).thenReturn(file);
+        when(fileService.findByOwner("profileImage", userModel)).thenReturn(file);
 
-        FileDto fileDto = fileController.findByType("profileImage", 1L);
+        FileDto fileDto = fileController.findByOwner("profileImage", 1L);
 
         assertEquals(fileDto.getOwnerId(), userModel.getId());
         assertEquals(fileDto.getResourceType(), file.getResourceType());
@@ -90,8 +90,8 @@ public class FileControllerTest {
         Resource resource = new UrlResource("file", "/file1.txt");
 
         when(fileService.getAsResource("file1.txt")).thenReturn(resource);
-        when(userService.getById(1L)).thenReturn(userModel);
-        when(fileService.findByType("file", userModel)).thenReturn(file);
+        when(extensionService.getById(1L)).thenReturn(extension);
+        when(fileService.findByExtension("file", extension)).thenReturn(file);
         when(fileService.increaseCount(file)).thenReturn(file);
         doNothing().when(extensionService).reloadFile(file);
         when(request.getServletContext()).thenReturn(servletContext);
@@ -102,7 +102,7 @@ public class FileControllerTest {
         assertEquals(response.getBody(), resource);
         assertEquals(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION), "attachment; filename=\"file1.txt\"");
         verify(fileService, times(1)).increaseCount(file);
-        verify(fileService, times(1)).findByType("file", userModel);
+        verify(fileService, times(1)).findByExtension("file", extension);
         verify(extensionService, times(1)).reloadFile(file);
     }
 }

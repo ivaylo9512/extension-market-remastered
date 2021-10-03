@@ -2,15 +2,13 @@ package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
-import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
-import com.tick42.quicksilver.repositories.base.UserRepository;
-import com.tick42.quicksilver.services.base.GitHubService;
-import com.tick42.quicksilver.services.base.TagService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -20,6 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,18 +31,42 @@ public class ExtensionService {
     private ExtensionRepository extensionRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private TagService tagService;
-
-    @Mock
-    private GitHubService gitHubService;
-
-    @Spy
-    @InjectMocks
     private ExtensionServiceImpl extensionService;
 
+    private final Page<Extension> mostRecentPage = createMostRecent();
+
+    @BeforeEach
+    private void create(){
+        extensionService = createMock();
+        resetMostRecent();
+    }
+
+    private void resetMostRecent(){
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 5))).thenReturn(mostRecentPage);
+        this.extensionService.updateMostRecent();
+    }
+
+    private Page<Extension> createMostRecent(){
+        Extension extension = new Extension();
+        Extension extension1 = new Extension();
+        Extension extension2 = new Extension();
+        Extension extension3 = new Extension();
+        Extension extension4 = new Extension();
+
+        extension.setId(2);
+        extension1.setId(2);
+        extension2.setId(5);
+        extension3.setId(8);
+        extension4.setId(10);
+
+        return new PageImpl<>(List.of(extension, extension1, extension2, extension3, extension4));
+    }
+
+    private ExtensionServiceImpl createMock(){
+        Page<Extension> page = new PageImpl<>(new ArrayList<>());
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 5))).thenReturn(page);
+        return Mockito.spy(new ExtensionServiceImpl(extensionRepository));
+    }
 
     @Test
     public void setFeatured_WithTrue() {
@@ -80,7 +104,7 @@ public class ExtensionService {
         Extension newState = extensionService.setPending(1, false);
 
         assertFalse(newState.isPending());
-        verify(extensionService, times(1)).updateMostRecent();
+        verify(extensionService, times(2)).updateMostRecent();
     }
 
     @Test
@@ -96,7 +120,7 @@ public class ExtensionService {
         assertTrue(newState.isPending());
         assertFalse(newState.isFeatured());
         verify(extensionRepository, times(1)).save(extension);
-        verify(extensionService, times(1)).updateMostRecent();
+        verify(extensionService, times(2)).updateMostRecent();
     }
 
     @Test
@@ -288,6 +312,7 @@ public class ExtensionService {
 
     @Test
     public void update_whenLoggedUserIsNotOwnerAndNotAdmin_ShouldThrow() {
+        Page<Extension> page = new PageImpl<>(new ArrayList<>());
         UserModel loggedUser = new UserModel();
         loggedUser.setId(1);
         loggedUser.setRole("ROLE_USER");
@@ -427,55 +452,6 @@ public class ExtensionService {
         assertEquals(thrown.getMessage(), "You are not authorized to delete this extension.");
     }
 
-    @Test
-    public void findAll_WhenPageMoreThanTotalPages_InvalidInput() {
-        when(extensionRepository.getTotalResults("name")).thenReturn(21L);
-
-        InvalidInputException thrown = assertThrows(
-                InvalidInputException.class,
-                () -> extensionService.findPageWithCriteria("name", "date", 5, 10));
-
-        assertEquals(thrown.getMessage(), "Page 3 is the last page. Page 5 is invalid.");
-
-    }
-
-    @Test
-    public void findAll_whenPageMoreThanTotalPagesAndTotalResultsAreZero() {
-        int page = 5;
-        int pageSize = 2;
-        Long totalResults = 20L;
-        Extension extension = new Extension("extension", "description", "version", new UserModel());
-        Extension extension1 = new Extension("extension", "description", "version", new UserModel());
-        List<Extension> extensions = List.of(extension, extension1);
-
-        when(extensionRepository.getTotalResults("extension")).thenReturn(totalResults);
-        when(extensionRepository.findAllOrderedBy("extension", PageRequest.of(page,
-                pageSize, Sort.Direction.ASC, "name"))).thenReturn(extensions);
-
-
-        PageDto<Extension> pageDto = extensionService.findPageWithCriteria("extension", "name", page, pageSize);
-
-        assertEquals(pageDto.getData(), extensions);
-        assertEquals(pageDto.getTotalResults(), totalResults);
-        assertEquals(pageDto.getCurrentPage(), page);
-    }
-
-    @Test
-    public void findAll_WhenInvalidParameter_InvalidInput() {
-        String name = "name";
-        String orderBy = "orderType";
-        int page = 5;
-        int pageSize = 10;
-        Long totalResults = 500L;
-
-        when(extensionRepository.getTotalResults(name)).thenReturn(totalResults);
-
-        InvalidInputException thrown = assertThrows(
-                InvalidInputException.class,
-                () -> extensionService.findPageWithCriteria(name, orderBy, page, pageSize));
-
-        assertEquals(thrown.getMessage(), "\"orderType\" is not a valid parameter. Use \"date\", \"commits\", \"name\" or \"downloads\".");
-    }
 
     @Test
     public void checkName(){
@@ -499,9 +475,9 @@ public class ExtensionService {
     public void findMostRecent(){
         List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(), new Extension(),
                 new Extension(), new Extension(), new Extension());
+        Page<Extension> page = new PageImpl<>(extensions);
 
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 5))).thenReturn(page);
 
         extensionService.updateMostRecent();
         List<Extension> mostRecent = extensionService.findMostRecent(3);
@@ -535,30 +511,21 @@ public class ExtensionService {
     @Test
     public void findMostRecent_WhenCountIsMoreThanMaxCount(){
         List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension());
+        Page<Extension> page = new PageImpl<>(extensions);
 
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 10,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 10))).thenReturn(page);
 
         List<Extension> mostRecent = extensionService.findMostRecent(10);
 
         assertEquals(extensions, mostRecent);
-        verify(extensionRepository, times(1)).findAllOrderedBy("", PageRequest.of(0, 10,
-                Sort.Direction.DESC, "uploadDate"));
     }
 
     @Test
     public void findMostRecent_WhenCountIsNull(){
-        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(), new Extension(),
-                new Extension(), new Extension(), new Extension());
-
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
-
-
         extensionService.updateMostRecent();
         List<Extension> mostRecent = extensionService.findMostRecent(null);
 
-        assertEquals(mostRecent.size(), 5);
+        assertEquals(mostRecent, mostRecentPage.getContent());
     }
 
     @Test
@@ -566,12 +533,14 @@ public class ExtensionService {
         List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(),
                 new Extension(), new Extension());
 
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "timesDownloaded"))).thenReturn(extensions);
+        Page<Extension> page = new PageImpl<>(extensions);
 
-        List<Extension> mostDownloaded = extensionService.findMostDownloaded(5);
+        when(extensionRepository.findAllByDownloaded(Integer.MAX_VALUE, "", 0, PageRequest.of(0, 5))).thenReturn(page);
 
-        assertEquals(extensions, mostDownloaded);
+        Page<Extension> mostDownloaded = extensionService.findAllByDownloaded(Integer.MAX_VALUE, 5, "", 0);
+
+        assertEquals(extensions, mostDownloaded.getContent());
+        assertEquals(extensions.size(), mostDownloaded.getTotalElements());
     }
 
     @Test
@@ -587,7 +556,7 @@ public class ExtensionService {
     }
 
     @Test
-    public void updateFeatured_WithUnfeatured(){
+    public void updateFeatured_WithNotFeatured(){
         Extension extension = new Extension();
         extension.setId(2);
         extension.setFeatured(true);
@@ -611,13 +580,14 @@ public class ExtensionService {
         extension.setId(2);
         extension.setDescription("description");
         extension.setFeatured(true);
+
         List<Extension> extensions = List.of(extension);
+        Page<Extension> page = new PageImpl<>(extensions);
 
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
         extensionService.loadFeatured();
 
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions);
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, extensionService.getMostRecentQueueLimit()))).thenReturn(page);
         extensionService.updateMostRecent();
 
         extension.setDescription("newDescription");
@@ -648,12 +618,12 @@ public class ExtensionService {
 
         List<Extension> extensions = List.of(extension);
         List<Extension> extensions2 = List.of(extension2);
+        Page<Extension> page = new PageImpl<>(extensions2);
 
         when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
         extensionService.loadFeatured();
 
-        when(extensionRepository.findAllOrderedBy("", PageRequest.of(0, 5,
-                Sort.Direction.DESC, "uploadDate"))).thenReturn(extensions2);
+        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, extensionService.getMostRecentQueueLimit()))).thenReturn(page);
         extensionService.updateMostRecent();
 
         File newFile = new File();

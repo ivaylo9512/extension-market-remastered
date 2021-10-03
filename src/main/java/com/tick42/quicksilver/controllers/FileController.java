@@ -44,7 +44,7 @@ public class FileController {
         if(fileName.startsWith("file")) {
             String[] result = Arrays.stream(fileName.split("[file|.]")).filter(s -> !s.equals("")).toArray(String[]::new);
 
-            File file = fileService.findByType("file", userService.getById(Long.parseLong(result[0])));
+            File file = fileService.findByExtension("file", extensionService.getById(Long.parseLong(result[0])));
             fileService.increaseCount(file);
             extensionService.reloadFile(file);
         }
@@ -56,9 +56,9 @@ public class FileController {
                 .body(resource);
     }
 
-    @GetMapping("/findByType/{resourceType}/{ownerId}")
-    public FileDto findByType(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
-        return new FileDto(fileService.findByType(resourceType, userService.getById(ownerId)));
+    @GetMapping("/findByOwner/{resourceType}/{ownerId}")
+    public FileDto findByOwner(@PathVariable("resourceType") String resourceType, @PathVariable("ownerId") long ownerId){
+        return new FileDto(fileService.findByOwner(resourceType, userService.getById(ownerId)));
     }
 
     @DeleteMapping("/auth/delete/{resourceType}/{ownerId}")

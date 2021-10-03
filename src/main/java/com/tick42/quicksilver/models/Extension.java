@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models;
 
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
+import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,8 +32,9 @@ public class Extension {
     @Column(name = "times_rated")
     private int timesRated;
 
-    @Column(name = "upload_date")
-    private LocalDateTime uploadDate = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(name = "upload_date", columnDefinition = "DATETIME(6)")
+    private LocalDateTime uploadDate;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinTable(

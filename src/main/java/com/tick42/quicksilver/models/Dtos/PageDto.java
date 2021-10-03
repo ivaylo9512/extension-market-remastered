@@ -3,7 +3,6 @@ package com.tick42.quicksilver.models.Dtos;
 import java.util.List;
 
 public class PageDto<T> {
-    private int currentPage;
     private int totalPages;
     private Long totalResults;
     private List<T> data;
@@ -12,29 +11,10 @@ public class PageDto<T> {
 
     }
 
-    public PageDto(List<T> data, int currentPage, int totalPages, Long totalResults) {
-        this.currentPage = currentPage;
+    public PageDto(List<T> data, int totalPages, Long totalResults) {
         this.totalResults = totalResults;
         this.data = data;
         this.totalPages = totalPages;
-    }
-    public PageDto(PageDto pageDto) {
-        this.currentPage = pageDto.getCurrentPage();
-        this.totalResults = pageDto.getTotalResults();
-        this.totalPages = pageDto.getTotalPages();
-    }
-
-    public PageDto(long totalResults, List<T> data){
-        this.data = data;
-        this.totalResults = totalResults;
-    }
-
-    public int getCurrentPage() {
-        return currentPage;
-    }
-
-    public void setCurrentPage(int currentPage) {
-        this.currentPage = currentPage;
     }
 
     public Long getTotalResults() {

@@ -1,27 +1,27 @@
 package com.tick42.quicksilver.models.specs;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 public class ExtensionSpec {
-    @NotNull(message = "Id is required")
     private long id;
 
-    @NotNull(message = "Name is required")
+    @NotBlank(message = "Name is required")
+    @Length(min = 7, max = 30, message = ("Name must be between 7 and 30 characters."))
     private String name;
 
-    @NotNull(message = "Version is required")
+    @NotBlank(message = "Version is required")
     private String version;
 
-    @NotNull(message = "Description is required")
+    @NotBlank(message = "Description is required")
     private String description;
 
-    @NotNull(message = "Github is required")
+    @NotBlank(message = "Github is required")
     @Pattern(regexp = "^https://github.com/.+/.+$", message = "Link to github should match https://github.com/USER/REPOSITORY")
     private String github;
 
-    @NotNull(message = "Github id is required")
     private int githubId;
 
     private String tags;
