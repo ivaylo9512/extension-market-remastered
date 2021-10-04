@@ -31,4 +31,6 @@ public interface UserService extends UserDetailsService {
     Page<UserModel> findByName(String name, String lastName, int pageSize);
 
     Page<UserModel> findByActive(boolean isActive, String name, String lastName, int pageSize);
+
+    void delete(UserModel user);
 }

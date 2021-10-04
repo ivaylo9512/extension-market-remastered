@@ -3,6 +3,7 @@ package com.tick42.quicksilver.controllers;
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
+import com.tick42.quicksilver.models.EmailToken;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.specs.NewPasswordSpec;
 import com.tick42.quicksilver.models.specs.RegisterSpec;
@@ -10,6 +11,7 @@ import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.UserSpec;
 import com.tick42.quicksilver.security.Jwt;
+import com.tick42.quicksilver.services.base.EmailTokenService;
 import com.tick42.quicksilver.services.base.FileService;
 import com.tick42.quicksilver.services.base.UserService;
 import org.springframework.data.domain.Page;
@@ -19,27 +21,33 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import java.io.IOException;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
     private final UserService userService;
     private final FileService fileService;
+    private final EmailTokenService emailTokenService;
 
-    public UserController(UserService userService, FileService fileService) {
+    public UserController(UserService userService, FileService fileService, EmailTokenService emailTokenService) {
         this.userService = userService;
         this.fileService = fileService;
+        this.emailTokenService = emailTokenService;
     }
 
     @PostMapping(value = "/register")
-    public void register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException {
+    @Transactional
+    public void register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException, MessagingException {
         MultipartFile profileImage = registerSpec.getProfileImage();
         File file = null;
 
@@ -52,6 +60,28 @@ public class UserController {
         if(file != null){
             fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
         }
+
+        emailTokenService.sendVerificationEmail(newUser);
+    }
+
+    @GetMapping(value = "/activate/{token}")
+    public void activate(@PathVariable("token") String token, HttpServletResponse httpServletResponse) throws IOException {
+        EmailToken emailToken = emailTokenService.getToken(token);
+        UserModel user = emailToken.getUser();
+
+        if(emailToken.getExpiryDate().isBefore(LocalDateTime.now())){
+            emailTokenService.delete(emailToken);
+            userService.delete(emailToken.getUser());
+
+            throw new UnauthorizedException("Token has expired. Repeat your registration.");
+        }
+
+        user.setEnabled(true);
+
+        userService.save(user);
+        emailTokenService.delete(emailToken);
+
+        httpServletResponse.sendRedirect("https://localhost:4200");
     }
 
     @PostMapping("/login")
