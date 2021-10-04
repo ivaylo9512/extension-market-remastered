@@ -9,18 +9,24 @@ import java.time.LocalDateTime;
 @Table(name = "email_tokens")
 public class EmailToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String token;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToOne(cascade = CascadeType.DETACH)
     private UserModel user;
 
+    @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
 
     public EmailToken() {
+    }
+
+    public EmailToken(String token, UserModel user) {
+        this.token = token;
+        this.user = user;
+        this.expiryDate = LocalDateTime.now().plusDays(2);
     }
 
     public Long getId() {
