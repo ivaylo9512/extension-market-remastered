@@ -6,10 +6,8 @@ import com.tick42.quicksilver.repositories.base.ExtensionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -26,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ExtensionService {
+public class ExtensionServiceTest {
     @Mock
     private ExtensionRepository extensionRepository;
 
@@ -34,16 +32,29 @@ public class ExtensionService {
     private ExtensionServiceImpl extensionService;
 
     private final Page<Extension> mostRecentPage = createMostRecent();
+    private final List<Extension> featured = createFeatured();
 
     @BeforeEach
     private void create(){
         extensionService = createMock();
         resetMostRecent();
+        resetFeatured();
     }
 
     private void resetMostRecent(){
         when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 5))).thenReturn(mostRecentPage);
+        mostRecentPage.getContent().get(0).getFile().setDownloadCount(2);
         this.extensionService.updateMostRecent();
+    }
+
+    private void resetFeatured(){
+        when(extensionRepository.findByFeatured(true)).thenReturn(featured);
+
+        Extension extension = featured.get(0);
+        extension.getFile().setDownloadCount(2);
+        extension.setFeatured(true);
+
+        this.extensionService.loadFeatured();
     }
 
     private Page<Extension> createMostRecent(){
@@ -53,13 +64,54 @@ public class ExtensionService {
         Extension extension3 = new Extension();
         Extension extension4 = new Extension();
 
-        extension.setId(2);
-        extension1.setId(2);
+        File file = new File();
+        file.setId(2);
+        file.setDownloadCount(2);
+
+
+        extension.setId(1);
+        extension.setUploadDate(LocalDateTime.of(2021, Month.OCTOBER, 5, 1, 1));
+        extension.setFile(file);
+
+        extension1.setId(3);
+        extension1.setUploadDate(LocalDateTime.of(2021, Month.OCTOBER, 4, 1, 1));
+
         extension2.setId(5);
+        extension2.setUploadDate(LocalDateTime.of(2021, Month.OCTOBER, 3, 1, 1));
+
         extension3.setId(8);
+        extension3.setUploadDate(LocalDateTime.of(2021, Month.OCTOBER, 2, 1, 1));
+
         extension4.setId(10);
+        extension4.setUploadDate(LocalDateTime.of(2021, Month.OCTOBER, 1, 1, 1));
 
         return new PageImpl<>(List.of(extension, extension1, extension2, extension3, extension4));
+    }
+
+    private List<Extension> createFeatured(){
+        Extension extension = new Extension();
+        Extension extension1 = new Extension();
+        Extension extension2 = new Extension();
+        Extension extension3 = new Extension();
+
+        File file = new File();
+        file.setId(1);
+        file.setDownloadCount(2);
+
+        extension.setId(2);
+        extension.setFeatured(true);
+        extension.setFile(file);
+
+        extension1.setId(6);
+        extension1.setFeatured(true);
+
+        extension2.setId(9);
+        extension2.setFeatured(true);
+
+        extension3.setId(11);
+        extension3.setFeatured(true);
+
+        return List.of(extension, extension1, extension2, extension3);
     }
 
     private ExtensionServiceImpl createMock(){
@@ -79,6 +131,7 @@ public class ExtensionService {
 
         assertTrue(newExtension.isFeatured());
         verify(extensionService, times(1)).updateFeatured(extension);
+        verify(extensionRepository, times(1)).save(extension);
     }
 
     @Test
@@ -92,6 +145,40 @@ public class ExtensionService {
 
         assertFalse(newState.isFeatured());
         verify(extensionService, times(1)).updateFeatured(extension);
+        verify(extensionRepository, times(1)).save(extension);
+    }
+
+    @Test
+    public void setFeatured_WithNotFound() {
+        Extension extension = new Extension();
+        extension.setFeatured(true);
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> extensionService.setFeatured(1, true));
+
+        assertEquals(thrown.getMessage(), "Extension not found.");
+    }
+
+    @Test
+    public void setFeatured_WithExceededLimit() {
+        Extension extension = new Extension();
+        extension.setId(1);
+        extension.setFeatured(false);
+
+        Extension extension1 = new Extension();
+        extension1.setId(2);
+        extension1.setFeatured(false);
+
+        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
+        when(extensionRepository.findById(2L)).thenReturn(Optional.of(extension1));
+
+        extensionService.setFeatured(1, true);
+        FeaturedLimitException thrown = assertThrows(FeaturedLimitException.class,
+                () -> extensionService.setFeatured(2, true));
+
+        assertEquals(thrown.getMessage(), String.format("Only %s extensions can be featured. To free space first un-feature another extension.", extensionService.getFeaturedLimit()));
     }
 
     @Test
@@ -139,6 +226,65 @@ public class ExtensionService {
         assertEquals(2, pending.getContent().size());
         assertTrue(pending.getContent().get(0).isPending());
         assertTrue(pending.getContent().get(1).isPending());
+    }
+
+    @Test
+    public void findAllByDownloaded(){
+        when(extensionRepository.findAllByDownloaded(5, "name", 50, PageRequest.of(0, 10)))
+                .thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findAllByDownloaded(5, 10, "name", 50);
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getTotalElements(), mostRecentPage.getTotalElements());
+    }
+
+    @Test
+    public void findAllByCommitDate(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        when(extensionRepository.findAllByCommitDate(dateTime, "name", 50, PageRequest.of(0, 10)))
+                .thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findAllByCommitDate(dateTime, 10, "name", 50);
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getTotalElements(), mostRecentPage.getTotalElements());
+    }
+
+    @Test
+    public void findAllByUploadDate(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        when(extensionRepository.findAllByUploadDate(dateTime, "name", 50, PageRequest.of(0, 10)))
+                .thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findAllByUploadDate(dateTime, 10, "name", 50);
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getTotalElements(), mostRecentPage.getTotalElements());
+    }
+
+    @Test
+    public void findAllByName(){
+        when(extensionRepository.findAllByName("name", "lastName", PageRequest.of(0, 10)))
+                .thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findAllByName("lastName", 10, "name");
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getTotalElements(), mostRecentPage.getTotalElements());
+    }
+
+    @Test
+    public void findUserExtensions() {
+        UserModel user = new UserModel();
+
+        when(extensionRepository.findUserExtensions(user, 1, PageRequest.of(0, 5, Sort.Direction.ASC, "id")))
+                .thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findUserExtensions(5, 1, user);
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getTotalElements(), mostRecentPage.getTotalElements());
     }
 
     @Test
@@ -312,7 +458,6 @@ public class ExtensionService {
 
     @Test
     public void update_whenLoggedUserIsNotOwnerAndNotAdmin_ShouldThrow() {
-        Page<Extension> page = new PageImpl<>(new ArrayList<>());
         UserModel loggedUser = new UserModel();
         loggedUser.setId(1);
         loggedUser.setRole("ROLE_USER");
@@ -473,14 +618,8 @@ public class ExtensionService {
 
     @Test
     public void findMostRecent(){
-        List<Extension> extensions = List.of(new Extension(), new Extension(), new Extension(), new Extension(),
-                new Extension(), new Extension(), new Extension());
-        Page<Extension> page = new PageImpl<>(extensions);
-
-        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, 5))).thenReturn(page);
-
-        extensionService.updateMostRecent();
         List<Extension> mostRecent = extensionService.findMostRecent(3);
+        List<Extension> extensions = mostRecentPage.getContent();
 
         assertEquals(mostRecent.size(), 3);
         assertEquals(extensions.get(0), mostRecent.get(0));
@@ -490,22 +629,9 @@ public class ExtensionService {
 
     @Test
     public void findFeatured() {
-        Extension extension = new Extension();
-        Extension extension1 = new Extension();
-        Extension extension2 = new Extension();
-
-        extension.setId(1);
-        extension1.setId(2);
-        extension2.setId(3);
-
-        List<Extension> extensions = List.of(extension, extension1, extension2);
-
-        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
-
-        extensionService.loadFeatured();
         List<Extension> featured = extensionService.findFeatured();
 
-        assertEquals(extensions, featured);
+        assertEquals(this.featured, featured);
     }
 
     @Test
@@ -546,32 +672,25 @@ public class ExtensionService {
     @Test
     public void updateFeatured(){
         Extension extension = new Extension();
-        extension.setId(2);
+        extension.setId(30);
         extension.setFeatured(true);
 
         extensionService.updateFeatured(extension);
         List<Extension> extensions = extensionService.findFeatured();
 
-        assertEquals(extensions.get(0), extension);
+        assertEquals(extensions.get(4), extension);
     }
 
     @Test
     public void updateFeatured_WithNotFeatured(){
         Extension extension = new Extension();
         extension.setId(2);
-        extension.setFeatured(true);
-
-        when(extensionRepository.findByFeatured(true)).thenReturn(List.of(extension));
-        extensionService.loadFeatured();
-        List<Extension> extensions = extensionService.findFeatured();
-
-        assertEquals(extensions.get(0), extension);
-
         extension.setFeatured(false);
+
         extensionService.updateFeatured(extension);
         List<Extension> featured = extensionService.findFeatured();
 
-        assertEquals(featured.size(), 0);
+        assertEquals(featured.size(), 3);
     }
 
     @Test
@@ -603,29 +722,6 @@ public class ExtensionService {
 
     @Test
     public void reloadFile() {
-        Extension extension = new Extension();
-        File file = new File();
-        file.setId(1);
-        file.setDownloadCount(2);
-
-        Extension extension2 = new Extension();
-        File file2 = new File();
-        file2.setId(2);
-        file2.setDownloadCount(2);
-
-        extension.setFile(file);
-        extension2.setFile(file2);
-
-        List<Extension> extensions = List.of(extension);
-        List<Extension> extensions2 = List.of(extension2);
-        Page<Extension> page = new PageImpl<>(extensions2);
-
-        when(extensionRepository.findByFeatured(true)).thenReturn(extensions);
-        extensionService.loadFeatured();
-
-        when(extensionRepository.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), "", 0, PageRequest.of(0, extensionService.getMostRecentQueueLimit()))).thenReturn(page);
-        extensionService.updateMostRecent();
-
         File newFile = new File();
         newFile.setId(1);
         newFile.setDownloadCount(5);

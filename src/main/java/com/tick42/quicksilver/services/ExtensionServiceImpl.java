@@ -20,7 +20,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private final List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private final int mostRecentQueueLimit = 5;
-    private int featuredLimit = 4;
+    private final int featuredLimit = 5;
 
     public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
         this.extensionRepository = extensionRepository;
@@ -91,7 +91,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public List<Extension> findFeatured(){
-        return new ArrayList<>(featured.values());
+        return featured.values().stream().toList();
     }
 
     @Override
@@ -140,7 +140,6 @@ public class ExtensionServiceImpl implements ExtensionService {
     public Extension setFeatured(long extensionId, boolean state) {
         Extension extension = extensionRepository.findById(extensionId)
                 .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
-
 
         if (!extension.isFeatured() && state && featured.size() == featuredLimit) {
             throw new FeaturedLimitException(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", featuredLimit));
@@ -202,12 +201,12 @@ public class ExtensionServiceImpl implements ExtensionService {
     @Override
     public void reloadFile(File file){
         featured.forEach((integer, extension) -> {
-            if(extension.getFile().equals(file))
+            if(extension.getFile() != null && extension.getFile().equals(file))
                 extension.getFile().setDownloadCount(file.getDownloadCount());
         });
 
         mostRecent.forEach(extension -> {
-            if (extension.getFile().equals(file))
+            if (extension.getFile() != null && extension.getFile().equals(file))
                 extension.getFile().setDownloadCount(file.getDownloadCount());
         });
     }
@@ -229,5 +228,9 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     public int getMostRecentQueueLimit(){
         return mostRecentQueueLimit;
+    }
+
+    public int getFeaturedLimit() {
+        return featuredLimit;
     }
 }
