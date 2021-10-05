@@ -2,6 +2,7 @@ package com.tick42.quicksilver.models.Dtos;
 
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
+import com.tick42.quicksilver.models.GitHubModel;
 import com.tick42.quicksilver.models.Tag;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,12 +43,12 @@ public class ExtensionDto {
         this.ownerId = extension.getOwner().getId();
         this.ownerName = extension.getOwner().getUsername();
         this.isPending = extension.isPending();
-        this.timesDownloaded = extension.getFile().getDownloadCount();
         this.version = extension.getVersion();
         this.rating = extension.getRating();
         this.timesRated = extension.getTimesRated();
-        this.github = new GitHubDto(extension.getGithub());
 
+        toGitHubDto(extension.getGithub());
+        setTimesDownloaded(extension.getFile());
         toTagsDto(extension.getTags());
         setImageName(extension.getImage());
         setCoverName(extension.getCover());
@@ -108,6 +109,12 @@ public class ExtensionDto {
         this.timesDownloaded = timesDownloaded;
     }
 
+    public void setTimesDownloaded(File file) {
+        if(file != null){
+            this.timesDownloaded = file.getDownloadCount();
+        }
+    }
+
     public boolean isPending() {
         return isPending;
     }
@@ -129,7 +136,9 @@ public class ExtensionDto {
     }
 
     public void setUploadDate(LocalDateTime uploadDate) {
-        this.uploadDate = uploadDate.toString();
+        if(uploadDate != null){
+            this.uploadDate = uploadDate.toString();
+        }
     }
 
     public String getOwnerName() {
@@ -224,6 +233,12 @@ public class ExtensionDto {
 
     public void setGithub(GitHubDto github) {
         this.github = github;
+    }
+
+    public void toGitHubDto(GitHubModel github){
+        if(github != null){
+            this.github = new GitHubDto(github);
+        }
     }
 
     private void toTagsDto(Set<Tag> tags) {

@@ -57,6 +57,11 @@ public class Extension {
 
     }
 
+    public Extension(long id, UserModel owner) {
+        this.owner = owner;
+        this.id = id;
+    }
+
     public Extension(ExtensionCreateSpec extensionCreateSpec, UserModel owner, Set<Tag> tags) {
         this(extensionCreateSpec.getName(), extensionCreateSpec.getDescription(),
                 extensionCreateSpec.getVersion(), owner);
