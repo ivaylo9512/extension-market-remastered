@@ -21,13 +21,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -66,7 +64,7 @@ public class UserController {
 
     @GetMapping(value = "/activate/{token}")
     public void activate(@PathVariable("token") String token, HttpServletResponse httpServletResponse) throws IOException {
-        EmailToken emailToken = emailTokenService.getToken(token);
+        EmailToken emailToken = emailTokenService.findByToken(token);
         UserModel user = emailToken.getUser();
 
         if(emailToken.getExpiryDate().isBefore(LocalDateTime.now())){

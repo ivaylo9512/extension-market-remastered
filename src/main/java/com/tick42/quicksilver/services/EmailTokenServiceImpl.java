@@ -24,13 +24,12 @@ public class EmailTokenServiceImpl implements EmailTokenService {
     }
 
     @Override
-    public void createVerificationToken(UserModel user, String token) {
-        EmailToken myToken = new EmailToken(token, user);
-        tokenRepository.save(myToken);
+    public void create(EmailToken token) {
+        tokenRepository.save(token);
     }
 
     @Override
-    public EmailToken getToken(String token) {
+    public EmailToken findByToken(String token) {
         return tokenRepository.findByToken(token).orElseThrow(() ->
                 new EntityNotFoundException("Incorrect token."));
     }
@@ -43,7 +42,7 @@ public class EmailTokenServiceImpl implements EmailTokenService {
     @Override
     public void sendVerificationEmail(UserModel user) throws MessagingException {
         String token = UUID.randomUUID().toString();
-        createVerificationToken(user, token);
+        create(new EmailToken(token, user));
 
         String subject = "Activate account.";
         String content = String.format("""
