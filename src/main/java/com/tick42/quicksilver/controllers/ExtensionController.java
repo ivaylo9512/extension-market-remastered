@@ -5,7 +5,9 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.Dtos.HomePageDto;
 import com.tick42.quicksilver.models.Dtos.PageDto;
+import com.tick42.quicksilver.models.specs.ExtensionCreateSpec;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
+import com.tick42.quicksilver.models.specs.ExtensionUpdateSpec;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.*;
 import javax.servlet.http.HttpServletRequest;
@@ -125,40 +127,40 @@ public class ExtensionController {
 
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) throws IOException {
+    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionCreateSpec extensionCreateSpec) throws IOException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
-        Extension newExtension = new Extension(extensionSpec, user, tags);
-        generateFiles(extensionSpec, newExtension, user);
-        newExtension.setGithub(gitHubService.generateGitHub(extensionSpec.getGithub()));
+        Set<Tag> tags = tagService.saveTags(extensionCreateSpec.getTags());
+        Extension newExtension = new Extension(extensionCreateSpec, user, tags);
+        generateFiles(extensionCreateSpec, newExtension, user);
+        newExtension.setGithub(gitHubService.generateGitHub(extensionCreateSpec.getGithub()));
 
         Extension extension = extensionService.save(newExtension);
-        saveFiles(extensionSpec, extension);
+        saveFiles(extensionCreateSpec, extension);
 
         return new ExtensionDto(extension);
     }
 
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionSpec extensionSpec) throws IOException, BindException {
+    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionUpdateSpec extensionUpdateSpec) throws IOException, BindException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
 
         UserModel user = userService.findById(userId, loggedUser);
-        Set<Tag> tags = tagService.saveTags(extensionSpec.getTags());
+        Set<Tag> tags = tagService.saveTags(extensionUpdateSpec.getTags());
 
-        Extension extension = new Extension(extensionSpec, user, tags);
+        Extension extension = new Extension(extensionUpdateSpec, user, tags);
 
-        generateFiles(extensionSpec, extension, user);
-        saveFiles(extensionSpec, extension);
+        generateFiles(extensionUpdateSpec, extension, user);
+        saveFiles(extensionUpdateSpec, extension);
 
-        if(extensionSpec.getGithub() != null)
-            extension.setGithub(gitHubService.updateGitHub(extensionSpec.getGithubId(), extensionSpec.getGithub()));
+        if(extensionUpdateSpec.getGithub() != null)
+            extension.setGithub(gitHubService.updateGitHub(extensionUpdateSpec.getGithubId(), extensionUpdateSpec.getGithub()));
 
         ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension, user));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());

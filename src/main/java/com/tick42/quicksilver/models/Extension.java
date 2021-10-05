@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models;
 
-import com.tick42.quicksilver.models.specs.ExtensionSpec;
+import com.tick42.quicksilver.models.specs.ExtensionCreateSpec;
+import com.tick42.quicksilver.models.specs.ExtensionUpdateSpec;
 import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -56,11 +57,17 @@ public class Extension {
 
     }
 
-    public Extension(ExtensionSpec extensionSpec, UserModel owner, Set<Tag> tags) {
-        this(extensionSpec.getName(), extensionSpec.getDescription(),
-                extensionSpec.getVersion(), owner);
+    public Extension(ExtensionCreateSpec extensionCreateSpec, UserModel owner, Set<Tag> tags) {
+        this(extensionCreateSpec.getName(), extensionCreateSpec.getDescription(),
+                extensionCreateSpec.getVersion(), owner);
         this.tags = tags;
-        this.github = getGithub();
+    }
+
+    public Extension(ExtensionUpdateSpec extensionUpdateSpec, UserModel owner, Set<Tag> tags) {
+        this(extensionUpdateSpec.getName(), extensionUpdateSpec.getDescription(),
+                extensionUpdateSpec.getVersion(), owner);
+        this.id = extensionUpdateSpec.getId();
+        this.tags = tags;
     }
 
     public Extension(String name, String description, String version, UserModel owner){

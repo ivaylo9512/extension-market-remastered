@@ -2,9 +2,13 @@ package com.tick42.quicksilver.models.specs;
 
 import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-public class ExtensionCreateSpec extends ExtensionSpec {
+public class ExtensionUpdateSpec extends ExtensionSpec{
+    @NotNull(message = "You must provide id")
+    private long id;
+
     @NotBlank(message = "Name is required")
     @Length(min = 7, max = 30, message = ("Name must be between 7 and 30 characters."))
     private String name;
@@ -19,9 +23,12 @@ public class ExtensionCreateSpec extends ExtensionSpec {
     @Pattern(regexp = "^https://github.com/.+/.+$", message = "Link to github should match https://github.com/USER/REPOSITORY")
     private String github;
 
+    @NotNull(message = "You must provide github id")
+    private int githubId;
+
     private String tags;
 
-    public ExtensionCreateSpec() {
+    public ExtensionUpdateSpec() {
     }
 
     public String getName() {
@@ -62,5 +69,21 @@ public class ExtensionCreateSpec extends ExtensionSpec {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public int getGithubId() {
+        return githubId;
+    }
+
+    public void setGithubId(int githubId) {
+        this.githubId = githubId;
     }
 }
