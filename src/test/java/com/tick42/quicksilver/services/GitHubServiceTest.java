@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class GitHubService {
+public class GitHubServiceTest {
     @Mock
     GitHubRepository gitHubRepository;
 

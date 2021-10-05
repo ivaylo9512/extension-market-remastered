@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.FileFormatException;
+import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
@@ -26,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class FileService {
+public class FileServiceTest {
     @Mock
     private FileRepository fileRepository;
 
@@ -201,5 +202,29 @@ public class FileService {
                 () -> fileService.getAsResource("nonexistent.txt"));
 
         assertEquals(thrown.getMessage(), "File not found");
+    }
+
+    @Test
+    public void findByExtension(){
+        Extension extension = new Extension();
+        File file = new File();
+
+        when(fileRepository.findByExtension("logo", extension)).thenReturn(Optional.of(file));
+
+        File foundFile = fileService.findByExtension("logo", extension);
+
+        assertEquals(foundFile, file);
+    }
+
+    @Test
+    public void findByExtensions_WithNotFound(){
+        Extension extension = new Extension();
+
+        when(fileRepository.findByExtension("logo", extension)).thenReturn(Optional.empty());
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> fileService.findByExtension("logo", extension));
+
+        assertEquals(thrown.getMessage(), "File not found.");
     }
 }

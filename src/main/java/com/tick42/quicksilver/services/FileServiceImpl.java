@@ -87,6 +87,7 @@ public class FileServiceImpl implements FileService {
         return fileRepository.findByExtension(resourceType, extension).orElseThrow(() ->
                 new EntityNotFoundException("File not found."));
     }
+
     @Override
     public File generate(MultipartFile receivedFile, String resourceType, String fileType) {
         String extension = FilenameUtils.getExtension(receivedFile.getOriginalFilename());

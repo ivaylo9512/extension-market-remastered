@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.Dtos.SettingsDto;
 import com.tick42.quicksilver.models.specs.SettingsSpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,9 +15,11 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -133,5 +136,35 @@ public class GitHubControllerTest {
         SettingsDto settingsDto = gitHubController.setGitHubSetting(taskRegistrar, settingsSpec);
 
         assertGitHub(settingsDto, settings);
+    }
+
+    @Test
+    public void getRepoDetails(){
+        GitHubModel gitHub = new GitHubModel("user", "repo");
+        gitHub.setId(2);
+
+        when(gitHubService.generateGitHub("link")).thenReturn(gitHub);
+
+        GitHubDto generated = gitHubController.getRepoDetails("link");
+
+
+        assertEquals(generated.getId(), gitHub.getId());
+        assertEquals(generated.getRepo(), gitHub.getRepo());
+        assertEquals(generated.getUser(), gitHub.getUser());
+    }
+
+    @Test
+    public void getRepoDetails_WithFail(){
+        GitHubModel gitHub = new GitHubModel("user", "repo");
+        gitHub.setId(2);
+        gitHub.setLastFail(LocalDateTime.now());
+        gitHub.setFailMessage("Exception:GhException");
+
+        when(gitHubService.generateGitHub("link")).thenReturn(gitHub);
+
+        GHException thrown = assertThrows(GHException.class,
+                () -> gitHubController.getRepoDetails("link"));
+
+        assertEquals(thrown.getMessage(), "GhException");
     }
 }

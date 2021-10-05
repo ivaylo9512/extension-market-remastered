@@ -275,6 +275,27 @@ public class ExtensionServiceTest {
     }
 
     @Test
+    public void findByTag() {
+        when(extensionRepository.findByTag("name", 5, PageRequest.of(0, 10, Sort.Direction.ASC, "id"))).thenReturn(mostRecentPage);
+
+        Page<Extension> page = extensionService.findByTag("name", 10, 5);
+
+        assertEquals(page.getContent(), mostRecentPage.getContent());
+        assertEquals(page.getSize(), mostRecentPage.getSize());
+    }
+
+    @Test
+    public void getById() {
+        Extension extension = new Extension();
+
+        when(extensionRepository.getById(1L)).thenReturn(extension);
+
+        Extension foundExtension = extensionService.getById(1);
+
+        assertEquals(foundExtension, extension);
+    }
+
+    @Test
     public void findUserExtensions() {
         UserModel user = new UserModel();
 

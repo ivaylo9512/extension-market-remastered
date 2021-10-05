@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TagService {
+public class TagServiceTest {
     @Mock
     private TagRepository tagRepository;
 
@@ -71,5 +71,19 @@ public class TagService {
         assertTrue(tags.contains(tag));
         assertTrue(tags.contains(tag1));
         assertTrue(tags.contains(tag2));
+    }
+
+    @Test
+    public void saveTags_WithNull() {
+        Set<Tag> tags = tagService.saveTags(null);
+
+        assertNull(tags);
+    }
+
+    @Test
+    public void saveTags_WithEmptyString() {
+        Set<Tag> tags = tagService.saveTags("");
+
+        assertNull(tags);
     }
 }
