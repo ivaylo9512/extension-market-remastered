@@ -31,7 +31,7 @@ pipeline {
                 ])
                 sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
                 sh 'chmod +x codecov'
-                sh './codecov -t cfdf437f-de0f-434f-9c18-de77c8fc2b4b'
+                sh './codecov -t 1f13ee31-e66c-4b64-96ec-19439ab52a6d'
             }
         }
     }
