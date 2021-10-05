@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -483,6 +487,53 @@ public class UserService {
         );
 
         assertEquals(thrown.getMessage(), "{ \"email\": \"Email is already taken.\" }");
+    }
+
+    @Test
+    public void save() {
+        UserModel user = new UserModel();
+
+        when(userRepository.save(user)).thenReturn(user);
+
+        UserModel savedUser = userService.save(user);
+
+        assertEquals(user, savedUser);
+    }
+
+    @Test
+    public void findByName() {
+        List<UserModel> users = List.of(new UserModel(), new UserModel());
+        Page<UserModel> page = new PageImpl<>(users);
+
+        when(userRepository.findByName("name", "lastName", PageRequest.of(0, 5, Sort.Direction.ASC, "username"))).thenReturn(page);
+
+        Page<UserModel> foundPage = userService.findByName("name", "lastName", 5);
+
+        assertEquals(users, foundPage.getContent());
+        assertEquals(2, foundPage.getTotalElements());
+    }
+
+    @Test
+    public void findByActive() {
+        List<UserModel> users = List.of(new UserModel(), new UserModel());
+        Page<UserModel> page = new PageImpl<>(users);
+
+        when(userRepository.findByActive(true, "name", "lastName",
+                PageRequest.of(0, 5, Sort.Direction.ASC, "username"))).thenReturn(page);
+
+        Page<UserModel> foundPage = userService.findByActive(true, "name", "lastName", 5);
+
+        assertEquals(users, foundPage.getContent());
+        assertEquals(2, foundPage.getTotalElements());
+    }
+
+    @Test
+    public void delete() {
+        UserModel user = new UserModel();
+
+        userService.delete(user);
+
+        verify(userRepository, times(1)).delete(user);
     }
 }
 

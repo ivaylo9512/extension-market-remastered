@@ -1,6 +1,5 @@
 package com.tick42.quicksilver.services;
 
-import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.TagRepository;
 import com.tick42.quicksilver.services.base.TagService;
@@ -14,13 +13,6 @@ public class TagServiceImpl implements TagService {
 
     public TagServiceImpl(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-    }
-
-    @Override
-    public String normalize(String name) {
-        name = name.trim().replaceAll(" +", "-");
-        name = name.toLowerCase();
-        return name;
     }
 
     @Override
