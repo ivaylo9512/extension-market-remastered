@@ -16,10 +16,6 @@ public class UserDto {
     private String info;
     private String role;
 
-    public UserDto() {
-
-    }
-
     public UserDto(UserModel userModel) {
         setProfileImage(userModel.getProfileImage());
         this.id = userModel.getId();
@@ -100,16 +96,8 @@ public class UserDto {
         return country;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
     public String getInfo() {
         return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
     }
 
     public String getRole() {

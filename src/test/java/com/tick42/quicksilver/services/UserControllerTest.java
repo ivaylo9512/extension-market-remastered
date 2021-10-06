@@ -1,7 +1,10 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.controllers.UserController;
+import com.tick42.quicksilver.exceptions.UnauthorizedException;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.Dtos.UserDto;
+import com.tick42.quicksilver.models.EmailToken;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
@@ -15,7 +18,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
@@ -25,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,6 +125,115 @@ public class UserControllerTest {
         assertEquals(passedToCreate.getProfileImage(), profileImage);
         assertEquals(passedToCreate.getProfileImage().getOwner().getUsername(), userModel.getUsername());
         assertEquals(passedToCreate.getRole(), userModel.getRole());
+    }
+
+    @Test
+    public void activate() throws IOException {
+        MockHttpServletResponse response = Mockito.spy(new MockHttpServletResponse());
+        EmailToken token = new EmailToken();
+        UserModel user = new UserModel();
+
+        user.setEnabled(false);
+        token.setExpiryDate(LocalDateTime.now().plusDays(1));
+        token.setUser(user);
+
+        when(emailTokenService.findByToken("token")).thenReturn(token);
+
+        userController.activate("token", response);
+
+        assertTrue(user.isEnabled());
+        verify(userService, times(1)).save(user);
+        verify(emailTokenService, times(1)).delete(token);
+        verify(response, times(1)).sendRedirect("https://localhost:4200");
+    }
+
+    @Test
+    public void activate_WithExpiredToken() throws IOException {
+        MockHttpServletResponse response = Mockito.spy(new MockHttpServletResponse());
+        EmailToken token = new EmailToken();
+        UserModel user = new UserModel();
+
+        user.setEnabled(false);
+        token.setExpiryDate(LocalDateTime.now().minusDays(1));
+        token.setUser(user);
+
+        when(emailTokenService.findByToken("token")).thenReturn(token);
+
+        UnauthorizedException thrown = assertThrows(UnauthorizedException.class,
+                () -> userController.activate("token", response));
+
+        assertEquals(thrown.getMessage(), "Token has expired. Repeat your registration.");
+        assertFalse(user.isEnabled());
+        verify(userService, times(0)).save(user);
+        verify(userService, times(1)).delete(user);
+        verify(emailTokenService, times(1)).delete(token);
+        verify(response, times(0)).sendRedirect("https://localhost:4200");
+    }
+
+    @Test
+    public void findAll_IsActiveTrue(){
+        UserModel user = new UserModel(3, "username", "email", "password", "role", "info", "country");
+        UserModel user1 = new UserModel(5);
+        List<UserModel> users = List.of(user, user1);
+
+        when(userService.findByActive(true, "name", "lastName", 5)).thenReturn(new PageImpl<>(users));
+
+        PageDto<UserDto> page = userController.findAll(true, "name", 5, "lastName");
+
+        UserDto foundUser = page.getData().get(0);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertEquals(page.getData().get(1).getId(), 5);
+        assertEquals(foundUser.getId(), 3);
+        assertEquals(foundUser.getUsername(), user.getUsername());
+        assertEquals(foundUser.getEmail(), user.getEmail());
+        assertEquals(foundUser.getCountry(), user.getCountry());
+        assertEquals(foundUser.getRole(), user.getRole());
+        assertEquals(foundUser.getInfo(), user.getInfo());
+    }
+
+    @Test
+    public void findAll_IsActiveFalse(){
+        UserModel user = new UserModel(3, "username", "email", "password", "role", "info", "country");
+        UserModel user1 = new UserModel(5);
+        List<UserModel> users = List.of(user, user1);
+
+        when(userService.findByActive(false, "name", "lastName", 5)).thenReturn(new PageImpl<>(users));
+
+        PageDto<UserDto> page = userController.findAll(false, "name", 5, "lastName");
+
+        UserDto foundUser = page.getData().get(0);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertEquals(page.getData().get(1).getId(), 5);
+        assertEquals(foundUser.getId(), 3);
+        assertEquals(foundUser.getUsername(), user.getUsername());
+        assertEquals(foundUser.getEmail(), user.getEmail());
+        assertEquals(foundUser.getCountry(), user.getCountry());
+        assertEquals(foundUser.getRole(), user.getRole());
+        assertEquals(foundUser.getInfo(), user.getInfo());
+    }
+
+    @Test
+    public void findAll_IsActiveNull(){
+        UserModel user = new UserModel(3, "username", "email", "password", "role", "info", "country");
+        UserModel user1 = new UserModel(5);
+        List<UserModel> users = List.of(user, user1);
+
+        when(userService.findByName("name", "lastName", 5)).thenReturn(new PageImpl<>(users));
+
+        PageDto<UserDto> page = userController.findAll(null, "name", 5, "lastName");
+
+        UserDto foundUser = page.getData().get(0);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertEquals(page.getData().get(1).getId(), 5);
+        assertEquals(foundUser.getId(), 3);
+        assertEquals(foundUser.getUsername(), user.getUsername());
+        assertEquals(foundUser.getEmail(), user.getEmail());
+        assertEquals(foundUser.getCountry(), user.getCountry());
+        assertEquals(foundUser.getRole(), user.getRole());
+        assertEquals(foundUser.getInfo(), user.getInfo());
     }
 
     @Test

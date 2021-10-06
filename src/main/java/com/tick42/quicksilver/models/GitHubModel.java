@@ -10,10 +10,6 @@ public class GitHubModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne
-    @PrimaryKeyJoinColumn
-    private Extension extension;
-
     @Column(name = "pull_requests")
     private int pullRequests;
 
@@ -66,14 +62,6 @@ public class GitHubModel {
 
     public void setRepo(String repo) {
         this.repo = repo;
-    }
-
-    public Extension getExtension() {
-        return extension;
-    }
-
-    public void setExtension(Extension extension) {
-        this.extension = extension;
     }
 
     public LocalDateTime getLastCommit() {

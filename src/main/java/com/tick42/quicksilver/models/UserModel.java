@@ -5,8 +5,6 @@ import com.tick42.quicksilver.models.specs.RegisterSpec;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -14,10 +12,6 @@ public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
-    @OrderBy(value = "upload_date DESC")
-    private Set<Extension> extensions = new HashSet<>();
 
     @Column(name = "is_active", nullable = false)
     @Type(type = "org.hibernate.type.NumericBooleanType")
@@ -51,6 +45,10 @@ public class UserModel {
 
     public UserModel(){
 
+    }
+
+    public UserModel(long id){
+        this.id = id;
     }
 
     public UserModel(String username, String email, String password, String role, String info, String country) {
@@ -105,14 +103,6 @@ public class UserModel {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public Set<Extension> getExtensions() {
-        return extensions;
-    }
-
-    public void setExtensions(Set<Extension> extensions) {
-        this.extensions = extensions;
     }
 
     public String getPassword() {
