@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(classes = { AppConfig.class, TestWebConfig.class, SecurityConfig.class })
-@WebAppConfiguration(value = "src/main/java/com/chat/app")
+@WebAppConfiguration(value = "src/main/java/com/tick42/quicksilver")
 @WebMvcTest(FileController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
