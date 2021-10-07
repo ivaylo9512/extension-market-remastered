@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.controllers;
 
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
 import com.tick42.quicksilver.models.Dtos.SettingsDto;
@@ -69,10 +70,14 @@ public class GitHubController {
 
     @GetMapping("/getRepoDetails")
     public GitHubDto getRepoDetails(@RequestParam(name = "link") String link){
+        if(!link.matches("^https://github.com/.+/.+$")){
+            throw new InvalidInputException("Link to github should match https://github.com/USER/REPOSITORY");
+        }
+
         GitHubModel gitHub = gitHubService.generateGitHub(link);
 
         if(gitHub.getLastFail() != null){
-            throw new GHException(gitHub.getFailMessage().split("Exception:")[1]);
+            throw new GHException(gitHub.getFailMessage().split("Exception: ")[1]);
         }
 
         return new GitHubDto(gitHub);

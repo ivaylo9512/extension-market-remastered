@@ -240,9 +240,7 @@ public class GitHubServiceTest {
 
     @Test
     public void initializeSettingsWhenSettingsIsNull(){
-        UserModel oldUser = new UserModel();
         UserModel newUser = new UserModel();
-        oldUser.setId(1);
         newUser.setId(2);
 
         SettingsSpec settingsSpec = new SettingsSpec("newToken", 50, 60, "newUsername");

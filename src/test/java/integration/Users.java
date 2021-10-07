@@ -80,6 +80,7 @@ public class Users {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/EmailTokenData.sql"));
         rdp.execute(dataSource);
     }
 
@@ -93,6 +94,7 @@ public class Users {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/EmailTokenData.sql"));
         rdp.execute(dataSource);
 
         FileInputStream input = new FileInputStream("./uploads/test.png");
@@ -254,11 +256,19 @@ public class Users {
     }
 
     @Test
+    public void login_WithNotEnabled() throws Exception {
+        mockMvc.perform(post("/api/users/login")
+                        .contentType("Application/json")
+                        .content("{\"username\": \"testThird\", \"password\": \"password\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("You must complete the registration. Check your email."));
+    }
+
+    @Test
     public void login_WithWrongPassword_ShouldThrow() throws Exception {
         mockMvc.perform(post("/api/users/login")
                         .contentType("Application/json")
                         .content("{\"username\": \"username\", \"password\": \"incorrect\"}"))
-                .andExpect(status().is(401))
                 .andExpect(content().string(containsString("Invalid username or password.")));
     }
 
@@ -303,6 +313,39 @@ public class Users {
     void findById_WithNonExistentId() throws Exception {
         mockMvc.perform(get("/api/users/findById/222"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void findById_WithIncorrectToken() throws Exception{
+        mockMvc.perform(get("/api/users/findById/2")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void activate() throws Exception {
+        mockMvc.perform(get("/api/users/activate/token1"))
+                .andExpect(status().isFound());
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType("Application/json")
+                        .content("{\"username\": \"testThird\", \"password\": \"password\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void activate_WithExpiredToken() throws Exception {
+        mockMvc.perform(get("/api/users/activate/token"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Token has expired. Repeat your registration."));
+    }
+
+    @Test
+    void activate_WithNotFound() throws Exception {
+        mockMvc.perform(get("/api/users/activate/tokenIncorrect"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Incorrect token."));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.tick42.quicksilver.services;
 
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.EmailToken;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.EmailTokenRepository;
@@ -14,7 +15,6 @@ import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -98,7 +98,7 @@ public class EmailTokenServiceTest {
     public void findByToken_WithNotFound() {
         when(emailTokenRepository.findByToken("token")).thenReturn(Optional.empty());
 
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+        InvalidInputException thrown = assertThrows(InvalidInputException.class,
                 () -> emailTokenService.findByToken("token"));
 
         assertEquals(thrown.getMessage(), "Incorrect token.");

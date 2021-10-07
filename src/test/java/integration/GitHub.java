@@ -239,6 +239,37 @@ public class GitHub {
     }
 
     @Test
+    public void getRepoDetails() throws Exception {
+        String response = mockMvc.perform(get("/api/github/getRepoDetails")
+                        .param("link", "https://github.com/ivaylo9512/extension-market-remastered"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        GitHubDto gitHub = objectMapper.readValue(response, GitHubDto.class);
+
+        LocalDateTime time = LocalDateTime.of(2021, Month.SEPTEMBER, 9, 0, 0);
+        assertTrue(LocalDateTime.parse(gitHub.getLastCommit()).isAfter(time));
+    }
+
+    @Test
+    public void getRepoDetails_WithIncorrectLink() throws Exception {
+        mockMvc.perform(get("/api/github/getRepoDetails")
+                        .param("link", "http://incorrect"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Link to github should match https://github.com/USER/REPOSITORY"));
+    }
+
+    @Test
+    public void getRepoDetails_WithNonExistent() throws Exception {
+        mockMvc.perform(get("/api/github/getRepoDetails")
+                        .param("link", "https://github.com/nonexistent/repo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Couldn't connect to repo: 'repo'. Check details."));
+    }
+
+    @Test
     public void deleteSettings() throws Exception {
         mockMvc.perform(delete("/api/github/auth/delete/3")
                 .header("Authorization", adminToken))

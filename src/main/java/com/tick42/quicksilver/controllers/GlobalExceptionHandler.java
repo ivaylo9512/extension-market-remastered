@@ -40,8 +40,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         String model = Arrays.stream(e.getMessage().split("[ .]+"))
-                .filter(s -> s.equals("UserModel") || s.equals("File") || s.equals("Settings")
-                        || s.equals("GitHub") || s.equals("Extension")).findFirst().orElse("Entity");
+                .filter(s -> s.equals("UserModel") || s.equals("File") || s.equals("Settings") ||
+                        s.equals("GitHub") || s.equals("Extension")).findFirst().orElse("Entity");
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -101,20 +101,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(ex.getMessage());
         }
-    }
-
-    @ExceptionHandler
-    ResponseEntity<String> disabledUserException(DisabledUserException e){
-        return ResponseEntity
-                .status(HttpStatus.LOCKED)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    ResponseEntity<String> handleBlockedUserException(BlockedUserException e){
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
     }
 
     @ExceptionHandler

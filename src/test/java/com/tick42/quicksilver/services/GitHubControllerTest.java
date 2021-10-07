@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.controllers.GitHubController;
+import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
 import com.tick42.quicksilver.models.Dtos.SettingsDto;
@@ -143,9 +144,9 @@ public class GitHubControllerTest {
         GitHubModel gitHub = new GitHubModel("user", "repo");
         gitHub.setId(2);
 
-        when(gitHubService.generateGitHub("link")).thenReturn(gitHub);
+        when(gitHubService.generateGitHub("https://github.com/user/repo")).thenReturn(gitHub);
 
-        GitHubDto generated = gitHubController.getRepoDetails("link");
+        GitHubDto generated = gitHubController.getRepoDetails("https://github.com/user/repo");
 
 
         assertEquals(generated.getId(), gitHub.getId());
@@ -158,13 +159,21 @@ public class GitHubControllerTest {
         GitHubModel gitHub = new GitHubModel("user", "repo");
         gitHub.setId(2);
         gitHub.setLastFail(LocalDateTime.now());
-        gitHub.setFailMessage("Exception:GhException");
+        gitHub.setFailMessage("Exception: GhException");
 
-        when(gitHubService.generateGitHub("link")).thenReturn(gitHub);
+        when(gitHubService.generateGitHub("https://github.com/user/repo")).thenReturn(gitHub);
 
         GHException thrown = assertThrows(GHException.class,
-                () -> gitHubController.getRepoDetails("link"));
+                () -> gitHubController.getRepoDetails("https://github.com/user/repo"));
 
         assertEquals(thrown.getMessage(), "GhException");
+    }
+
+    @Test
+    public void getRepoDetails_IncorrectLink(){
+        InvalidInputException thrown = assertThrows(InvalidInputException.class,
+                () -> gitHubController.getRepoDetails("invalid"));
+
+        assertEquals(thrown.getMessage(), "Link to github should match https://github.com/USER/REPOSITORY");
     }
 }

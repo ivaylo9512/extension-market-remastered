@@ -45,24 +45,6 @@ public class UserService {
     }
 
     @Test
-    public void findById_WithNotEnabledUser() {
-        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
-
-        UserModel user = new UserModel();
-        user.setId(1);
-        user.setActive(true);
-        user.setEnabled(false);
-
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-
-        DisabledUserException thrown = assertThrows(DisabledUserException.class,
-                () -> userService.findById(user.getId(), loggedUser));
-
-        assertEquals(thrown.getMessage(), "You must complete the registration. Check your email.");
-    }
-
-    @Test
     public void findById_WithNotEnabledUser_AndLoggedAdminUser() {
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
         UserDetails loggedUser = new UserDetails("test", "test", authorities, 2);
@@ -177,14 +159,12 @@ public class UserService {
 
     @Test
     public void loadUserByUsername_WithBlockedUser() {
-        UserModel userModel = new UserModel();
-        userModel.setUsername("username");
-        userModel.setPassword("password");
+        UserModel foundUser = new UserModel();
+        foundUser.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
+        foundUser.setActive(false);
+        foundUser.setEnabled(true);
 
-        UserModel foundUserModel = new UserModel();
-        foundUserModel.setPassword(BCrypt.hashpw("password",BCrypt.gensalt(4)));
-        foundUserModel.setActive(false);
-        when(userRepository.findByUsername("username")).thenReturn(foundUserModel);
+        when(userRepository.findByUsername("username")).thenReturn(Optional.of(foundUser));
 
         BlockedUserException thrown = assertThrows(BlockedUserException.class,
                 () -> userService.loadUserByUsername("username"));
@@ -193,18 +173,45 @@ public class UserService {
     }
 
     @Test
+    public void loadUserByUsername_WithNotEnabledUser() {
+        UserModel user = new UserModel();
+        user.setEnabled(false);
+        user.setActive(true);
+
+        when(userRepository.findByUsername("username")).thenReturn(Optional.of(user));
+
+        DisabledUserException thrown = assertThrows(DisabledUserException.class,
+                () -> userService.loadUserByUsername("username"));
+
+        assertEquals(thrown.getMessage(), "You must complete the registration. Check your email.");
+    }
+
+    @Test
     public void loadUserByUsername(){
         UserModel foundUser = new UserModel("username", "test@gmail.com", "password", "ROLE_ADMIN");
+        foundUser.setEnabled(true);
 
         UserDetails userDetails = new UserDetails(foundUser, List.of(
                 new SimpleGrantedAuthority(foundUser.getRole())));
 
-        when(userRepository.findByUsername("username")).thenReturn(foundUser);
+        when(userRepository.findByUsername("username")).thenReturn(Optional.of(foundUser));
 
         UserDetails loggedUser = userService.loadUserByUsername("username");
 
         assertEquals(userDetails, loggedUser);
         assertEquals(foundUser.getUsername(), loggedUser.getUsername());
+    }
+
+    @Test
+    public void loadUserByUsername_WithNonExistentUsername(){
+        when(userRepository.findByUsername("username")).thenReturn(Optional.empty());
+
+        BadCredentialsException thrown = assertThrows(
+                BadCredentialsException.class,
+                () -> userService.loadUserByUsername("username")
+        );
+
+        assertEquals(thrown.getMessage(), "Invalid username or password.");
     }
 
     @Test

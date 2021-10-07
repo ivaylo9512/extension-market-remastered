@@ -17,10 +17,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Properties;
+import java.util.TimeZone;
 
 @Configuration
 @EnableTransactionManagement
@@ -43,6 +45,11 @@ public class AppConfig {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
         return transactionManager;
+    }
+
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @Bean

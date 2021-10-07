@@ -75,12 +75,8 @@ public class UserServiceImpl implements UserService {
             return user;
         }
 
-        if (!user.isActive()) {
+        if (!user.isActive() || !user.isEnabled()) {
             throw new UnauthorizedException("User is unavailable.");
-        }
-
-        if(!user.isEnabled()){
-            throw new DisabledUserException("You must complete the registration. Check your email.");
         }
 
         return user;
@@ -93,18 +89,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel foundUser = userRepository.findByUsername(username);
-        if(foundUser == null){
-            throw new BadCredentialsException("Invalid username or password.");
+        UserModel user = userRepository.findByUsername(username).orElseThrow(
+                () -> new BadCredentialsException("Invalid username or password."));
+
+        if(!user.isEnabled()){
+            throw new DisabledUserException("You must complete the registration. Check your email.");
         }
-        if (!foundUser.isActive()) {
+
+        if (!user.isActive()) {
             throw new BlockedUserException("User is disabled.");
         }
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(foundUser.getRole()));
+        authorities.add(new SimpleGrantedAuthority(user.getRole()));
 
-        return new UserDetails(foundUser, authorities);
+        return new UserDetails(user, authorities);
     }
 
     @Override
