@@ -20,9 +20,9 @@ USE `extensions-market-test`;
 DELETE FROM `ratings`;
 ALTER TABLE `ratings` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `ratings` (
-  `user` int(11) NOT NULL,
+  `user` bigint(20) NOT NULL,
   `rating` tinyint(4) NOT NULL DEFAULT 0,
-  `extension` int(11) NOT NULL,
+  `extension` bigint(20) NOT NULL,
   PRIMARY KEY (`user`,`extension`),
   KEY `extension` (`extension`),
   CONSTRAINT `FK1_extensions_extension_id` FOREIGN KEY (`extension`) REFERENCES `extensions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `ratings` (
 INSERT INTO `ratings` (`user`, `rating`, `extension`) VALUES
 	(2, 5, 1),
 	(1, 5, 2),
-	(2, 5, 3),
+	(1, 5, 3),
 	(3, 5, 4),
 	(1, 4, 4),
 	(1, 4, 5),

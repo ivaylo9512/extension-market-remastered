@@ -30,12 +30,12 @@ CREATE TABLE IF NOT EXISTS `github` (
   `last_fail` datetime DEFAULT NULL,
   `fail_message` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=398 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table extensions-market-test.github: ~25 rows (approximately)
 /*!40000 ALTER TABLE `github` DISABLE KEYS */;
 INSERT INTO `github` (`id`, `user`, `repo`, `last_commit`, `open_issues`, `pull_requests`, `last_success`, `last_fail`, `fail_message`) VALUES
-	(1, 'ivaylo9512', 'extension-market-remastered', '2020-09-07 05:23:44', 0, 0, '2020-09-10 05:37:17', '2020-09-10 02:48:43', 'com.tick42.quicksilver.exceptions.GitHubRepositoryException: Couldn\'t connect to https://github.com/ivaylo9512/Tick42-ExtensionRepository-Extended. Check URL.'),
+	(1, 'ivaylo9512', 'extension-market-remastered', '2020-09-07 05:23:44', 0, 0, '2020-09-10 05:37:17', NULL, NULL),
 	(2, 'SonarSource', 'sonar-scanner-vsts', '2021-09-06 12:55:20', 0, 2, '2021-09-10 05:37:20', '2021-09-10 02:48:43', 'com.tick42.quicksilver.exceptions.GitHubRepositoryException: Couldn\'t connect to https://github.com/SonarSource/sonar-scanner-vsts. Check URL.'),
 	(3, 'IvanGrigorov', 'RPG-Game-Challenge', '2015-05-27 15:04:40', 0, 0, '2021-09-10 05:37:21', '2021-09-10 02:48:43', 'com.tick42.quicksilver.exceptions.GitHubRepositoryException: Couldn\'t connect to https://github.com/IvanGrigorov/RPG-Game-Challenge. Check URL.'),
 	(4, 'mmajcica', 'DevEnvBuild', '2019-05-30 08:34:40', 7, 4, '2021-09-10 05:37:22', '2021-09-10 02:48:43', 'com.tick42.quicksilver.exceptions.GitHubRepositoryException: Couldn\'t connect to https://github.com/mmajcica/DevEnvBuild. Check URL.'),

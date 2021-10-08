@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
   PRIMARY KEY (`id`),
   KEY `FK_settings_users` (`user`),
   CONSTRAINT `FK_settings_users` FOREIGN KEY (`user`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table extensions-market-test.settings: ~2 rows (approximately)
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;

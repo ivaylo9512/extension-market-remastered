@@ -23,12 +23,12 @@ ALTER TABLE `email_tokens` AUTO_INCREMENT = 1;
 CREATE TABLE IF NOT EXISTS `email_tokens` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `token` text NOT NULL,
-  `user_id` int NOT NULL DEFAULT '0',
+  `user_id` bigint(20) NOT NULL DEFAULT '0',
   `expiry_date` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_email_tokens_users` (`user_id`) USING BTREE,
   CONSTRAINT `FK_email_tokens_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table extensions-market-test.email_tokens: ~0 rows (approximately)
 /*!40000 ALTER TABLE `email_tokens` DISABLE KEYS */;
