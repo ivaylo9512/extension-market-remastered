@@ -161,6 +161,16 @@ public class Extensions {
     }
 
     @Test
+    public void assertConfig_assertExtensionController() {
+        ServletContext servletContext = webApplicationContext.getServletContext();
+
+        assertNotNull(servletContext);
+        assertTrue(servletContext instanceof MockServletContext);
+        assertNotNull(webApplicationContext.getBean("extensionController"));
+    }
+
+
+    @Test
     public void findById() throws Exception {
         mockMvc.perform(get("/api/extensions/findById/1"))
                 .andExpect(status().isOk())
@@ -270,6 +280,153 @@ public class Extensions {
                 .andExpect(content().string("Access is denied"));
     }
 
+    @Test
+    public void setFeaturedTrue_AndCheckHomePage() throws Exception {
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/2/true")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        String response = mockMvc.perform(get("/api/extensions/findById/2")
+                        .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExtensionDto extension = objectMapper.readValue(response, ExtensionDto.class);
+        assertTrue(extension.isFeatured());
+
+        HomePageDto homePage = homeExtensionsRequest();
+        assertTrue(homePage.getFeatured().contains(extension));
+    }
+
+    @Test
+    public void setFeaturedFalse_AndCheckHomePage() throws Exception {
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/2/false")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void setFeatured_WithLimitReached() throws Exception {
+        extensionService.setFeaturedLimit(4);
+
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/5/true")
+                        .header("Authorization", adminToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(String.format("Only %s extensions can be featured. To free space first un-feature another extension.", extensionService.getFeaturedLimit())));
+    }
+
+    @Test
+    public void setFeatured_WithUserNotAdmin() throws Exception {
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/1/false")
+                        .header("Authorization", userToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Access is denied"));
+    }
+
+    @Test
+    public void isNameAvailable_WithExisting() throws Exception {
+        mockMvc.perform(get("/api/extensions/checkName")
+                .param("name", "Extension Market"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+    }
+
+    @Test
+    public void isNameAvailable_WithNonExisting() throws Exception {
+        mockMvc.perform(get("/api/extensions/checkName")
+                        .param("name", "non existing"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    public void delete_Owner_NotAdmin() throws Exception {
+        mockMvc.perform(delete("/api/extensions/auth/delete/3")
+                .header("Authorization", userToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/extensions/findById/3"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Extension not found."));
+    }
+
+    @Test
+    public void delete_NotOwner_NotAdmin() throws Exception {
+        mockMvc.perform(delete("/api/extensions/auth/delete/1")
+                .header("Authorization", userToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("You are not authorized to delete this extension."));
+    }
+
+    @Test
+    public void delete_NotOwner_Admin() throws Exception {
+        mockMvc.perform(delete("/api/extensions/auth/delete/3")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/extensions/findById/3"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Extension not found."));
+
+    }
+
+    @Test
+    public void delete_Owner_Admin() throws Exception {
+        mockMvc.perform(delete("/api/extensions/auth/delete/1")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/extensions/findById/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Extension not found."));
+    }
+
+    @Test
+    public void findFeatured() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/featured"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ExtensionDto> featured = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertTrue(featured.contains(new ExtensionDto(1)));
+        assertTrue(featured.contains(new ExtensionDto(6)));
+        assertTrue(featured.contains(new ExtensionDto(8)));
+        assertTrue(featured.contains(new ExtensionDto(10)));
+    }
+
+    @Test
+    public void findHomeExtensions() throws Exception {
+        HomePageDto homePage = homeExtensionsRequest();
+
+        List<ExtensionDto> mostRecent = homePage.getMostRecent();
+        List<ExtensionDto> mostDownloaded = homePage.getMostDownloaded();
+        List<ExtensionDto> featured = homePage.getFeatured();
+
+        assertEquals(mostRecent.get(0).getId(), 1);
+        assertEquals(mostRecent.get(1).getId(), 2);
+        assertEquals(mostRecent.get(2).getId(), 5);
+        assertEquals(mostRecent.get(3).getId(), 6);
+
+        assertEquals(mostDownloaded.get(0).getId(), 1);
+        assertEquals(mostDownloaded.get(1).getId(), 2);
+        assertEquals(mostDownloaded.get(2).getId(), 10);
+        assertEquals(mostDownloaded.get(3).getId(), 8);
+
+        assertExtensions(mostRecent.get(0), extensionDto);
+        assertExtensions(mostDownloaded.get(0), extensionDto);
+
+        assertTrue(featured.contains(new ExtensionDto(1)));
+        assertTrue(featured.contains(new ExtensionDto(6)));
+        assertTrue(featured.contains(new ExtensionDto(8)));
+        assertTrue(featured.contains(new ExtensionDto(10)));
+    }
+
     private HomePageDto homeExtensionsRequest() throws Exception {
         String response = mockMvc.perform(get("/api/extensions/findHomeExtensions/4/4"))
                 .andExpect(status().isOk())
@@ -306,16 +463,6 @@ public class Extensions {
     }
 
     @Test
-    public void assertConfig_assertExtensionController() {
-        ServletContext servletContext = webApplicationContext.getServletContext();
-
-        assertNotNull(servletContext);
-        assertTrue(servletContext instanceof MockServletContext);
-        assertNotNull(webApplicationContext.getBean("extensionController"));
-    }
-
-
-    @Test
     void create_WithoutToken_Unauthorized() throws Exception{
         mockMvc.perform(post("/api/extensions/auth/create"))
                 .andExpect(status().isUnauthorized())
@@ -345,4 +492,78 @@ public class Extensions {
                 .andExpect(content().string("Jwt token is incorrect"));
     }
 
+    @Test
+    void delete_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(delete("/api/extensions/auth/delete/3"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void delete_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(delete("/api/extensions/auth/delete/3")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void findUserExtensions_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/extensions/auth/findUserExtensions/3"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void findUserExtensions_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/extensions/auth/findUserExtensions/3")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void findByPending_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/extensions/auth/findByPending/true/3"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void findByPending_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(get("/api/extensions/auth/findByPending/true/3")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void setPending_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/extensions/auth/setPending/3/true"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void setPending_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/extensions/auth/setPending/3/true")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
+
+    @Test
+    void setFeatured_WithoutToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/3/true"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is missing"));
+    }
+
+    @Test
+    void setFeatured_WithIncorrectToken_Unauthorized() throws Exception{
+        mockMvc.perform(patch("/api/extensions/auth/setFeatured/3/true")
+                .header("Authorization", "Token incorrect"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Jwt token is incorrect"));
+    }
 }

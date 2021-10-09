@@ -218,7 +218,6 @@ public class ExtensionController {
         return generateExtensionDTOList(extensionService.findFeatured());
     }
 
-    @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @DeleteMapping("/auth/delete/{id}")
     @Transactional
     public void delete(@PathVariable(name = "id") long id) {
