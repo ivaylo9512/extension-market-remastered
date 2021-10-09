@@ -1,6 +1,9 @@
 package com.tick42.quicksilver.models;
 
 import com.tick42.quicksilver.models.specs.SettingsSpec;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 
 @Entity
@@ -18,6 +21,7 @@ public class Settings {
 
     @OneToOne
     @JoinColumn(name = "user")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserModel user;
 
     private int rate;

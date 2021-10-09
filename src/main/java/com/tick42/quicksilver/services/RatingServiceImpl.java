@@ -82,9 +82,13 @@ public class RatingServiceImpl implements RatingService {
         int userRatedExtensions = userModel.getExtensionsRated();
 
         if (extensionRating > 0) {
-            double rating = (userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1);
+            double rating = userRatedExtensions > 1
+                    ? (userRating * userRatedExtensions - extensionRating) / (userRatedExtensions - 1)
+                    : 0;
+
             userModel.setRating(rating);
             userModel.setExtensionsRated(userRatedExtensions - 1);
+
             userRepository.save(userModel);
         }
     }

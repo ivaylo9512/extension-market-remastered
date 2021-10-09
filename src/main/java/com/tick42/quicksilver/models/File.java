@@ -1,7 +1,5 @@
 package com.tick42.quicksilver.models;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
@@ -11,14 +9,16 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "extension")
     private Extension extension;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserModel owner;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "profileImage")
+    private UserModel profileOwner;
 
     @Column(name = "download_count")
     private int downloadCount;
@@ -31,6 +31,13 @@ public class File {
 
     private String type;
     private double size;
+
+    @PreRemove
+    private void preRemove() {
+        if(owner.getProfileImage().equals(this)){
+            profileOwner.setProfileImage(null);
+        }
+    }
 
     public File(){
 
@@ -126,5 +133,9 @@ public class File {
 
     public void setOwner(UserModel owner) {
         this.owner = owner;
+    }
+
+    public void setProfileOwner(UserModel profileOwner) {
+        this.profileOwner = profileOwner;
     }
 }

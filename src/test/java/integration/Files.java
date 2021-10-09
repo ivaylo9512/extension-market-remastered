@@ -131,7 +131,7 @@ public class Files {
         assertEquals(image.getExtensionType(), "png");
         assertEquals(image.getOwnerId(), 1);
         assertEquals(image.getType(), "image/png");
-        assertEquals(image.getSize(), 43250.0);
+        assertEquals(image.getSize(), 50000.0);
     }
 
     @Test

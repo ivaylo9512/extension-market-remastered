@@ -39,12 +39,12 @@ CREATE TABLE IF NOT EXISTS `files` (
 -- Dumping data for table extensions-market-test.files: ~8 rows (approximately)
 /*!40000 ALTER TABLE `files` DISABLE KEYS */;
 INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_type`, `type`, `download_count`, `size`) VALUES
-	(1, 'profileImage', 1, NULL, 'png', 'image/png', 0, 43250),
+	(1, 'logo', 1, 1, 'png', 'image/png', 0, 43250),
 	(2, 'profileImage', 2, NULL, 'png', 'image/png', 0, 46000),
 	(3, 'logo', 4, NULL, 'png', 'image/png', 0, 32000),
 	(4, 'cover', 4, NULL, 'png', 'image/png', 0, 37000),
-	(5, 'profileImage', 5, NULL, 'png', 'image/png', 0, 50000),
-	(6, 'profileImage', 6, NULL, 'png', 'image/png', 0, 20000),
+	(5, 'profileImage', 1, NULL, 'png', 'image/png', 0, 50000),
+	(6, 'cover', 6, 1, 'png', 'image/png', 0, 20000),
 	(7, 'profileImage', 7, NULL, 'png', 'image/png', 0, 31500),
 	(8, 'profileImage', 8, NULL, 'png', 'image/png', 0, 31200),
 	(9, 'test', 3, NULL , 'png', 'image/png', 0, 66800),
@@ -52,13 +52,13 @@ INSERT INTO `files` (`id`, `resource_type`, `owner`, `extension`, `extension_typ
 	(11, 'file', 8, 2, 'txt', 'plain/text', 25, 31200),
 	(12, 'file', 8, 3, 'txt', 'plain/text', 40, 31200),
 	(13, 'file', 8, 4, 'txt', 'plain/text', 3, 31200),
-	(14, 'file', 8, 5, 'txt', 'plain/text', 6, 31200),
+	(14, 'file', 1, 5, 'txt', 'plain/text', 6, 31200),
 	(15, 'file', 8, 6, 'txt', 'plain/text', 1, 31200),
 	(16, 'file', 8, 7, 'txt', 'plain/text', 3, 31200),
 	(17, 'file', 8, 8, 'txt', 'plain/text', 7, 31200),
 	(18, 'file', 8, 9, 'txt', 'plain/text', 8, 31200),
 	(19, 'file', 8, 10, 'txt', 'plain/text', 9, 31200),
-	(20, 'file', 8, 1, 'txt', 'plain/text', 10, 31200);
+	(20, 'file', 8, null, 'txt', 'plain/text', 10, 31200);
 /*!40000 ALTER TABLE `files` ENABLE KEYS */;
 
 SET FOREIGN_KEY_CHECKS = 1;

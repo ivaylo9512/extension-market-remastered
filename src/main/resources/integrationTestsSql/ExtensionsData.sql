@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `extensions` (
 -- Dumping data for table extensions-market-test.extensions: ~24 rows (approximately)
 /*!40000 ALTER TABLE `extensions` DISABLE KEYS */;
 INSERT INTO `extensions` (`id`, `times_rated`, `rating`, `name`, `version`, `owner`, `github_id`, `file_id`, `image_id`, `description`, `pending`, `featured`, `upload_date`, `cover_id`) VALUES
-    (1, 1, 5, 'Extension Market', '1', 1, 1, 10, 1, 'Extension market application.', 0, 1, '2021-02-01 22:32:46', 1),
+    (1, 1, 5, 'Extension Market', '1', 1, 1, 10, 1, 'Extension market application.', 0, 1, '2021-02-01 22:32:46', 6),
     (2, 1, 5, 'Sonar Cloud', '1', 2, 2, 11, 2, 'SonarCloud is the leading product for Continuous Code Quality online, totally free for open-source projects.', 0, 0, '2021-01-01 22:32:46', NULL),
 	(3, 1, 5, 'Package Management', '3.32', 3, 3, 12, 3, 'Move your packages to the cloud<br />You no longer need to manage legacy on-prem file shares or host private package servers.', 1, 0, '2021-03-01 22:40:34', 3),
 	(4, 2, 4.5, 'Octopus Deploy In', '2.4', 2, 4, 13, 4, 'This extension adds the following tasks: Package Application, Push Packages to Octopus, Create Octopus Release, Deploy Octopus Release', 1, 0, '2020-10-02 22:51:50', NULL),
@@ -58,7 +58,7 @@ INSERT INTO `extensions` (`id`, `times_rated`, `rating`, `name`, `version`, `own
 	(6, 2, 4.5, 'JFrog Artifactory', '1.2a', 5, 6, 15, 6, 'Download generic build dependencies from Artifactory.', 0, 1, '2020-08-02 22:59:06', NULL),
 	(7, 2, 4, 'Linked Wiki pages', '1', 4, 7, 16, 7, 'Link Work Items to Wiki.', 1, 0, '2019-07-02 23:04:26', NULL),
 	(8, 2, 4.5, 'HockeyApp', '0.000001', 6, 3, 17, 8, 'Accelerate your Apps with Mobile DevOps Take advantage of HockeyApp and bring a full Mobile DevOps flow.', 0, 1, '2020-06-02 23:07:45', NULL),
-	(9, 1, 5, 'IIS Web App Deployment Using WinRM', '213a', 3, 4, 18, 9, 'IIS Web App Deployment Using WinRM.', 1, 0, '2020-05-02 23:09:01', NULL),
+	(9, 1, 5, 'IIS Web App Deployment Using WinRM', '213a', 3, 4, 18, NULL, 'IIS Web App Deployment Using WinRM.', 1, 0, '2020-05-02 23:09:01', NULL),
 	(10, 2, 5, 'Restaurant App', '2.0b', 8, 5, 19, 10, 'Restaurant app is a modern way to create orders. ', 0, 1, '2020-04-02 04:20:39', NULL);
 /*!40000 ALTER TABLE `extensions` ENABLE KEYS */;
 

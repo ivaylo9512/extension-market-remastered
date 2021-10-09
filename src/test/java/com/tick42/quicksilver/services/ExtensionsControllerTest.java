@@ -10,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class ExtensionsControllerTest {
     private GitHubServiceImpl gitHubService;
 
     @Test
-    public void getHomeExtensions(){
+    public void findHomeExtensions(){
         UserModel owner = new UserModel();
         List<Extension> mostRecent = List.of(new Extension(2, owner), new Extension(3, owner));
         List<Extension> featured = List.of(new Extension(4, owner), new Extension(5, owner));
@@ -49,9 +48,9 @@ public class ExtensionsControllerTest {
 
         when(extensionService.findMostRecent(5)).thenReturn(mostRecent);
         when(extensionService.findFeatured()).thenReturn(featured);
-        when(extensionService.findAllByDownloaded(6, Integer.MAX_VALUE, "", 0)).thenReturn(new PageImpl<>(mostDownloaded));
+        when(extensionService.findAllByDownloaded(Integer.MAX_VALUE, 6, "", 0)).thenReturn(new PageImpl<>(mostDownloaded));
 
-        HomePageDto pageDto = extensionController.getHomeExtensions(5, 6);
+        HomePageDto pageDto = extensionController.findHomeExtensions(5, 6);
         List<ExtensionDto> featuredDto = pageDto.getFeatured();
         List<ExtensionDto> mostRecentDto = pageDto.getMostRecent();
         List<ExtensionDto> mostDownloadedDto = pageDto.getMostDownloaded();

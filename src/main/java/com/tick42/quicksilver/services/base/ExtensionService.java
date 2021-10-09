@@ -51,4 +51,8 @@ public interface ExtensionService {
     Page<Extension> findUserExtensions(int pageSize, long lastId, UserModel user);
 
     Page<Extension> findByTag(String name, int pageSize, long lastId);
+
+    int getFeaturedLimit();
+
+    void setFeaturedLimit(int limit);
 }

@@ -119,6 +119,7 @@ public class UserController {
         }
 
         UserModel user = userService.findById(id, loggedUser);
+
         return new UserDto(user);
     }
 

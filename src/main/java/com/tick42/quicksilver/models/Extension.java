@@ -3,6 +3,8 @@ package com.tick42.quicksilver.models;
 import com.tick42.quicksilver.models.specs.ExtensionCreateSpec;
 import com.tick42.quicksilver.models.specs.ExtensionUpdateSpec;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -14,13 +16,16 @@ public class Extension {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH })
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private File file;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH })
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private File image;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = { CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH })
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private File cover;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -28,6 +33,7 @@ public class Extension {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserModel owner;
 
     @Column(name = "times_rated")
@@ -37,11 +43,15 @@ public class Extension {
     @Column(name = "upload_date", columnDefinition = "DATETIME(6)")
     private LocalDateTime uploadDate;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
     @JoinTable(
             name = "extension_tags",
             joinColumns = @JoinColumn(name = "extension"),
             inverseJoinColumns = @JoinColumn(name = "tag"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Tag> tags = new HashSet<>();
 
     @Column(columnDefinition = "text")
@@ -52,6 +62,14 @@ public class Extension {
     private boolean pending = true;
     private boolean featured;
     private double rating;
+
+    @PreRemove
+    private void preRemove() {
+        file.setExtension(null);
+        image.setExtension(null);
+        cover.setExtension(null);
+        tags.forEach(tag -> tag.getExtensions().remove(this));
+    }
 
     public Extension() {
 
@@ -87,19 +105,6 @@ public class Extension {
         this.id = id;
         this.tags = tags;
         this.github = github;
-    }
-
-    @Override
-    public int hashCode() {
-        return Long.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == this) return true;
-        if(!(obj instanceof Extension extension)) return false;
-
-        return extension.getId() == getId();
     }
 
     public long getId() {

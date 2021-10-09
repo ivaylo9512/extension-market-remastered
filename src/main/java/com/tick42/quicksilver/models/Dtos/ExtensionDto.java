@@ -21,7 +21,6 @@ public class ExtensionDto {
     private String uploadDate;
     private String ownerName;
     private long ownerId;
-    private String gitHubLink;
     private String fileName;
     private String imageName;
     private String coverName;
@@ -54,6 +53,10 @@ public class ExtensionDto {
         setCoverName(extension.getCover());
         setFileName(extension.getFile());
         setUploadDate(extension.getUploadDate());
+    }
+
+    public ExtensionDto(long id){
+        this.id = id;
     }
 
     @Override
@@ -157,14 +160,6 @@ public class ExtensionDto {
         this.ownerId = ownerId;
     }
 
-    public String getGitHubLink() {
-        return gitHubLink;
-    }
-
-    public void setGitHubLink(String gitHubLink) {
-        this.gitHubLink = gitHubLink;
-    }
-
     public List<String> getTags() {
         return tags;
     }
@@ -201,6 +196,10 @@ public class ExtensionDto {
         return fileName;
     }
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
     public void setFileName(File file) {
         if(file != null){
             this.fileName = file.getResourceType() + id + "." + file.getExtensionType();
@@ -211,6 +210,10 @@ public class ExtensionDto {
         return imageName;
     }
 
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
     public void setImageName(File file) {
         if(file != null){
             this.imageName = file.getResourceType() + id + "." + file.getExtensionType();
@@ -219,6 +222,10 @@ public class ExtensionDto {
 
     public String getCoverName() {
         return coverName;
+    }
+
+    public void setCoverName(String coverName) {
+        this.coverName = coverName;
     }
 
     public void setCoverName(File file) {

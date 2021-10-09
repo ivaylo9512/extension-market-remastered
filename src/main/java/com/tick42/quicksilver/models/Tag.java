@@ -1,9 +1,8 @@
 package com.tick42.quicksilver.models;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "tags")
@@ -11,8 +10,8 @@ public class Tag {
     @Id
     private String name;
 
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    private Set<Extension> extensions = new HashSet<>();
+    @ManyToMany(mappedBy = "tags")
+    private List<Extension> extensions;
 
     public Tag() {
     }
@@ -42,11 +41,11 @@ public class Tag {
         this.name = name;
     }
 
-    public Set<Extension> getExtensions() {
+    public List<Extension> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(Set<Extension> extensions) {
+    public void setExtensions(List<Extension> extensions) {
         this.extensions = extensions;
     }
 

@@ -48,14 +48,13 @@ public class ExtensionController {
         this.gitHubService = gitHubService;
     }
 
-    @GetMapping("/getHomeExtensions")
-    public HomePageDto getHomeExtensions(
-            @RequestParam(name = "mostRecentCount", required = false) Integer mostRecentCount,
-            @RequestParam(name = "mostDownloadedCount") int mostDownloadedCount){
+    @GetMapping("/findHomeExtensions/{mostRecentCount}/{mostDownloadedCount}")
+    public HomePageDto findHomeExtensions(@PathVariable("mostRecentCount") int mostRecentCount,
+                                          @PathVariable("mostDownloadedCount") int mostDownloadedCount){
 
         List<ExtensionDto> mostRecent = generateExtensionDTOList(extensionService.findMostRecent(mostRecentCount));
         List<ExtensionDto> featured = generateExtensionDTOList(extensionService.findFeatured());
-        List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findAllByDownloaded(mostDownloadedCount, Integer.MAX_VALUE, "", 0).getContent());
+        List<ExtensionDto> mostDownloaded = generateExtensionDTOList(extensionService.findAllByDownloaded(Integer.MAX_VALUE, mostDownloadedCount, "", 0).getContent());
 
         return new HomePageDto(mostRecent, featured, mostDownloaded);
     }
@@ -109,7 +108,7 @@ public class ExtensionController {
         return new PageDto<>(generateExtensionDTOList(page.getContent()), page.getTotalPages(), page.getTotalElements());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/findById/{id}")
     public ExtensionDto findById(@PathVariable(name = "id") long extensionId, HttpServletRequest request) {
         UserDetails loggedUser = null;
         int rating = 0;
@@ -215,12 +214,13 @@ public class ExtensionController {
     }
 
     @GetMapping("/featured")
-    public List<ExtensionDto> featured() {
+    public List<ExtensionDto> findFeatured() {
         return generateExtensionDTOList(extensionService.findFeatured());
     }
 
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/auth/{id}")
+    @DeleteMapping("/auth/delete/{id}")
+    @Transactional
     public void delete(@PathVariable(name = "id") long id) {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
@@ -255,6 +255,7 @@ public class ExtensionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/setPending/{id}/{state}")
+    @Transactional
     public ExtensionDto setPending(@PathVariable(name = "id") long id, @PathVariable("state") boolean state) {
         return new ExtensionDto(extensionService.setPending(id, state));
     }

@@ -20,7 +20,7 @@ public class ExtensionServiceImpl implements ExtensionService {
     private final Map<Long, Extension> featured = Collections.synchronizedMap(new LinkedHashMap<>());
     private final List<Extension> mostRecent = Collections.synchronizedList(new ArrayList<>());
     private final int mostRecentQueueLimit = 5;
-    private final int featuredLimit = 5;
+    private int featuredLimit = 5;
 
     public ExtensionServiceImpl(ExtensionRepository extensionRepository) {
         this.extensionRepository = extensionRepository;
@@ -72,7 +72,13 @@ public class ExtensionServiceImpl implements ExtensionService {
         if(loggedUser.getId() != owner.getId() && !loggedUser.getRole().equals("ROLE_ADMIN")){
             throw new UnauthorizedException("You are not authorized to delete this extension.");
         }
-        extensionRepository.delete(extension);
+
+        extensionRepository.deleteById(extensionId);
+        extensionRepository.flush();
+        extension.setFeatured(false);
+
+        updateFeatured(extension);
+        updateMostRecent();
 
         return extension;
     }
@@ -125,7 +131,6 @@ public class ExtensionServiceImpl implements ExtensionService {
 
         if(state){
             featured.remove(extensionId);
-            mostRecent.remove(extension);
             extension.setFeatured(false);
         }
 
@@ -226,11 +231,17 @@ public class ExtensionServiceImpl implements ExtensionService {
         return extensionRepository.findByName(name) == null;
     }
 
-    public int getMostRecentQueueLimit(){
-        return mostRecentQueueLimit;
-    }
-
+    @Override
     public int getFeaturedLimit() {
         return featuredLimit;
+    }
+
+    @Override
+    public void setFeaturedLimit(int limit) {
+        featuredLimit = limit;
+    }
+
+    public int getMostRecentQueueLimit(){
+        return mostRecentQueueLimit;
     }
 }

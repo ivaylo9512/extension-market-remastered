@@ -74,9 +74,13 @@ public class GitHub {
     @BeforeEach
     public void setupData() {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
-        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionsData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/GitHubData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
         rdp.execute(dataSource);
+
+        setOAuthTokenFromFile();
     }
 
     @BeforeAll
