@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.FileRepository;
 import com.tick42.quicksilver.services.base.FileService;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,13 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
     private final Path fileLocation;
     private final FileRepository fileRepository;
+    private final String uploadPath;
 
-    public FileServiceImpl(FileRepository fileRepository) throws IOException {
+    public FileServiceImpl(FileRepository fileRepository, @Value("${uploadPath}") String uploadPath) throws IOException {
         this.fileRepository = fileRepository;
-        this.fileLocation = Paths.get("./uploads")
+        this.uploadPath = uploadPath;
+        this.fileLocation = Paths.get(uploadPath)
                 .toAbsolutePath().normalize();
-
         Files.createDirectories(this.fileLocation);
     }
 
@@ -62,7 +64,7 @@ public class FileServiceImpl implements FileService {
 
         File file = findByOwner(resourceType, owner);
 
-        boolean isDeleted = new java.io.File("./uploads/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
+        boolean isDeleted = new java.io.File(uploadPath + "/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
         if(isDeleted){
             fileRepository.delete(file);
             return true;

@@ -86,7 +86,7 @@ public class Users {
 
     @AfterEach
     public void reset(){
-        new File("./uploads/profileImage10.png").delete();
+        new File("./uploads/test/profileImage10.png").delete();
     }
 
     @BeforeAll
@@ -97,7 +97,7 @@ public class Users {
         rdp.addScript(new ClassPathResource("integrationTestsSql/EmailTokenData.sql"));
         rdp.execute(dataSource);
 
-        FileInputStream input = new FileInputStream("./uploads/test.png");
+        FileInputStream input = new FileInputStream("./uploads/test/test.png");
         profileImage = new MockMultipartFile("profileImage", "test.png", "image/png",
                 IOUtils.toByteArray(input));
         input.close();
@@ -445,7 +445,7 @@ public class Users {
 
     @Test
     public void register_WithWrongFileType() throws Exception {
-        FileInputStream input = new FileInputStream("./uploads/test.txt");
+        FileInputStream input = new FileInputStream("./uploads/test/test.txt");
         MockMultipartFile profileImage = new MockMultipartFile("profileImage", "test.txt", "text/plain",
                 IOUtils.toByteArray(input));
         input.close();

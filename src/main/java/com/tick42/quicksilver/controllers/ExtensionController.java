@@ -145,7 +145,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionUpdateSpec extensionUpdateSpec) throws IOException, BindException {
+    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionUpdateSpec extensionUpdateSpec) throws IOException{
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -174,7 +174,7 @@ public class ExtensionController {
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            File imageModel = fileService.generate(image, "image", "image");
+            File imageModel = fileService.generate(image, "logo", "image");
 
             imageModel.setOwner(owner);
             imageModel.setExtension(extension);
@@ -203,7 +203,7 @@ public class ExtensionController {
         MultipartFile cover = extensionSpec.getCover();
 
         if(image != null){
-            fileService.save("image" + id, image);
+            fileService.save("logo" + id, image);
         }
         if(file != null){
             fileService.save("file" + id, file);

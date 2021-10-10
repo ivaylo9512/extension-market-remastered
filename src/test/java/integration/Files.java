@@ -75,7 +75,7 @@ public class Files {
 
     @AfterEach
     public void resetState() throws IOException {
-        java.nio.file.Files.copy(Paths.get("./uploads/test.png"), Paths.get("./uploads/test3.png"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/test3.png"), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @BeforeAll
@@ -151,7 +151,7 @@ public class Files {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("File not found."));
 
-        assertFalse(new File("test3.png").exists());
+        assertFalse(new File("./uploads/test/test3.png").exists());
     }
 
     @Test
@@ -180,6 +180,6 @@ public class Files {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("File not found."));
 
-        assertFalse(new File("test3.png").exists());
+        assertFalse(new File("./uploads/test/test3.png").exists());
     }
 }

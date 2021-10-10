@@ -14,6 +14,7 @@ import com.tick42.quicksilver.models.Dtos.HomePageDto;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.ExtensionService;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
@@ -30,14 +32,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -89,7 +98,7 @@ public class Extensions {
     }
 
     @BeforeAll
-    public void setup() {
+    public void setup() throws IOException {
         ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
         rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionTagsData.sql"));
         rdp.addScript(new ClassPathResource("integrationTestsSql/TagsData.sql"));
@@ -158,6 +167,24 @@ public class Extensions {
                 .webAppContextSetup(webApplicationContext)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+
+
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/logo1.png"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.svg"), Paths.get("./uploads/test/cover1.svg"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.txt"), Paths.get("./uploads/test/file1.json"), StandardCopyOption.REPLACE_EXISTING);
+        new java.io.File("./uploads/test/cover11.svg").delete();
+        new java.io.File("./uploads/test/logo11.png").delete();
+        new java.io.File("./uploads/test/file11.txt").delete();
+    }
+
+    @AfterAll
+    public void reset() throws IOException {
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/logo1.png"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.svg"), Paths.get("./uploads/test/cover1.svg"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.txt"), Paths.get("./uploads/test/file1.json"), StandardCopyOption.REPLACE_EXISTING);
+        new java.io.File("./uploads/test/cover11.svg").delete();
+        new java.io.File("./uploads/test/logo11.png").delete();
+        new java.io.File("./uploads/test/file11.txt").delete();
     }
 
     @Test
@@ -343,6 +370,174 @@ public class Extensions {
     }
 
     @Test
+    public void create() throws Exception {
+        FileInputStream logoInput = new FileInputStream("./uploads/test/test.png");
+        MockMultipartFile logo = new MockMultipartFile("image", "test.png", "image/png",
+                IOUtils.toByteArray(logoInput));
+
+        FileInputStream coverInput = new FileInputStream("./uploads/test/test.svg");
+        MockMultipartFile cover = new MockMultipartFile("cover", "test.svg", "image/svg",
+                IOUtils.toByteArray(coverInput));
+
+        FileInputStream fileInput = new FileInputStream("./uploads/test/test.txt");
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain",
+                IOUtils.toByteArray(fileInput));
+
+        logoInput.close();
+        fileInput.close();
+        coverInput.close();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/extensions/auth/create")
+                .file(logo)
+                .file(cover)
+                .file(file)
+                .header("Authorization", adminToken)
+                .param("name", "extensionName")
+                .param("description", "description")
+                .param("version", "version")
+                .param("github", "https://github.com/ivaylo9512/extension-market-remastered")
+                .param("tags", "tag, tag1");
+
+        String response = mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse().getContentAsString();
+
+        ExtensionDto extensionDto = objectMapper.readValue(response, ExtensionDto.class);
+
+        String findResponse = mockMvc.perform(get("/api/extensions/findById/" + extensionDto.getId())
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExtensionDto foundExtension = objectMapper.readValue(findResponse, ExtensionDto.class);
+
+        assertEquals(foundExtension.getName(), "extensionName");
+        assertEquals(foundExtension.getDescription(), "description");
+        assertEquals(foundExtension.getVersion(), "version");
+        assertEquals(foundExtension.getOwnerId(), 1);
+        assertEquals(foundExtension.getFileName(), "file11.txt");
+        assertEquals(foundExtension.getImageName(), "logo11.png");
+        assertEquals(foundExtension.getCoverName(), "cover11.svg");
+        assertEquals(foundExtension.getOwnerName(), "adminUser");
+        assertEquals(foundExtension.getGithub().getUser(), "ivaylo9512");
+        assertEquals(foundExtension.getGithub().getRepo(), "extension-market-remastered");
+        assertTrue(foundExtension.getTags().contains("tag"));
+        assertTrue(foundExtension.getTags().contains("tag1"));
+
+        assertTrue(new java.io.File("./uploads/test/logo11.png").exists());
+        assertTrue(new java.io.File("./uploads/test/file11.txt").exists());
+        assertTrue(new java.io.File("./uploads/test/cover11.svg").exists());
+    }
+
+    @Test
+    public void create_WithWrongFields() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/extensions/auth/create")
+                .header("Authorization", adminToken)
+                .param("name", "short");
+
+        String response = mockMvc.perform(request)
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Map<String, String> errors = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(errors.get("name"), "Name must be between 7 and 30 characters.");
+        assertEquals(errors.get("version"), "Version is required");
+        assertEquals(errors.get("description"), "Description is required");
+        assertEquals(errors.get("github"), "Github is required");
+    }
+
+    @Test
+    public void update() throws Exception {
+        FileInputStream logoInput = new FileInputStream("./uploads/test/test.svg");
+        MockMultipartFile logo = new MockMultipartFile("image", "test.svg", "image/svg",
+                IOUtils.toByteArray(logoInput));
+
+        FileInputStream coverInput = new FileInputStream("./uploads/test/test.png");
+        MockMultipartFile cover = new MockMultipartFile("cover", "test.png", "image/png",
+                IOUtils.toByteArray(coverInput));
+
+        FileInputStream fileInput = new FileInputStream("./uploads/test/test.txt");
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain",
+                IOUtils.toByteArray(fileInput));
+
+        logoInput.close();
+        fileInput.close();
+        coverInput.close();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/extensions/auth/edit")
+                .file(logo)
+                .file(cover)
+                .file(file)
+                .header("Authorization", adminToken)
+                .param("id", "1")
+                .param("name", "extensionNameNew")
+                .param("description", "descriptionNew")
+                .param("version", "versionNew")
+                .param("github", "https://github.com/ivaylo9512/restaurant-app-with-chat-long-polling-server")
+                .param("tags", "tag2, tag3");
+
+        String response = mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse().getContentAsString();
+
+        ExtensionDto extensionDto = objectMapper.readValue(response, ExtensionDto.class);
+
+        String findResponse = mockMvc.perform(get("/api/extensions/findById/" + extensionDto.getId())
+                        .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExtensionDto foundExtension = objectMapper.readValue(findResponse, ExtensionDto.class);
+
+        assertEquals(foundExtension.getName(), "extensionNameNew");
+        assertEquals(foundExtension.getDescription(), "descriptionNew");
+        assertEquals(foundExtension.getVersion(), "versionNew");
+        assertEquals(foundExtension.getOwnerId(), 1);
+        assertEquals(foundExtension.getFileName(), "file1.txt");
+        assertEquals(foundExtension.getImageName(), "logo1.svg");
+        assertEquals(foundExtension.getCoverName(), "cover1.png");
+        assertEquals(foundExtension.getOwnerName(), "adminUser");
+        assertEquals(foundExtension.getGithub().getUser(), "ivaylo9512");
+        assertEquals(foundExtension.getGithub().getRepo(), "restaurant-app-with-chat-long-polling-server");
+        assertTrue(foundExtension.getTags().contains("tag2"));
+        assertTrue(foundExtension.getTags().contains("tag3"));
+
+        assertTrue(new java.io.File("./uploads/test/logo1.svg").exists());
+        assertTrue(new java.io.File("./uploads/test/file1.txt").exists());
+        assertTrue(new java.io.File("./uploads/test/cover1.png").exists());
+    }
+
+    @Test
+    public void update_WithWrongFields() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/extensions/auth/edit")
+                .header("Authorization", adminToken)
+                .param("name", "short");
+
+        String response = mockMvc.perform(request)
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Map<String, String> errors = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(errors.get("name"), "Name must be between 7 and 30 characters.");
+        assertEquals(errors.get("version"), "Version is required");
+        assertEquals(errors.get("description"), "Description is required");
+        assertEquals(errors.get("github"), "Github is required");
+    }
+
+
+    @Test
     public void delete_Owner_NotAdmin() throws Exception {
         mockMvc.perform(delete("/api/extensions/auth/delete/3")
                 .header("Authorization", userToken))
@@ -459,7 +654,6 @@ public class Extensions {
         assertEquals(gitHub.getId(), extension1.getGithub().getId());
         assertEquals(gitHub.getUser(), extension1.getGithub().getUser());
         assertEquals(gitHub.getRepo(), extension1.getGithub().getRepo());
-
     }
 
     @Test

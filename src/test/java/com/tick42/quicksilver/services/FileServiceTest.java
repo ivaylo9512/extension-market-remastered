@@ -8,11 +8,11 @@ import com.tick42.quicksilver.repositories.base.FileRepository;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
@@ -31,23 +31,28 @@ public class FileServiceTest {
     @Mock
     private FileRepository fileRepository;
 
-    @Spy
-    @InjectMocks
     private FileServiceImpl fileService;
+
+    private static String uploadsPath = "./uploads/test";
 
     @BeforeAll
     private static void setup() throws IOException {
-        new java.io.File("./uploads/logo.txt").createNewFile();
-        new java.io.File("./uploads/logo1.txt").createNewFile();
-        new java.io.File("./uploads/logo3.txt").createNewFile();
+        new java.io.File(uploadsPath + "/logo.txt").createNewFile();
+        new java.io.File(uploadsPath + "/logo1.txt").createNewFile();
+        new java.io.File(uploadsPath + "/logo3.txt").createNewFile();
     }
 
     @AfterAll
     private static void reset() throws IOException {
-        new java.io.File("./uploads/logo.txt").delete();
-        new java.io.File("./uploads/logo1.txt").delete();
-        new java.io.File("./uploads/logo2.txt").delete();
-        new java.io.File("./uploads/logo3.txt").delete();
+        new java.io.File(uploadsPath + "/logo.txt").delete();
+        new java.io.File(uploadsPath + "/logo1.txt").delete();
+        new java.io.File(uploadsPath + "/logo2.txt").delete();
+        new java.io.File(uploadsPath + "/logo3.txt").delete();
+    }
+
+    @BeforeEach
+    private void setupEach() throws IOException {
+        this.fileService = Mockito.spy(new FileServiceImpl(fileRepository, uploadsPath));
     }
 
     @Test
@@ -104,14 +109,14 @@ public class FileServiceTest {
 
     @Test
     public void createAndSave() throws Exception{
-        FileInputStream input = new FileInputStream("./uploads/logo.txt");
+        FileInputStream input = new FileInputStream("./uploads/test/logo.txt");
         MultipartFile multipartFile = new MockMultipartFile("test", "logo.txt", "text/plain",
                 IOUtils.toByteArray(input));
         input.close();
 
         fileService.save("logo2", multipartFile);
 
-        assertTrue(new java.io.File("./uploads/logo2.txt").exists());
+        assertTrue(new java.io.File("./uploads/test/logo2.txt").exists());
     }
 
     @Test
@@ -127,7 +132,7 @@ public class FileServiceTest {
 
         boolean isDeleted = fileService.delete("logo", owner, owner);
 
-        assertFalse(new java.io.File("./uploads/logo1.txt").exists());
+        assertFalse(new java.io.File("./uploads/test/logo1.txt").exists());
         assertTrue(isDeleted);
     }
 
@@ -148,7 +153,7 @@ public class FileServiceTest {
 
         boolean isDeleted = fileService.delete("logo", owner, loggedUser);
 
-        assertFalse(new java.io.File("./uploads/logo3.txt").exists());
+        assertFalse(new java.io.File("./uploads/test/logo3.txt").exists());
         assertTrue(isDeleted);
     }
 
