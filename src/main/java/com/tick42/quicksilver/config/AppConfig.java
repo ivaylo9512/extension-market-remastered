@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -29,6 +31,9 @@ import java.util.TimeZone;
 @EnableJpaRepositories(basePackages = "com.tick42.quicksilver.repositories.base")
 @EnableWebMvc
 public class AppConfig {
+    @Value("${systemPath}")
+    private String systemPath;
+
     @Bean(name = "OBJECT_MAPPER_BEAN")
     @Primary
     public ObjectMapper jsonObjectMapper() {
@@ -37,6 +42,11 @@ public class AppConfig {
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .modules(new JavaTimeModule())
                 .build();
+    }
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
@@ -58,7 +68,7 @@ public class AppConfig {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
 
-        BufferedReader br = new BufferedReader(new FileReader("/email.txt"));
+        BufferedReader br = new BufferedReader(new FileReader(systemPath + "/email.txt"));
         String password = br.readLine();
         br.close();
 

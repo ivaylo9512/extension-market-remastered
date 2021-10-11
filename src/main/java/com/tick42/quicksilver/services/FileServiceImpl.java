@@ -56,21 +56,27 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean delete(String resourceType, UserModel owner, UserModel loggedUser) {
-        if(owner.getId() != loggedUser.getId()
+    public void deleteById(long id, UserModel loggedUser){
+        File file = fileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("File not found."));
+
+        Extension extension = file.getExtension();
+        delete(file, extension != null ? extension.getId() : file.getOwner().getId(), loggedUser);
+    }
+
+    @Override
+    public void delete(File file, long sourceId, UserModel loggedUser) {
+        if(file.getOwner().getId() != loggedUser.getId()
                 && !loggedUser.getRole().equals("ROLE_ADMIN")){
-            throw new UnauthorizedException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized.");
         }
 
-        File file = findByOwner(resourceType, owner);
+        new java.io.File(uploadPath + "/" + file.getResourceType() + sourceId + "." + file.getExtensionType()).delete();
+        fileRepository.delete(file);
+    }
 
-        boolean isDeleted = new java.io.File(uploadPath + "/" + resourceType + owner.getId() + "." + file.getExtensionType()).delete();
-        if(isDeleted){
-            fileRepository.delete(file);
-            return true;
-        }
-
-        return false;
+    @Override
+    public void deleteFromSystem(String name){
+        new java.io.File(uploadPath + "/" + name).delete();
     }
 
     @Override

@@ -12,7 +12,7 @@ public interface ExtensionService {
 
     Extension findById(long id, UserDetails loggedUser);
 
-    Extension update(Extension extension, UserModel loggedUser);
+    Extension update(Extension newExtension);
 
     Extension save(Extension extension);
 

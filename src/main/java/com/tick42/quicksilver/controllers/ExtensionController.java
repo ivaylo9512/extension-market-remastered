@@ -19,14 +19,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -133,9 +131,11 @@ public class ExtensionController {
 
         UserModel user = userService.findById(userId, loggedUser);
         Set<Tag> tags = tagService.saveTags(extensionCreateSpec.getTags());
+
         Extension newExtension = new Extension(extensionCreateSpec, user, tags);
-        generateFiles(extensionCreateSpec, newExtension, user);
         newExtension.setGithub(gitHubService.generateGitHub(extensionCreateSpec.getGithub()));
+
+        generateFiles(extensionCreateSpec, newExtension, user);
 
         Extension extension = extensionService.save(newExtension);
         saveFiles(extensionCreateSpec, extension);
@@ -153,7 +153,10 @@ public class ExtensionController {
         UserModel user = userService.findById(userId, loggedUser);
         Set<Tag> tags = tagService.saveTags(extensionUpdateSpec.getTags());
 
-        Extension extension = new Extension(extensionUpdateSpec, user, tags);
+        Extension oldExtension = extensionService.findById(extensionUpdateSpec.getId(), loggedUser);
+        Map<String, String> oldNames = getFileNames(oldExtension);
+
+        Extension extension = new Extension(extensionUpdateSpec, oldExtension, tags);
 
         generateFiles(extensionUpdateSpec, extension, user);
         saveFiles(extensionUpdateSpec, extension);
@@ -161,9 +164,11 @@ public class ExtensionController {
         if(extensionUpdateSpec.getGithub() != null)
             extension.setGithub(gitHubService.updateGitHub(extensionUpdateSpec.getGithubId(), extensionUpdateSpec.getGithub()));
 
-        ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension, user));
+        ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
         extensionDto.setCurrentUserRatingValue(rating);
+
+        deleteOldFiles(oldNames, extensionDto);
 
         return extensionDto;
     }
@@ -176,22 +181,28 @@ public class ExtensionController {
         if(image != null){
             File imageModel = fileService.generate(image, "logo", "image");
 
+            imageModel.setId(extension.getImage() != null ? extension.getImage().getId() : 0);
             imageModel.setOwner(owner);
             imageModel.setExtension(extension);
+
             extension.setImage(imageModel);
         }
         if(file != null){
             File fileModel = fileService.generate(file, "file", "");
 
+            fileModel.setId(extension.getFile() != null ? extension.getFile().getId() : 0);
             fileModel.setOwner(owner);
             fileModel.setExtension(extension);
+
             extension.setFile(fileModel);
         }
         if(cover != null){
             File coverModel = fileService.generate(cover, "cover", "image");
 
+            coverModel.setId(extension.getCover() != null ? extension.getCover().getId() : 0);
             coverModel.setOwner(owner);
             coverModel.setExtension(extension);
+
             extension.setCover(coverModel);
         }
     }
@@ -213,6 +224,53 @@ public class ExtensionController {
         }
     }
 
+    private void deleteFiles(Extension extension, UserModel loggedUser){
+        long extensionId = extension.getId();
+
+        fileService.delete(extension.getFile(), extensionId, loggedUser);
+        fileService.delete(extension.getCover(), extensionId, loggedUser);
+        fileService.delete(extension.getImage(), extensionId, loggedUser);
+    }
+
+    private Map<String, String> getFileNames(Extension extension){
+        Map<String, String> names = new HashMap<>();
+        File cover = extension.getCover();
+        File image = extension.getImage();
+        File file = extension.getFile();
+
+        if(file != null){
+            names.put("file", file.getResourceType() + extension.getId() + "." + file.getExtensionType());
+        }
+
+        if(cover != null){
+            names.put("cover", cover.getResourceType() + extension.getId() + "." + cover.getExtensionType());
+        }
+
+        if(image != null){
+            names.put("image", image.getResourceType() + extension.getId() + "." + image.getExtensionType());
+        }
+
+        return names;
+    }
+
+    public void deleteOldFiles(Map<String, String> names, ExtensionDto extension){
+        String file = names.get("file");
+        String cover = names.get("cover");
+        String image = names.get("image");
+
+        if(file != null && !extension.getFileName().equals(file)){
+            fileService.deleteFromSystem(file);
+        }
+
+        if(cover != null && !extension.getCoverName().equals(cover)){
+            fileService.deleteFromSystem(cover);
+        }
+
+        if(image != null && !extension.getFileName().equals(image)){
+            fileService.deleteFromSystem(image);
+        }
+    }
+
     @GetMapping("/featured")
     public List<ExtensionDto> findFeatured() {
         return generateExtensionDTOList(extensionService.findFeatured());
@@ -228,6 +286,8 @@ public class ExtensionController {
 
         Extension extension = extensionService.delete(id, userModel);
         ratingService.updateRatingOnExtensionDelete(extension);
+
+        getFileNames(extension).values().forEach(fileService::deleteFromSystem);
     }
 
     @GetMapping(value = { "/auth/findUserExtensions/{pageSize}/{lastId}", "/auth/findUserExtensions/{pageSize}" })

@@ -86,11 +86,14 @@ public class Extension {
         this.tags = tags;
     }
 
-    public Extension(ExtensionUpdateSpec extensionUpdateSpec, UserModel owner, Set<Tag> tags) {
+    public Extension(ExtensionUpdateSpec extensionUpdateSpec, Extension extension, Set<Tag> tags) {
         this(extensionUpdateSpec.getName(), extensionUpdateSpec.getDescription(),
-                extensionUpdateSpec.getVersion(), owner);
+                extensionUpdateSpec.getVersion(), extension.getOwner());
         this.id = extensionUpdateSpec.getId();
         this.tags = tags;
+        this.file = extension.getFile();
+        this.image = extension.getImage();
+        this.cover = extension.getCover();
     }
 
     public Extension(String name, String description, String version, UserModel owner){

@@ -52,20 +52,14 @@ public class FileControllerTest {
 
     @Test
     public void delete(){
-        UserModel owner = new UserModel();
-        owner.setId(2);
-
         auth.setDetails(user);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-
-        when(userService.getById(2L)).thenReturn(owner);
         when(userService.findById(1L, user)).thenReturn(userModel);
-        when(fileService.delete("profileImage", owner, userModel)).thenReturn(true);
 
-        fileController.delete("profileImage", 2L);
+        fileController.delete(2L);
 
-        verify(fileService, times(1)).delete("profileImage", owner, userModel);
+        verify(fileService, times(1)).deleteById(2, userModel);
     }
 
     @Test

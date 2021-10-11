@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.services;
 
 import com.tick42.quicksilver.exceptions.FileFormatException;
+import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserModel;
@@ -33,7 +34,7 @@ public class FileServiceTest {
 
     private FileServiceImpl fileService;
 
-    private static String uploadsPath = "./uploads/test";
+    private final static String uploadsPath = "./uploads/test";
 
     @BeforeAll
     private static void setup() throws IOException {
@@ -127,13 +128,31 @@ public class FileServiceTest {
         File file = new File();
         file.setOwner(owner);
         file.setExtensionType("txt");
+        file.setResourceType("logo");
 
-        when(fileRepository.findByOwner("logo", owner)).thenReturn(Optional.of(file));
-
-        boolean isDeleted = fileService.delete("logo", owner, owner);
+        fileService.delete(file, owner.getId(), owner);
 
         assertFalse(new java.io.File("./uploads/test/logo1.txt").exists());
-        assertTrue(isDeleted);
+    }
+
+    @Test
+    public void delete_NotOwner_NotAdmin(){
+        UserModel loggedUser = new UserModel();
+        loggedUser.setId(2);
+        loggedUser.setRole("ROLE_USER");
+
+        UserModel owner = new UserModel();
+        owner.setId(1);
+
+        File file = new File();
+        file.setOwner(owner);
+        file.setExtensionType("txt");
+        file.setResourceType("logo");
+
+        UnauthorizedException thrown = assertThrows(UnauthorizedException.class,
+                () -> fileService.delete(file, owner.getId(), loggedUser));
+
+        assertEquals(thrown.getMessage(), "Unauthorized.");
     }
 
     @Test
@@ -148,50 +167,63 @@ public class FileServiceTest {
         File file = new File();
         file.setOwner(owner);
         file.setExtensionType("txt");
+        file.setResourceType("logo");
 
-        when(fileRepository.findByOwner("logo", owner)).thenReturn(Optional.of(file));
-
-        boolean isDeleted = fileService.delete("logo", owner, loggedUser);
+        fileService.delete(file, owner.getId(), loggedUser);
 
         assertFalse(new java.io.File("./uploads/test/logo3.txt").exists());
-        assertTrue(isDeleted);
     }
 
     @Test
-    public void delete_WhenFileIsNotInDB_NotFound(){
+    public void deleteById_WithNotFound(){
         UserModel loggedUser = new UserModel();
         loggedUser.setRole("ROLE_ADMIN");
 
-        UserModel owner = new UserModel();
-        owner.setId(11);
-
-        when(fileRepository.findByOwner("logo", owner)).thenReturn(Optional.empty());
+        when(fileRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(
                 EntityNotFoundException.class,
-                () -> fileService.delete("logo", owner, loggedUser));
+                () -> fileService.deleteById(1, loggedUser));
 
         assertEquals(thrown.getMessage(), "File not found.");
     }
 
     @Test
-    public void delete_WhenFileIsNotInFolder(){
+    public void deleteById_WithOwner(){
         UserModel loggedUser = new UserModel();
-        loggedUser.setId(2);
         loggedUser.setRole("ROLE_ADMIN");
-
-        UserModel owner = new UserModel();
-        owner.setId(11);
+        loggedUser.setId(1);
 
         File file = new File();
-        file.setOwner(owner);
+        file.setOwner(loggedUser);
 
-        when(fileRepository.findByOwner("logo", owner)).thenReturn(Optional.of(file));
+        doNothing().when(fileService).delete(file, loggedUser.getId(), loggedUser);
+        when(fileRepository.findById(1L)).thenReturn(Optional.of(file));
 
-        boolean isDeleted = fileService.delete("logo", owner, loggedUser);
-        assertFalse(isDeleted);
+        fileService.deleteById(1, loggedUser);
 
-        verify(fileRepository, times(0)).delete(any(File.class));
+        verify(fileService, times(1)).delete(file, loggedUser.getId(), loggedUser);
+    }
+
+    @Test
+    public void deleteById_WithExtension(){
+        UserModel loggedUser = new UserModel();
+        loggedUser.setRole("ROLE_ADMIN");
+        loggedUser.setId(1);
+
+        Extension extension = new Extension();
+        extension.setId(2);
+
+        File file = new File();
+        file.setOwner(loggedUser);
+        file.setExtension(extension);
+
+        doNothing().when(fileService).delete(file, extension.getId(), loggedUser);
+        when(fileRepository.findById(1L)).thenReturn(Optional.of(file));
+
+        fileService.deleteById(1, loggedUser);
+
+        verify(fileService, times(1)).delete(file, extension.getId(), loggedUser);
     }
 
     @Test

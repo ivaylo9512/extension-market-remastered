@@ -143,7 +143,7 @@ public class Files {
 
     @Test
     public void deleteFile() throws Exception{
-        mockMvc.perform(delete("/api/files/auth/delete/test/3")
+        mockMvc.perform(delete("/api/files/auth/delete/9")
                 .header("Authorization", userToken))
                 .andExpect(status().isOk());
 
@@ -156,7 +156,7 @@ public class Files {
 
     @Test
     public void deleteFileWithNonExistent() throws Exception{
-        mockMvc.perform(delete("/api/files/auth/delete/nonexistent/3")
+        mockMvc.perform(delete("/api/files/auth/delete/222")
                 .header("Authorization", userToken))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("File not found."));
@@ -164,15 +164,15 @@ public class Files {
 
     @Test
     public void deleteFileWithUserThatIsNotOwner() throws Exception{
-        mockMvc.perform(delete("/api/files/auth/delete/profileImage/1")
+        mockMvc.perform(delete("/api/files/auth/delete/1")
                         .header("Authorization", userToken))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Unauthorized"));
+                .andExpect(content().string("Unauthorized."));
     }
 
     @Test
     public void deleteFileWithUserThatIsNotOwnerAndIsRoleAdmin() throws Exception{
-        mockMvc.perform(delete("/api/files/auth/delete/test/3")
+        mockMvc.perform(delete("/api/files/auth/delete/9")
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk());
 

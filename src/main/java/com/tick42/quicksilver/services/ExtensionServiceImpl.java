@@ -43,16 +43,8 @@ public class ExtensionServiceImpl implements ExtensionService {
     }
 
     @Override
-    public Extension update(Extension newExtension, UserModel loggedUser) {
-        Extension extension = extensionRepository.findById(newExtension.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Extension not found."));
-
-        if (loggedUser.getId() != extension.getOwner().getId() && !loggedUser.getRole().equals("ROLE_ADMIN")) {
-            throw new UnauthorizedException("You are not authorized to edit this extension.");
-        }
-
+    public Extension update(Extension newExtension) {
         extensionRepository.save(newExtension);
-        newExtension.setOwner(extension.getOwner());
         reloadExtension(newExtension);
 
         return newExtension;

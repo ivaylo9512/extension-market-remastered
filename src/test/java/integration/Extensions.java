@@ -80,16 +80,7 @@ public class Extensions {
 
     @BeforeEach
     public void setupData() {
-        ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
-        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionTagsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/TagsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/RatingsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/GitHubData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
-        rdp.execute(dataSource);
+        loadData();
 
         extensionService.setFeaturedLimit(5);
         extensionService.updateMostRecent();
@@ -99,16 +90,7 @@ public class Extensions {
 
     @BeforeAll
     public void setup() throws IOException {
-        ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
-        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionTagsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/TagsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/RatingsData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/GitHubData.sql"));
-        rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
-        rdp.execute(dataSource);
+        loadData();
 
         UserModel admin = new UserModel("adminUser", "password", "ROLE_ADMIN");
         admin.setId(1);
@@ -122,6 +104,52 @@ public class Extensions {
         userToken = "Token " + Jwt.generate(new UserDetails(user, Collections
                 .singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
+
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
+
+        createExtension(admin);
+        resetFiles();
+    }
+
+    @AfterEach
+    public void resetEach() throws IOException {
+        resetFiles();
+    }
+
+    private void resetFiles() throws IOException {
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/logo1.png"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.svg"), Paths.get("./uploads/test/cover1.svg"), StandardCopyOption.REPLACE_EXISTING);
+        java.nio.file.Files.copy(Paths.get("./uploads/test/test.txt"), Paths.get("./uploads/test/file1.json"), StandardCopyOption.REPLACE_EXISTING);
+        new java.io.File("./uploads/test/logo1.svg").delete();
+        new java.io.File("./uploads/test/cover1.png").delete();
+        new java.io.File("./uploads/test/file1.txt").delete();
+        new java.io.File("./uploads/test/cover11.svg").delete();
+        new java.io.File("./uploads/test/logo11.png").delete();
+        new java.io.File("./uploads/test/file11.txt").delete();
+    }
+
+    private void loadData(){
+        ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
+
+        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/ExtensionTagsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/TagsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/UsersData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/SettingsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/RatingsData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/GitHubData.sql"));
+        rdp.addScript(new ClassPathResource("integrationTestsSql/FilesData.sql"));
+
+        rdp.execute(dataSource);
+    }
+
+    private void createExtension(UserModel owner){
         Set<Tag> tags = Set.of(new Tag("app"), new Tag("c"), new Tag("auto"), new Tag("repo"));
 
         GitHubModel github = new GitHubModel("ivaylo9512", "extension-market-remastered");
@@ -137,17 +165,17 @@ public class Extensions {
 
         file.setId(10);
         file.setDownloadCount(30);
-        file.setExtensionType("txt");
+        file.setExtensionType("json");
         file.setResourceType("file");
         image.setId(3);
         image.setExtensionType("png");
         image.setResourceType("logo");
         cover.setId(4);
-        cover.setExtensionType("png");
+        cover.setExtensionType("svg");
         cover.setResourceType("cover");
 
 
-        Extension extension = new Extension(1, "Extension Market", "Extension market application.", "1", tags, github, admin);
+        Extension extension = new Extension(1, "Extension Market", "Extension market application.", "1", tags, github, owner);
         extension.setRating(5);
         extension.setTimesRated(1);
         extension.setUploadDate(LocalDateTime.of(2021, Month.FEBRUARY, 1, 22, 32, 46));
@@ -159,32 +187,6 @@ public class Extensions {
 
         extensionDto = new ExtensionDto(extension);
         extensionDto.setTags(List.of("app", "c", "auto", "repo"));
-
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(webApplicationContext)
-                .apply(SecurityMockMvcConfigurers.springSecurity())
-                .build();
-
-
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/logo1.png"), StandardCopyOption.REPLACE_EXISTING);
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.svg"), Paths.get("./uploads/test/cover1.svg"), StandardCopyOption.REPLACE_EXISTING);
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.txt"), Paths.get("./uploads/test/file1.json"), StandardCopyOption.REPLACE_EXISTING);
-        new java.io.File("./uploads/test/cover11.svg").delete();
-        new java.io.File("./uploads/test/logo11.png").delete();
-        new java.io.File("./uploads/test/file11.txt").delete();
-    }
-
-    @AfterAll
-    public void reset() throws IOException {
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/logo1.png"), StandardCopyOption.REPLACE_EXISTING);
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.svg"), Paths.get("./uploads/test/cover1.svg"), StandardCopyOption.REPLACE_EXISTING);
-        java.nio.file.Files.copy(Paths.get("./uploads/test/test.txt"), Paths.get("./uploads/test/file1.json"), StandardCopyOption.REPLACE_EXISTING);
-        new java.io.File("./uploads/test/cover11.svg").delete();
-        new java.io.File("./uploads/test/logo11.png").delete();
-        new java.io.File("./uploads/test/file11.txt").delete();
     }
 
     @Test
@@ -514,6 +516,10 @@ public class Extensions {
         assertTrue(new java.io.File("./uploads/test/logo1.svg").exists());
         assertTrue(new java.io.File("./uploads/test/file1.txt").exists());
         assertTrue(new java.io.File("./uploads/test/cover1.png").exists());
+
+        assertFalse(new java.io.File("./uploads/test/logo1.png").exists());
+        assertFalse(new java.io.File("./uploads/test/file1.json").exists());
+        assertFalse(new java.io.File("./uploads/test/cover1.svg").exists());
     }
 
     @Test
@@ -535,7 +541,6 @@ public class Extensions {
         assertEquals(errors.get("description"), "Description is required");
         assertEquals(errors.get("github"), "Github is required");
     }
-
 
     @Test
     public void delete_Owner_NotAdmin() throws Exception {
@@ -577,6 +582,10 @@ public class Extensions {
         mockMvc.perform(get("/api/extensions/findById/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Extension not found."));
+
+        assertFalse(new java.io.File("./uploads/test/logo1.png").exists());
+        assertFalse(new java.io.File("./uploads/test/file1.json").exists());
+        assertFalse(new java.io.File("./uploads/test/cover1.svg").exists());
     }
 
     @Test

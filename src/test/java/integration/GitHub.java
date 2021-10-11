@@ -14,6 +14,7 @@ import com.tick42.quicksilver.security.Jwt;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -67,6 +68,9 @@ public class GitHub {
     @Autowired
     private SettingsRepository settingsRepository;
 
+    @Value("${systemPath}")
+    private String systemPath;
+
     private MockMvc mockMvc;
     private static String adminToken, userToken;
     private String githubToken;
@@ -85,7 +89,7 @@ public class GitHub {
 
     @BeforeAll
     public void setup() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader("/adminUser.txt"));
+        BufferedReader br = new BufferedReader(new FileReader(systemPath + "/adminUser.txt"));
         githubToken = br.readLine();
 
 

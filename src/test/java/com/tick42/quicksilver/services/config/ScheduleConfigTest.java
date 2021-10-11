@@ -15,7 +15,6 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

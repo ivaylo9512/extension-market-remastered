@@ -465,47 +465,7 @@ public class ExtensionServiceTest {
     }
 
     @Test
-    public void update_whenExtensionNonExist_ShouldThrow() {
-        Extension extension = new Extension();
-        extension.setId(1);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.empty());
-
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
-                () -> extensionService.update(extension, new UserModel()));
-
-        assertEquals(thrown.getMessage(), "Extension not found.");
-    }
-
-    @Test
-    public void update_whenLoggedUserIsNotOwnerAndNotAdmin_ShouldThrow() {
-        UserModel loggedUser = new UserModel();
-        loggedUser.setId(1);
-        loggedUser.setRole("ROLE_USER");
-
-        UserModel owner = new UserModel();
-        owner.setId(2);
-
-        Extension extension = new Extension();
-        extension.setOwner(owner);
-        extension.setId(1);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(extension));
-
-        UnauthorizedException thrown = assertThrows(
-                UnauthorizedException.class,
-                () -> extensionService.update(extension, loggedUser)
-        );
-
-        assertEquals(thrown.getMessage(), "You are not authorized to edit this extension.");
-    }
-
-    @Test
-    public void update_whenLoggedUserIsOwner() {
-        UserModel loggedUser = new UserModel();
-        loggedUser.setId(1);
-        loggedUser.setRole("ROLE_USER");
-
+    public void update() {
         UserModel owner = new UserModel();
         owner.setId(1);
 
@@ -514,41 +474,9 @@ public class ExtensionServiceTest {
         extension.setGithub(new GitHubModel("username", "repo"));
         extension.setId(1);
 
-        Extension foundExtension = new Extension();
-        foundExtension.setId(1);
-        foundExtension.setOwner(loggedUser);
-
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
         when(extensionRepository.save(extension)).thenReturn(extension);
 
-        Extension actualExtension = extensionService.update(extension, loggedUser);
-
-        assertEquals(extension, actualExtension);
-    }
-
-    @Test
-    public void update_whenLoggedUserIsAdmin() {
-        UserModel loggedUser = new UserModel();
-        loggedUser.setId(2);
-        loggedUser.setRole("ROLE_ADMIN");
-
-        UserModel owner = new UserModel();
-        owner.setId(1);
-
-        Extension extension = new Extension("name", "description", "version", owner);
-        extension.setTags(new HashSet<>(List.of(new Tag("tag1"), new Tag("tag2"))));
-        extension.setGithub(new GitHubModel("username", "repo"));
-        extension.setId(1);
-
-        Extension foundExtension = new Extension();
-        foundExtension.setId(1);
-        foundExtension.setOwner(owner);
-
-        when(extensionRepository.findById(1L)).thenReturn(Optional.of(foundExtension));
-        when(extensionRepository.save(extension)).thenReturn(extension);
-
-        Extension actualExtension = extensionService.update(extension, loggedUser);
+        Extension actualExtension = extensionService.update(extension);
 
         assertEquals(extension, actualExtension);
     }

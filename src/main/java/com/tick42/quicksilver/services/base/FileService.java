@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 public interface FileService {
-    boolean delete(String resourceType, UserModel owner, UserModel loggedUser);
+    void delete(File file, long sourceId, UserModel loggedUser);
+
+    void deleteById(long id, UserModel loggedUser);
 
     Resource getAsResource(String fileName) throws MalformedURLException;
 
@@ -20,6 +22,8 @@ public interface FileService {
     void save(String name, MultipartFile receivedFile) throws IOException;
 
     File generate(MultipartFile receivedFile, String resourceType, String fileType);
+
+    void deleteFromSystem(String name);
 
     File increaseCount(File file);
 }

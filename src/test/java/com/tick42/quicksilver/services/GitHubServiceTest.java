@@ -16,8 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-
 import javax.persistence.EntityNotFoundException;
 import java.io.BufferedReader;
 import java.io.FileReader;
