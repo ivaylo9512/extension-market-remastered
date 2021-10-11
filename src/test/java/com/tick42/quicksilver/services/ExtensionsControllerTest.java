@@ -3,12 +3,16 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.controllers.ExtensionController;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.*;
+import com.tick42.quicksilver.models.specs.ExtensionCreateSpec;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
+import com.tick42.quicksilver.models.specs.ExtensionUpdateSpec;
 import com.tick42.quicksilver.security.Jwt;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,6 +35,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ExtensionsControllerTest {
     @InjectMocks
+    @Spy
     private ExtensionController extensionController;
 
     @Mock
@@ -56,10 +61,14 @@ public class ExtensionsControllerTest {
     private final String token = "Token " + Jwt.generate(user);
     private final UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, user.getId());
 
-    private final Extension extension = createExtension();
-    private final ExtensionDto extensionDto = new ExtensionDto(extension);
+    private Extension extension;
+    private ExtensionDto extensionDto;
 
-
+    @BeforeEach
+    public void setup(){
+        extension = createExtension();
+        extensionDto = new ExtensionDto(extension);
+    }
 
     @Test
     public void setPending() {
@@ -86,6 +95,19 @@ public class ExtensionsControllerTest {
         when(extensionService.findByTag("name", 10, 5)).thenReturn(new PageImpl<>(extensions));
 
         PageDto<ExtensionDto> page = extensionController.findByTag("name", 10, 5L);
+
+        assertExtensions(page.getData().get(0));
+        assertEquals(page.getData().get(1).getId(), extensions.get(1).getId());
+        assertEquals(page.getTotalResults(), 2);
+    }
+
+    @Test
+    public void findByTag_WithNullLastId() {
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
+
+        when(extensionService.findByTag("name", 10, 0)).thenReturn(new PageImpl<>(extensions));
+
+        PageDto<ExtensionDto> page = extensionController.findByTag("name", 10, null);
 
         assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), extensions.get(1).getId());
@@ -127,6 +149,76 @@ public class ExtensionsControllerTest {
     }
 
     @Test
+    public void create() throws IOException {
+        MockMultipartFile file = createFile();
+        MockMultipartFile image = createFile();
+        MockMultipartFile cover = createFile();
+
+        ExtensionCreateSpec extensionSpec = new ExtensionCreateSpec();
+        extensionSpec.setTags("app, c, auto, repo");
+        extensionSpec.setGithub("https://github/user/repo");
+        extensionSpec.setFile(file);
+        extensionSpec.setCover(cover);
+        extensionSpec.setImage(image);
+
+        auth.setDetails(user);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(userService.findById(user.getId(), user)).thenReturn(userModel);
+        when(extensionService.save(any(Extension.class))).thenReturn(extension);
+        when(tagService.saveTags(extensionSpec.getTags())).thenReturn(extension.getTags());
+        when(gitHubService.generateGitHub(extensionSpec.getGithub())).thenReturn(extension.getGithub());
+        when(fileService.generate(file, "file", "")).thenReturn(extension.getFile());
+        when(fileService.generate(image, "logo", "image")).thenReturn(extension.getImage());
+        when(fileService.generate(cover, "cover", "image")).thenReturn(extension.getCover());
+
+        ExtensionDto extensionDto = extensionController.create(extensionSpec);
+
+        verify(extensionController, times(1)).saveFiles(extensionSpec, extension);
+        assertExtensions(extensionDto);
+    }
+
+    @Test
+    public void edit() throws IOException{
+        MockMultipartFile file = createFile();
+        MockMultipartFile image = createFile();
+        MockMultipartFile cover = createFile();
+
+        ExtensionUpdateSpec extensionSpec = new ExtensionUpdateSpec();
+
+        extensionSpec.setId(extension.getId());
+        extensionSpec.setTags("app, c, auto, repo");
+        extensionSpec.setGithub("https://github/user/repo");
+        extensionSpec.setFile(file);
+        extensionSpec.setCover(cover);
+        extensionSpec.setImage(image);
+        extensionSpec.setGithubId(2);
+
+        Map<String, String> names = Map.of("file", "file1.txt", "logo", "logo1.svg", "cover", "cover1.png");
+        int userRatingForExtension = 3;
+
+        auth.setDetails(user);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(userService.findById(user.getId(), user)).thenReturn(userModel);
+        when(tagService.saveTags(extensionSpec.getTags())).thenReturn(extension.getTags());
+        when(extensionService.findById(extensionSpec.getId(), user)).thenReturn(extension);
+        when(extensionController.getFileNames(extension)).thenReturn(names);
+        when(ratingService.userRatingForExtension(extension.getId(), user.getId())).thenReturn(userRatingForExtension);
+        when(extensionService.update(any(Extension.class))).thenReturn(extension);
+        when(fileService.generate(file, "file", "")).thenReturn(extension.getFile());
+        when(fileService.generate(image, "logo", "image")).thenReturn(extension.getImage());
+        when(fileService.generate(cover, "cover", "image")).thenReturn(extension.getCover());
+        when(gitHubService.updateGitHub(extensionSpec.getGithubId(), extensionSpec.getGithub())).thenReturn(extension.getGithub());
+
+        ExtensionDto extensionDto = extensionController.edit(extensionSpec);
+
+        verify(extensionController, times(1)).deleteOldFiles(eq(names), any(ExtensionDto.class));
+        verify(extensionController, times(1)).saveFiles(extensionSpec, extension);
+        assertEquals(extensionDto.getCurrentUserRatingValue(), userRatingForExtension);
+    }
+
+    @Test
     public void delete() {
         auth.setDetails(user);
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -137,6 +229,11 @@ public class ExtensionsControllerTest {
         extensionController.delete(extension.getId());
 
         verify(ratingService, times(1)).updateRatingOnExtensionDelete(extension);
+
+        verify(extensionController, times(1)).getFileNames(extension);
+        verify(fileService, times(1)).deleteFromSystem("file" + extension.getId() + "." + extension.getFile().getExtensionType());
+        verify(fileService, times(1)).deleteFromSystem("logo" + extension.getId() + "." + extension.getImage().getExtensionType());
+        verify(fileService, times(1)).deleteFromSystem("cover" + extension.getId() + "." + extension.getCover().getExtensionType());
     }
 
     @Test
@@ -153,9 +250,9 @@ public class ExtensionsControllerTest {
 
     @Test
     public void findHomeExtensions(){
-        List<Extension> mostRecent = List.of(new Extension(2, userModel), new Extension(3, userModel));
-        List<Extension> featured = List.of(new Extension(4, userModel), new Extension(5, userModel));
-        List<Extension> mostDownloaded = List.of(new Extension(6, userModel), new Extension(8, userModel));
+        List<Extension> mostRecent = List.of(extension, new Extension(3, userModel));
+        List<Extension> featured = List.of(extension, new Extension(5, userModel));
+        List<Extension> mostDownloaded = List.of(extension, new Extension(8, userModel));
 
         when(extensionService.findMostRecent(5)).thenReturn(mostRecent);
         when(extensionService.findFeatured()).thenReturn(featured);
@@ -166,11 +263,11 @@ public class ExtensionsControllerTest {
         List<ExtensionDto> mostRecentDto = pageDto.getMostRecent();
         List<ExtensionDto> mostDownloadedDto = pageDto.getMostDownloaded();
 
-        assertEquals(featuredDto.get(0).getId(), featured.get(0).getId());
+        assertExtensions(featuredDto.get(0));
         assertEquals(featuredDto.get(1).getId(), featured.get(1).getId());
-        assertEquals(mostRecentDto.get(0).getId(), mostRecent.get(0).getId());
+        assertExtensions(mostRecentDto.get(0));
         assertEquals(mostRecentDto.get(1).getId(), mostRecent.get(1).getId());
-        assertEquals(mostDownloadedDto.get(0).getId(), mostDownloaded.get(0).getId());
+        assertExtensions(mostDownloadedDto.get(0));
         assertEquals(mostDownloadedDto.get(1).getId(), mostDownloaded.get(1).getId());
     }
 
@@ -178,14 +275,14 @@ public class ExtensionsControllerTest {
     public void findAllByCommitDate(){
         LocalDateTime dateTime = LocalDateTime.now();
 
-        List<Extension> extensions = List.of(new Extension(2, userModel), new Extension(3, userModel));
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
 
         when(extensionService.findAllByCommitDate(dateTime, 7, "name", 5)).thenReturn(new PageImpl<>(extensions));
 
         PageDto<ExtensionDto> page = extensionController.findAllByCommitDate("name", dateTime, 5, 7);
 
         assertEquals(page.getTotalResults(), 2);
-        assertEquals(page.getData().get(0).getId(), 2);
+        assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), 3);
     }
 
@@ -193,27 +290,66 @@ public class ExtensionsControllerTest {
     public void findAllByUploadDate(){
         LocalDateTime dateTime = LocalDateTime.now();
 
-        List<Extension> extensions = List.of(new Extension(2, userModel), new Extension(3, userModel));
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
 
         when(extensionService.findAllByUploadDate(dateTime, 10, "name", 5)).thenReturn(new PageImpl<>(extensions));
 
         PageDto<ExtensionDto> page = extensionController.findAllByUploadDate("name", dateTime, 5, 10);
 
         assertEquals(page.getTotalResults(), 2);
-        assertEquals(page.getData().get(0).getId(), 2);
+        assertExtensions(page.getData().get(0));
+        assertEquals(page.getData().get(1).getId(), 3);
+    }
+
+    @Test
+    public void findAllByDownloadCount(){
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
+
+        when(extensionService.findAllByDownloaded(7, 10, "name", 5)).thenReturn(new PageImpl<>(extensions));
+
+        PageDto<ExtensionDto> page = extensionController.findAllByDownloadCount("name", 7, 10, 5);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertExtensions(page.getData().get(0));
+        assertEquals(page.getData().get(1).getId(), 3);
+    }
+
+    @Test
+    public void findAllByCommitDate_WithNullLastDate(){
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
+
+        when(extensionService.findAllByCommitDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), 7, "name", 5)).thenReturn(new PageImpl<>(extensions));
+
+        PageDto<ExtensionDto> page = extensionController.findAllByCommitDate("name", null, 5, 7);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertExtensions(page.getData().get(0));
+        assertEquals(page.getData().get(1).getId(), 3);
+    }
+
+    @Test
+    public void findAllByUploadDate_WithNullLastDate(){
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
+
+        when(extensionService.findAllByUploadDate(LocalDateTime.of(9999, Month.DECEMBER, 31, 23, 23, 59, 59), 10, "name", 5)).thenReturn(new PageImpl<>(extensions));
+
+        PageDto<ExtensionDto> page = extensionController.findAllByUploadDate("name", null, 5, 10);
+
+        assertEquals(page.getTotalResults(), 2);
+        assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), 3);
     }
 
     @Test
     public void findAllByName() {
-        List<Extension> extensions = List.of(new Extension(2, userModel), new Extension(3, userModel));
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
 
         when(extensionService.findAllByName("lastName", 10, "name")).thenReturn(new PageImpl<>(extensions));
 
         PageDto<ExtensionDto> page = extensionController.findAllByName("name", "lastName", 10);
 
         assertEquals(page.getTotalResults(), 2);
-        assertEquals(page.getData().get(0).getId(), 2);
+        assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), 3);
     }
 
@@ -228,6 +364,23 @@ public class ExtensionsControllerTest {
         when(userService.getById(user.getId())).thenReturn(userModel);
 
         PageDto<ExtensionDto> page = extensionController.findUserExtensions(3, 5L);
+
+        assertExtensions(page.getData().get(0));
+        assertEquals(page.getData().get(1).getId(), extensions.get(1).getId());
+        assertEquals(page.getTotalResults(), 2);
+    }
+
+    @Test
+    public void findUserExtensions_WithNullLastId(){
+        auth.setDetails(user);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        List<Extension> extensions = List.of(extension, new Extension(3, userModel));
+
+        when(extensionService.findUserExtensions(3, 0, userModel)).thenReturn(new PageImpl<>(extensions));
+        when(userService.getById(user.getId())).thenReturn(userModel);
+
+        PageDto<ExtensionDto> page = extensionController.findUserExtensions(3, null);
 
         assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), extensions.get(1).getId());
@@ -560,6 +713,75 @@ public class ExtensionsControllerTest {
         assertEquals(cover.getId(), 4);
     }
 
+    @Test
+    public void generateFiles_LogoOnly(){
+        MockMultipartFile multipartImage = createFile();
+        File image = new File();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setImage(multipartImage);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        when(fileService.generate(multipartImage, "logo", "image")).thenReturn(image);
+
+        extensionController.generateFiles(extensionSpec, extension, userModel);
+
+        assertEquals(extension.getImage(), image);
+        assertEquals(image.getOwner(), userModel);
+        assertEquals(image.getExtension(), extension);
+        assertEquals(image.getId(), 0);
+
+        verify(fileService, times(1)).generate(any(MultipartFile.class), any(String.class), any(String.class));
+    }
+
+    @Test
+    public void generateFiles_FileOnly(){
+        MockMultipartFile multipartFile = createFile();
+        File file = new File();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setFile(multipartFile);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        when(fileService.generate(multipartFile, "file", "")).thenReturn(file);
+
+        extensionController.generateFiles(extensionSpec, extension, userModel);
+
+        assertEquals(extension.getFile(), file);
+        assertEquals(file.getOwner(), userModel);
+        assertEquals(file.getExtension(), extension);
+        assertEquals(file.getId(), 0);
+
+        verify(fileService, times(1)).generate(any(MultipartFile.class), any(String.class), any(String.class));
+    }
+
+    @Test
+    public void generateFiles_CoverOnly(){
+        MockMultipartFile multipartCover = createFile();
+        File cover = new File();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setCover(multipartCover);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        when(fileService.generate(multipartCover, "cover", "image")).thenReturn(cover);
+
+        extensionController.generateFiles(extensionSpec, extension, userModel);
+
+        assertEquals(extension.getCover(), cover);
+        assertEquals(cover.getOwner(), userModel);
+        assertEquals(cover.getExtension(), extension);
+        assertEquals(cover.getId(), 0);
+
+        verify(fileService, times(1)).generate(any(MultipartFile.class), any(String.class), any(String.class));
+    }
+
     private MockMultipartFile createFile(){
         return new MockMultipartFile("test", "test.png", "image/png", "test".getBytes());
     }
@@ -584,7 +806,7 @@ public class ExtensionsControllerTest {
         file.setResourceType("file");
 
         image.setId(3);
-        image.setExtensionType("png");
+        image.setExtensionType("svg");
         image.setResourceType("logo");
 
         cover.setId(4);

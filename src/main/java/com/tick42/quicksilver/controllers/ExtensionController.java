@@ -124,7 +124,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/create")
     @Transactional
-    public ExtensionDto createExtension(@Valid @ModelAttribute ExtensionCreateSpec extensionCreateSpec) throws IOException {
+    public ExtensionDto create(@Valid @ModelAttribute ExtensionCreateSpec extensionCreateSpec) throws IOException {
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -145,7 +145,7 @@ public class ExtensionController {
 
     @PostMapping("/auth/edit")
     @Transactional
-    public ExtensionDto editExtension(@Valid @ModelAttribute ExtensionUpdateSpec extensionUpdateSpec) throws IOException{
+    public ExtensionDto edit(@Valid @ModelAttribute ExtensionUpdateSpec extensionUpdateSpec) throws IOException{
         UserDetails loggedUser = (UserDetails)SecurityContextHolder
                 .getContext().getAuthentication().getDetails();
         long userId = loggedUser.getId();
@@ -157,12 +157,11 @@ public class ExtensionController {
         Map<String, String> oldNames = getFileNames(oldExtension);
 
         Extension extension = new Extension(extensionUpdateSpec, oldExtension, tags);
+        extension.setGithub(gitHubService.updateGitHub(extensionUpdateSpec.getGithubId(), extensionUpdateSpec.getGithub()));
 
         generateFiles(extensionUpdateSpec, extension, user);
-        saveFiles(extensionUpdateSpec, extension);
+        saveFiles(extensionUpdateSpec, oldExtension);
 
-        if(extensionUpdateSpec.getGithub() != null)
-            extension.setGithub(gitHubService.updateGitHub(extensionUpdateSpec.getGithubId(), extensionUpdateSpec.getGithub()));
 
         ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
