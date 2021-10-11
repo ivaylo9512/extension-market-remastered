@@ -3,6 +3,7 @@ package com.tick42.quicksilver.services;
 import com.tick42.quicksilver.controllers.ExtensionController;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.*;
+import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.security.Jwt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,16 +12,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -183,6 +188,7 @@ public class ExtensionsControllerTest {
         assertEquals(page.getData().get(0).getId(), 2);
         assertEquals(page.getData().get(1).getId(), 3);
     }
+
     @Test
     public void findAllByUploadDate(){
         LocalDateTime dateTime = LocalDateTime.now();
@@ -252,6 +258,310 @@ public class ExtensionsControllerTest {
         assertExtensions(page.getData().get(0));
         assertEquals(page.getData().get(1).getId(), extensions.get(1).getId());
         assertEquals(page.getTotalResults(), 2);
+    }
+
+    @Test
+    public void saveFiles() throws IOException {
+        MockMultipartFile file = createFile();
+        MockMultipartFile image = createFile();
+        MockMultipartFile cover = createFile();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setCover(cover);
+        extensionSpec.setFile(file);
+        extensionSpec.setImage(image);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        extensionController.saveFiles(extensionSpec, extension);
+
+        verify(fileService, times(1)).save("logo" + extension.getId(), image);
+        verify(fileService, times(1)).save("cover" + extension.getId(), cover);
+        verify(fileService, times(1)).save("file" + extension.getId(), file);
+    }
+
+    @Test
+    public void saveFiles_FileOnly() throws IOException {
+        MockMultipartFile file = createFile();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setFile(file);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        extensionController.saveFiles(extensionSpec, extension);
+
+        verify(fileService, times(0)).save(eq("logo" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(0)).save(eq("cover" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(1)).save("file" + extension.getId(), file);
+    }
+
+    @Test
+    public void saveFiles_ImageOnly() throws IOException {
+        MockMultipartFile image = createFile();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setImage(image);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        extensionController.saveFiles(extensionSpec, extension);
+
+        verify(fileService, times(0)).save(eq("file" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(0)).save(eq("cover" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(1)).save("logo" + extension.getId(), image);
+    }
+
+    @Test
+    public void saveFiles_CoverOnly() throws IOException {
+        MockMultipartFile cover = createFile();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setCover(cover);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        extensionController.saveFiles(extensionSpec, extension);
+
+        verify(fileService, times(0)).save(eq("file" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(0)).save(eq("logo" + extension.getId()), any(MultipartFile.class));
+        verify(fileService, times(1)).save("cover" + extension.getId(), cover);
+    }
+
+    @Test
+    public void getFileNames(){
+        Extension extension = new Extension();
+        extension.setId(11);
+
+        extension.setFile(new File("file", 200, "text/plain", "txt"));
+        extension.setImage(new File("logo", 200, "image/png", "png"));
+        extension.setCover(new File("cover", 200, "image/svg", "svg"));
+
+        Map<String, String> names = extensionController.getFileNames(extension);
+
+        assertEquals(names.get("file"), "file11.txt");
+        assertEquals(names.get("logo"), "logo11.png");
+        assertEquals(names.get("cover"), "cover11.svg");
+    }
+
+    @Test
+    public void getFileNames_FileOnly(){
+        Extension extension = new Extension();
+        extension.setId(11);
+        extension.setFile(new File("file", 200, "text/plain", "txt"));
+
+        Map<String, String> names = extensionController.getFileNames(extension);
+
+        assertEquals(names.get("file"), "file11.txt");
+        assertNull(names.get("logo"));
+        assertNull(names.get("cover"));
+    }
+
+    @Test
+    public void getFileNames_LogoOnly(){
+        Extension extension = new Extension();
+        extension.setId(11);
+        extension.setImage(new File("logo", 200, "image/png", "png"));
+
+        Map<String, String> names = extensionController.getFileNames(extension);
+
+        assertEquals(names.get("logo"), "logo11.png");
+        assertNull(names.get("file"));
+        assertNull(names.get("cover"));
+    }
+
+    @Test
+    public void getFileNames_CoverOnly(){
+        Extension extension = new Extension();
+        extension.setId(11);
+        extension.setCover(new File("cover", 200, "image/svg", "svg"));
+
+        Map<String, String> names = extensionController.getFileNames(extension);
+
+        assertEquals(names.get("cover"), "cover11.svg");
+        assertNull(names.get("file"));
+        assertNull(names.get("logo"));
+    }
+
+    @Test
+    public void deleteOldFiles_WithReplacedFileNames(){
+        String file = "file11.txt";
+        String cover = "cover11.txt";
+        String logo = "logo11.txt";
+
+        Map<String, String> names = Map.of("file", file, "logo", logo, "cover", cover);
+        ExtensionDto extension = new ExtensionDto();
+        extension.setFileName("file11.json");
+        extension.setCoverName("cover.png");
+        extension.setImageName("logo.svg");
+
+        extensionController.deleteOldFiles(names, extension);
+
+        verify(fileService, times(1)).deleteFromSystem(eq(file));
+        verify(fileService, times(1)).deleteFromSystem(eq(file));
+        verify(fileService, times(1)).deleteFromSystem(eq(file));
+    }
+
+    @Test
+    public void deleteOldFiles_WithSameFileNames(){
+        String file = "file11.txt";
+        String cover = "file11.txt";
+        String logo = "file11.txt";
+
+        Map<String, String> names = Map.of("file", file, "logo", logo, "cover", cover);
+        ExtensionDto extension = new ExtensionDto();
+        extension.setFileName(file);
+        extension.setCoverName(cover);
+        extension.setImageName(logo);
+
+        extensionController.deleteOldFiles(names, extension);
+
+        verify(fileService, times(0)).deleteFromSystem(file);
+        verify(fileService, times(0)).deleteFromSystem(logo);
+        verify(fileService, times(0)).deleteFromSystem(cover);
+    }
+
+    @Test
+    public void deleteOldFiles_LogoOnly(){
+        String logo = "logo11.png";
+
+        Map<String, String> names = Map.of("logo", logo);
+        ExtensionDto extension = new ExtensionDto();
+        extension.setImageName("logo.svg");
+
+        extensionController.deleteOldFiles(names, extension);
+
+        verify(fileService, times(1)).deleteFromSystem(any(String.class));
+        verify(fileService, times(1)).deleteFromSystem(logo);
+    }
+
+    @Test
+    public void deleteOldFiles_CoverOnly(){
+        String cover = "cover11.png";
+
+        Map<String, String> names = Map.of("cover", cover);
+        ExtensionDto extension = new ExtensionDto();
+        extension.setCoverName("cover.svg");
+
+        extensionController.deleteOldFiles(names, extension);
+
+        verify(fileService, times(1)).deleteFromSystem(any(String.class));
+        verify(fileService, times(1)).deleteFromSystem(cover);
+    }
+
+    @Test
+    public void deleteOldFiles_FileOnly(){
+        String file = "file11.txt";
+
+        Map<String, String> names = Map.of("file", file);
+        ExtensionDto extension = new ExtensionDto();
+        extension.setFileName("file.json");
+
+        extensionController.deleteOldFiles(names, extension);
+
+        verify(fileService, times(1)).deleteFromSystem(any(String.class));
+        verify(fileService, times(1)).deleteFromSystem(file);
+    }
+
+    @Test
+    public void generateFiles_WithNewFiles(){
+        MockMultipartFile multipartFile = createFile();
+        MockMultipartFile multipartImage = createFile();
+        MockMultipartFile multipartCover = createFile();
+
+        File file = new File();
+        File cover = new File();
+        File image = new File();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setCover(multipartCover);
+        extensionSpec.setFile(multipartFile);
+        extensionSpec.setImage(multipartImage);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+
+        when(fileService.generate(multipartImage, "logo", "image")).thenReturn(image);
+        when(fileService.generate(multipartFile, "file", "")).thenReturn(file);
+        when(fileService.generate(multipartCover, "cover", "image")).thenReturn(cover);
+
+        extensionController.generateFiles(extensionSpec, extension, userModel);
+
+        assertEquals(extension.getCover(), cover);
+        assertEquals(extension.getImage(), image);
+        assertEquals(extension.getFile(), file);
+
+        assertEquals(file.getOwner(), userModel);
+        assertEquals(image.getOwner(), userModel);
+        assertEquals(cover.getOwner(), userModel);
+
+        assertEquals(file.getExtension(), extension);
+        assertEquals(image.getExtension(), extension);
+        assertEquals(cover.getExtension(), extension);
+
+        assertEquals(file.getId(), 0);
+        assertEquals(image.getId(), 0);
+        assertEquals(cover.getId(), 0);
+    }
+
+    @Test
+    public void generateFiles_WithOldFiles(){
+        MockMultipartFile multipartFile = createFile();
+        MockMultipartFile multipartImage = createFile();
+        MockMultipartFile multipartCover = createFile();
+
+        File oldFile = new File();
+        File oldCover = new File();
+        File oldImage = new File();
+
+        oldFile.setId(2);
+        oldCover.setId(4);
+        oldImage.setId(6);
+
+        File file = new File();
+        File cover = new File();
+        File image = new File();
+
+        ExtensionSpec extensionSpec = new ExtensionSpec();
+        extensionSpec.setCover(multipartCover);
+        extensionSpec.setFile(multipartFile);
+        extensionSpec.setImage(multipartImage);
+
+        Extension extension = new Extension();
+        extension.setId(1);
+        extension.setFile(oldFile);
+        extension.setImage(oldImage);
+        extension.setCover(oldCover);
+
+        when(fileService.generate(multipartImage, "logo", "image")).thenReturn(image);
+        when(fileService.generate(multipartFile, "file", "")).thenReturn(file);
+        when(fileService.generate(multipartCover, "cover", "image")).thenReturn(cover);
+
+        extensionController.generateFiles(extensionSpec, extension, userModel);
+
+        assertEquals(extension.getCover(), cover);
+        assertEquals(extension.getImage(), image);
+        assertEquals(extension.getFile(), file);
+
+        assertEquals(file.getOwner(), userModel);
+        assertEquals(image.getOwner(), userModel);
+        assertEquals(cover.getOwner(), userModel);
+
+        assertEquals(file.getExtension(), extension);
+        assertEquals(image.getExtension(), extension);
+        assertEquals(cover.getExtension(), extension);
+
+        assertEquals(file.getId(), 2);
+        assertEquals(image.getId(), 6);
+        assertEquals(cover.getId(), 4);
+    }
+
+    private MockMultipartFile createFile(){
+        return new MockMultipartFile("test", "test.png", "image/png", "test".getBytes());
     }
 
     private Extension createExtension(){

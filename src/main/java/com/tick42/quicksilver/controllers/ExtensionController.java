@@ -173,7 +173,7 @@ public class ExtensionController {
         return extensionDto;
     }
 
-    private void generateFiles(ExtensionSpec extensionSpec, Extension extension, UserModel owner) {
+    public void generateFiles(ExtensionSpec extensionSpec, Extension extension, UserModel owner) {
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
         MultipartFile cover = extensionSpec.getCover();
@@ -187,6 +187,7 @@ public class ExtensionController {
 
             extension.setImage(imageModel);
         }
+
         if(file != null){
             File fileModel = fileService.generate(file, "file", "");
 
@@ -196,6 +197,7 @@ public class ExtensionController {
 
             extension.setFile(fileModel);
         }
+
         if(cover != null){
             File coverModel = fileService.generate(cover, "cover", "image");
 
@@ -207,7 +209,7 @@ public class ExtensionController {
         }
     }
 
-    private void saveFiles(ExtensionSpec extensionSpec, Extension extension) throws IOException {
+    public void saveFiles(ExtensionSpec extensionSpec, Extension extension) throws IOException {
         long id = extension.getId();
         MultipartFile image = extensionSpec.getImage();
         MultipartFile file = extensionSpec.getFile();
@@ -224,15 +226,7 @@ public class ExtensionController {
         }
     }
 
-    private void deleteFiles(Extension extension, UserModel loggedUser){
-        long extensionId = extension.getId();
-
-        fileService.delete(extension.getFile(), extensionId, loggedUser);
-        fileService.delete(extension.getCover(), extensionId, loggedUser);
-        fileService.delete(extension.getImage(), extensionId, loggedUser);
-    }
-
-    private Map<String, String> getFileNames(Extension extension){
+    public Map<String, String> getFileNames(Extension extension){
         Map<String, String> names = new HashMap<>();
         File cover = extension.getCover();
         File image = extension.getImage();
@@ -247,7 +241,7 @@ public class ExtensionController {
         }
 
         if(image != null){
-            names.put("image", image.getResourceType() + extension.getId() + "." + image.getExtensionType());
+            names.put("logo", image.getResourceType() + extension.getId() + "." + image.getExtensionType());
         }
 
         return names;
@@ -256,7 +250,7 @@ public class ExtensionController {
     public void deleteOldFiles(Map<String, String> names, ExtensionDto extension){
         String file = names.get("file");
         String cover = names.get("cover");
-        String image = names.get("image");
+        String logo = names.get("logo");
 
         if(file != null && !extension.getFileName().equals(file)){
             fileService.deleteFromSystem(file);
@@ -266,8 +260,8 @@ public class ExtensionController {
             fileService.deleteFromSystem(cover);
         }
 
-        if(image != null && !extension.getFileName().equals(image)){
-            fileService.deleteFromSystem(image);
+        if(logo != null && !extension.getImageName().equals(logo)){
+            fileService.deleteFromSystem(logo);
         }
     }
 
