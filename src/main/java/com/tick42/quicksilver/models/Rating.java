@@ -32,23 +32,11 @@ public class Rating implements Serializable {
         return rating;
     }
 
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
     public long getExtension() {
         return extension;
     }
 
-    public void setExtension(int extension) {
-        this.extension = extension;
-    }
-
     public long getUser() {
         return user;
-    }
-
-    public void setUser(int user) {
-        this.user = user;
     }
 }

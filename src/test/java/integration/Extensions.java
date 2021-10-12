@@ -11,6 +11,7 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.ExtensionDto;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
 import com.tick42.quicksilver.models.Dtos.HomePageDto;
+import com.tick42.quicksilver.models.Dtos.PageDto;
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.security.Jwt;
 import com.tick42.quicksilver.services.base.ExtensionService;
@@ -540,6 +541,216 @@ public class Extensions {
         assertEquals(errors.get("version"), "Version is required");
         assertEquals(errors.get("description"), "Description is required");
         assertEquals(errors.get("github"), "Github is required");
+    }
+
+    @Test
+    public void findAllByUploadDate() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/findAllByUploadDate")
+                .param("pageSize", "2"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 3);
+        assertEquals(page.getTotalResults(), 6);
+        assertExtensions(page.getData().get(0), extensionDto);
+        assertEquals(page.getData().get(1).getId(), 2);
+    }
+
+    @Test
+    public void findNextAllByUploadDate() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/findAllByUploadDate")
+                .param("pageSize", "2")
+                .param("lastId", "2")
+                .param("lastDate", "2021-01-01T22:32:46"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertEquals(page.getData().get(0).getId(), 5);
+        assertEquals(page.getData().get(1).getId(), 6);
+    }
+
+    @Test
+    public void findAllByName() throws Exception{
+        String response = mockMvc.perform(get("/api/extensions/findAllByName")
+                .param("pageSize", "2"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 3);
+        assertEquals(page.getTotalResults(), 6);
+        assertEquals(page.getData().get(0).getId(), 5);
+        assertExtensions(page.getData().get(1), extensionDto);
+    }
+
+    @Test
+    public void findNextAllByName() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/findAllByName")
+                .param("pageSize", "2")
+                .param("lastName", "Extension Market"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertEquals(page.getData().get(0).getId(), 8);
+        assertEquals(page.getData().get(1).getId(), 6);
+    }
+
+    @Test
+    public void findAllByDownloadCount() throws Exception{
+        String response = mockMvc.perform(get("/api/extensions/findAllByDownloadCount")
+                .param("pageSize", "2"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 3);
+        assertEquals(page.getTotalResults(), 6);
+        assertExtensions(page.getData().get(0), extensionDto);
+        assertEquals(page.getData().get(1).getId(), 2);
+    }
+
+    @Test
+    public void findNextAllByDownloadCount() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/findAllByDownloadCount")
+                .param("pageSize", "2")
+                .param("lastId", "2")
+                .param("lastDownloadCount", "25"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertEquals(page.getData().get(0).getId(), 10);
+        assertEquals(page.getData().get(1).getId(), 8);
+    }
+
+    @Test
+    public void findUserExtensions() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findUserExtensions/2")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertExtensions(page.getData().get(0), extensionDto);
+        assertEquals(page.getData().get(1).getId(), 5);
+    }
+
+    @Test
+    public void findNextUserExtensions() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findUserExtensions/2/5")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 1);
+        assertEquals(page.getTotalResults(), 2);
+        assertEquals(page.getData().get(0).getId(), 6);
+        assertEquals(page.getData().get(1).getId(), 8);
+    }
+
+    @Test
+    public void findByPendingFalse() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findPending/false/2")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 3);
+        assertEquals(page.getTotalResults(), 6);
+        assertExtensions(page.getData().get(0), extensionDto);
+        assertEquals(page.getData().get(1).getId(), 2);
+    }
+
+    @Test
+    public void findNextByPendingFalse() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findPending/false/2/2")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertEquals(page.getData().get(0).getId(), 5);
+        assertEquals(page.getData().get(1).getId(), 6);
+    }
+
+
+    @Test
+    public void findByPendingTrue() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findPending/true/2")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 2);
+        assertEquals(page.getTotalResults(), 4);
+        assertEquals(page.getData().get(0).getId(),3);
+        assertEquals(page.getData().get(1).getId(), 4);
+    }
+
+    @Test
+    public void findNextByPendingTrue() throws Exception {
+        String response = mockMvc.perform(get("/api/extensions/auth/findPending/true/2/4")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PageDto<ExtensionDto> page = objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertEquals(page.getTotalPages(), 1);
+        assertEquals(page.getTotalResults(), 2);
+        assertEquals(page.getData().get(0).getId(),7);
+        assertEquals(page.getData().get(1).getId(), 9);
     }
 
     @Test

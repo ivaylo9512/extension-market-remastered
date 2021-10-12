@@ -296,7 +296,7 @@ public class ExtensionController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = { "/auth/findPending/{state}/{pageSize}/", "/auth/findPending/{state}/{pageSize}/{lastId}" })
+    @GetMapping(value = { "/auth/findPending/{state}/{pageSize}", "/auth/findPending/{state}/{pageSize}/{lastId}" })
     public PageDto<ExtensionDto> findByPending(@PathVariable("state") boolean state,
                                          @PathVariable("pageSize") int pageSize,
                                          @PathVariable(name = "lastId", required = false) Long lastId) {

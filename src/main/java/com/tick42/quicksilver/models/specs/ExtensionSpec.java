@@ -3,7 +3,6 @@ package com.tick42.quicksilver.models.specs;
 import org.springframework.web.multipart.MultipartFile;
 
 public class ExtensionSpec {
-    private long id;
     private MultipartFile image;
     private MultipartFile file;
     private MultipartFile cover;
@@ -30,13 +29,5 @@ public class ExtensionSpec {
 
     public void setCover(MultipartFile cover) {
         this.cover = cover;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 }

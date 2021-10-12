@@ -122,10 +122,6 @@ public class Extension {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -136,10 +132,6 @@ public class Extension {
 
     public String getVersion() {
         return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public Set<Tag> getTags() {

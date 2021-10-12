@@ -13,8 +13,8 @@ import java.util.List;
 public interface ExtensionRepository extends JpaRepository<Extension, Long> {
     List<Extension> findByFeatured(boolean state);
 
-    @Query(value = "FROM Extension as e WHERE pending LIKE :state AND id > :lastId")
-    Page<Extension> findByPending(@Param("state") boolean state,@Param("lastId") long lastId, Pageable pageRequest);
+    @Query(value = "FROM Extension as e WHERE pending = :state AND id > :lastId ORDER BY id ASC")
+    Page<Extension> findByPending(@Param("state") boolean state, @Param("lastId") long lastId, Pageable pageRequest);
 
     @Query("FROM Extension as e WHERE LOWER(name) LIKE LOWER(CONCAT(:name, '%')) AND name > :lastName AND pending = false ORDER BY name ASC, id ASC")
     Page<Extension> findAllByName(@Param("name") String name, @Param("lastName") String lastName, Pageable pageRequest);

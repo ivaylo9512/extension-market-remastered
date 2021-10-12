@@ -91,16 +91,8 @@ public class File {
         return size;
     }
 
-    public void setSize(double size) {
-        this.size = size;
-    }
-
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getResourceType() {
@@ -133,9 +125,5 @@ public class File {
 
     public void setOwner(UserModel owner) {
         this.owner = owner;
-    }
-
-    public void setProfileOwner(UserModel profileOwner) {
-        this.profileOwner = profileOwner;
     }
 }

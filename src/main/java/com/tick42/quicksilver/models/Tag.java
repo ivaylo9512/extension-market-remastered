@@ -44,13 +44,4 @@ public class Tag {
     public List<Extension> getExtensions() {
         return extensions;
     }
-
-    public void setExtensions(List<Extension> extensions) {
-        this.extensions = extensions;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }

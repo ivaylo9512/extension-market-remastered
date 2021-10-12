@@ -61,16 +61,8 @@ public class Settings {
         return rate;
     }
 
-    public void setRate(int rate) {
-        this.rate = rate;
-    }
-
     public int getWait() {
         return wait;
-    }
-
-    public void setWait(int wait) {
-        this.wait = wait;
     }
 
     public String getToken() {
@@ -83,10 +75,6 @@ public class Settings {
 
     public String getUsername() {
         return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public UserModel getUser() {

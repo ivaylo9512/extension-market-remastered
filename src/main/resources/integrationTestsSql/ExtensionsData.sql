@@ -55,9 +55,9 @@ INSERT INTO `extensions` (`id`, `times_rated`, `rating`, `name`, `version`, `own
 	(3, 1, 5, 'Package Management', '3.32', 3, 3, 12, 3, 'Move your packages to the cloud<br />You no longer need to manage legacy on-prem file shares or host private package servers.', 1, 0, '2021-03-01 22:40:34', 3),
 	(4, 2, 4.5, 'Octopus Deploy In', '2.4', 2, 4, 13, 4, 'This extension adds the following tasks: Package Application, Push Packages to Octopus, Create Octopus Release, Deploy Octopus Release', 1, 0, '2020-10-02 22:51:50', NULL),
 	(5, 1, 4, 'Build with devenv edit', '0.0.001', 1, 5, 14, 5, 'Build with devenv edit specific version of Visual Studio.', 0, 0, '2020-09-02 22:56:27', NULL),
-	(6, 2, 4.5, 'JFrog Artifactory', '1.2a', 5, 6, 15, 6, 'Download generic build dependencies from Artifactory.', 0, 1, '2020-08-02 22:59:06', NULL),
+	(6, 2, 4.5, 'JFrog Artifactory', '1.2a', 1, 6, 15, 6, 'Download generic build dependencies from Artifactory.', 0, 1, '2020-08-02 22:59:06', NULL),
 	(7, 2, 4, 'Linked Wiki pages', '1', 4, 7, 16, 7, 'Link Work Items to Wiki.', 1, 0, '2019-07-02 23:04:26', NULL),
-	(8, 2, 4.5, 'HockeyApp', '0.000001', 6, 3, 17, 8, 'Accelerate your Apps with Mobile DevOps Take advantage of HockeyApp and bring a full Mobile DevOps flow.', 0, 1, '2020-06-02 23:07:45', NULL),
+	(8, 2, 4.5, 'HockeyApp', '0.000001', 1, 3, 17, 8, 'Accelerate your Apps with Mobile DevOps Take advantage of HockeyApp and bring a full Mobile DevOps flow.', 0, 1, '2020-06-02 23:07:45', NULL),
 	(9, 1, 5, 'IIS Web App Deployment Using WinRM', '213a', 3, 4, 18, NULL, 'IIS Web App Deployment Using WinRM.', 1, 0, '2020-05-02 23:09:01', NULL),
 	(10, 2, 5, 'Restaurant App', '2.0b', 8, 5, 19, 10, 'Restaurant app is a modern way to create orders. ', 0, 1, '2020-04-02 04:20:39', NULL);
 /*!40000 ALTER TABLE `extensions` ENABLE KEYS */;
