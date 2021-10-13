@@ -1,8 +1,9 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.exceptions.*;
 import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.repositories.base.ExtensionRepository;
+import com.tick42.quicksilver.services.ExtensionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

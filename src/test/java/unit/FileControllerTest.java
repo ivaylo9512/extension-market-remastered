@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.controllers.FileController;
 import com.tick42.quicksilver.models.Dtos.FileDto;
@@ -6,6 +6,9 @@ import com.tick42.quicksilver.models.Extension;
 import com.tick42.quicksilver.models.File;
 import com.tick42.quicksilver.models.UserDetails;
 import com.tick42.quicksilver.models.UserModel;
+import com.tick42.quicksilver.services.ExtensionServiceImpl;
+import com.tick42.quicksilver.services.FileServiceImpl;
+import com.tick42.quicksilver.services.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

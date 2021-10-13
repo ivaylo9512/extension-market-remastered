@@ -1,6 +1,7 @@
 package com.tick42.quicksilver.models.specs;
 
 import org.hibernate.validator.constraints.Length;
+import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -22,6 +23,8 @@ public class UserSpec {
 
     @NotBlank(message = "You must provide info.")
     private String info;
+
+    private MultipartFile profileImage;
 
     public UserSpec() {
     }
@@ -72,5 +75,13 @@ public class UserSpec {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public MultipartFile getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(MultipartFile profileImage) {
+        this.profileImage = profileImage;
     }
 }

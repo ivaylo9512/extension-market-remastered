@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services.config;
+package unit.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

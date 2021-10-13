@@ -41,11 +41,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
@@ -62,7 +65,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
-@Transactional
 public class Users {
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -85,8 +87,10 @@ public class Users {
     }
 
     @AfterEach
-    public void reset(){
+    public void reset() throws IOException {
         new File("./uploads/test/profileImage10.png").delete();
+        new File("./uploads/test/profileImage1.svg").delete();
+        Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/profileImage1.png"), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @BeforeAll
@@ -127,6 +131,10 @@ public class Users {
                 .webAppContextSetup(webApplicationContext)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+
+        new File("./uploads/test/profileImage10.png").delete();
+        new File("./uploads/test/profileImage1.svg").delete();
+        Files.copy(Paths.get("./uploads/test/test.png"), Paths.get("./uploads/test/profileImage1.png"), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Test
@@ -138,8 +146,8 @@ public class Users {
         assertNotNull(webApplicationContext.getBean("userController"));
     }
 
-    private UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "info", "Bulgaria");
-    private UserDto userDto = new UserDto(user);
+    private final UserModel user = new UserModel("username", "email@gmail.com", "password1234","ROLE_USER", "info", "Bulgaria");
+    private final UserDto userDto = new UserDto(user);
 
     private RequestBuilder createMediaRegisterRequest(String url, String role, String username, String email, String token, boolean isWithImage) throws IOException {
         MockHttpServletRequestBuilder request = (isWithImage
@@ -186,7 +194,6 @@ public class Users {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(objectMapper.writeValueAsString(userDto))));
 
-        enableUser(userDto.getId());
         checkDBForUser(userDto, null);
         checkDBForImage("profileImage", userDto.getId());
     }
@@ -385,37 +392,49 @@ public class Users {
         userDto.setActive(true);
         userDto.setRating(4.166666666666667);
         userDto.setExtensionsRated(3);
-        userDto.setProfileImage("profileImage1.png");
+        userDto.setProfileImage("profileImage1.svg");
 
-        mockMvc.perform(patch("/api/users/auth/changeUserInfo")
-                        .header("Authorization", adminToken)
-                        .contentType("Application/json")
-                        .content(objectMapper.writeValueAsString(userSpec)))
-                .andExpect(content().string(objectMapper.writeValueAsString(userDto)));
+        FileInputStream logoInput = new FileInputStream("./uploads/test/test.svg");
+        MockMultipartFile logo = new MockMultipartFile("profileImage", "test.svg", "image/svg",
+                IOUtils.toByteArray(logoInput));
 
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users/auth/changeUserInfo")
+                        .file(logo)
+                        .param("id", String.valueOf(userSpec.getId()))
+                        .param("username", userSpec.getUsername())
+                        .param("email", userSpec.getEmail())
+                        .param("country", userSpec.getCountry())
+                        .param("info", userSpec.getInfo())
+                        .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        assertFalse(new File("./uploads/test/profileImage1.png").exists());
+        assertTrue(new File("./uploads/test/profileImage1.svg").exists());
         checkDBForUser(userDto, null);
     }
 
     @Test
     public void changeUserInfo_WhenUsernameIsTaken() throws Exception {
-        UserSpec userSpec = new UserSpec(1, "testUser", "newUsername@gmail.com", "newCountry", "info");
-
-        mockMvc.perform(patch("/api/users/auth/changeUserInfo")
-                        .header("Authorization", adminToken)
-                        .contentType("Application/json")
-                        .content(objectMapper.writeValueAsString(userSpec)))
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users/auth/changeUserInfo")
+                        .param("id","1")
+                        .param("username", "testUser")
+                        .param("email", "newUsername@gmail.com")
+                        .param("country", "newCountry")
+                        .param("info", "info")
+                        .header("Authorization", adminToken))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string("{ \"username\": \"Username is already taken.\" }"));
     }
 
     @Test
     public void changeUserInfo_WhenEmailIsTaken() throws Exception {
-        UserSpec userSpec = new UserSpec(1, "newUsername", "testUser@gmail.com", "newCountry", "info");
-
-        mockMvc.perform(patch("/api/users/auth/changeUserInfo")
-                        .header("Authorization", adminToken)
-                        .contentType("Application/json")
-                        .content(objectMapper.writeValueAsString(userSpec)))
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users/auth/changeUserInfo")
+                        .param("id","1")
+                        .param("username", "newUsername")
+                        .param("email", "testUser@gmail.com")
+                        .param("country", "newCountry")
+                        .param("info", "info")
+                        .header("Authorization", adminToken))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string("{ \"email\": \"Email is already taken.\" }"));
     }
@@ -505,11 +524,26 @@ public class Users {
     }
 
     @Test
+    void deleteUser() throws Exception {
+        mockMvc.perform(delete("/api/users/auth/delete/1")
+                .header("Authorization", adminToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/users/findById/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("User not found."));
+
+        assertFalse(new File("./uploads/test/profileImage1.png").exists());
+    }
+
+    @Test
     void changeUserInfo_WithWrongFields() throws Exception {
-        String response = mockMvc.perform(patch("/api/users/auth/changeUserInfo")
-                        .content("{\"username\": \"short\", \"email\": \"incorrect\"}")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", adminToken))
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.multipart("/api/users/register")
+                .param("username", "short")
+                .param("email", "short")
+                .header("Authorization", adminToken);
+
+        String response = mockMvc.perform(request)
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse()

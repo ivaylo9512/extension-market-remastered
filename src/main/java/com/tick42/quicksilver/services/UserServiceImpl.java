@@ -39,13 +39,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel create(UserModel user) {
-        UserModel existingUser = userRepository.findFirstByUsernameOrEmail(user.getUsername(), user.getEmail());
-        if (existingUser != null) {
+        userRepository.findFirstByUsernameOrEmail(user.getUsername(), user.getEmail()).ifPresent(existingUser -> {
             if(existingUser.getUsername().equals(user.getUsername())){
                 throw new UsernameExistsException("{ \"username\": \"Username is already taken.\" }");
             }
             throw new EmailExistsException("{ \"email\": \"Email is already taken.\" }");
-        }
+        });
 
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(4)));
         return userRepository.save(user);
@@ -119,24 +118,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserModel changeUserInfo(UserSpec userSpec, UserDetails loggedUser){
-        if(userSpec.getId() != loggedUser.getId() &&
-                !loggedUser.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
-            throw new UnauthorizedException("Unauthorized");
-        }
+    public UserModel changeUserInfo(UserSpec userSpec, UserModel user){
+        String newUsername = user.getUsername().equals(userSpec.getUsername()) ? null : userSpec.getUsername();
+        String newEmail = user.getEmail().equals(userSpec.getEmail()) ? null : userSpec.getEmail();
 
-        UserModel user = userRepository.findById(userSpec.getId())
-                .orElseThrow(() -> new EntityNotFoundException("UserModel not found."));
-
-        if(!user.getUsername().equals(userSpec.getUsername()) || !user.getEmail().equals(userSpec.getEmail())){
-            UserModel existingUser = userRepository.findFirstByUsernameOrEmail(userSpec.getUsername(), userSpec.getEmail());
-
-            if(existingUser != null){
+        if(newUsername != null || newEmail != null){
+            userRepository.findFirstByUsernameOrEmail(newUsername, newEmail).ifPresent(existingUser -> {
                 if(existingUser.getUsername().equals(userSpec.getUsername())){
                     throw new UsernameExistsException("{ \"username\": \"Username is already taken.\" }");
                 }
                 throw new EmailExistsException("{ \"email\": \"Email is already taken.\" }");
-            }
+            });
         }
 
         user.setUsername(userSpec.getUsername());
@@ -157,7 +149,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(long id, UserDetails loggedUser) {
+    public UserModel delete(long id, UserDetails loggedUser) {
         UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("UserModel not found."));
 
@@ -167,6 +159,8 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.delete(user);
+
+        return user;
     }
 
     @Override

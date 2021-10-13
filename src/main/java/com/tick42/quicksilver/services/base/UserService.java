@@ -22,11 +22,11 @@ public interface UserService extends UserDetailsService {
 
     UserModel changePassword(NewPasswordSpec changePasswordSpec, UserDetails loggedUser);
 
-    UserModel changeUserInfo(UserSpec userSpec, UserDetails loggedUser);
+    UserModel changeUserInfo(UserSpec userSpec, UserModel user);
 
     void setEnabled(boolean state, long id);
 
-    void delete(long id, UserDetails loggedUser);
+    UserModel delete(long id, UserDetails loggedUser);
 
     Page<UserModel> findByName(String name, String lastName, int pageSize);
 

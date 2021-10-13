@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.controllers.GitHubController;
 import com.tick42.quicksilver.exceptions.InvalidInputException;
@@ -6,6 +6,9 @@ import com.tick42.quicksilver.models.*;
 import com.tick42.quicksilver.models.Dtos.GitHubDto;
 import com.tick42.quicksilver.models.Dtos.SettingsDto;
 import com.tick42.quicksilver.models.specs.SettingsSpec;
+import com.tick42.quicksilver.services.ExtensionServiceImpl;
+import com.tick42.quicksilver.services.GitHubServiceImpl;
+import com.tick42.quicksilver.services.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHException;

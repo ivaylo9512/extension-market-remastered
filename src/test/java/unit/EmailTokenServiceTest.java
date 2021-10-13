@@ -1,9 +1,10 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.exceptions.InvalidInputException;
 import com.tick42.quicksilver.models.EmailToken;
 import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.repositories.base.EmailTokenRepository;
+import com.tick42.quicksilver.services.EmailTokenServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

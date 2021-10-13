@@ -1,5 +1,8 @@
 package com.tick42.quicksilver.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 
 @Entity
@@ -15,10 +18,8 @@ public class File {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserModel owner;
-
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "profileImage")
-    private UserModel profileOwner;
 
     @Column(name = "download_count")
     private int downloadCount;
@@ -35,7 +36,7 @@ public class File {
     @PreRemove
     private void preRemove() {
         if(owner.getProfileImage().equals(this)){
-            profileOwner.setProfileImage(null);
+            owner.setProfileImage(null);
         }
     }
 

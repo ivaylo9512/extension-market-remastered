@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services.config;
+package unit.config;
 
 import com.tick42.quicksilver.ExtensionsApplication;
 import org.junit.jupiter.api.Test;

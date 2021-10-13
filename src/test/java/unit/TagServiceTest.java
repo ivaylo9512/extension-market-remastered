@@ -1,7 +1,8 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.models.Tag;
 import com.tick42.quicksilver.repositories.base.TagRepository;
+import com.tick42.quicksilver.services.TagServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

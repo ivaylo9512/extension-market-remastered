@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.controllers.ExtensionController;
 import com.tick42.quicksilver.models.*;
@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.specs.ExtensionCreateSpec;
 import com.tick42.quicksilver.models.specs.ExtensionSpec;
 import com.tick42.quicksilver.models.specs.ExtensionUpdateSpec;
 import com.tick42.quicksilver.security.Jwt;
+import com.tick42.quicksilver.services.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

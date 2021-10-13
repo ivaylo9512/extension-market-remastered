@@ -17,7 +17,7 @@ public class UserModel {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isActive = true;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_image")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private File profileImage;

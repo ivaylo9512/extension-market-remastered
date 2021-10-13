@@ -46,12 +46,7 @@ public class UserController {
     @PostMapping(value = "/register")
     @Transactional
     public void register(@Valid @ModelAttribute RegisterSpec registerSpec, HttpServletResponse response) throws IOException, MessagingException {
-        MultipartFile profileImage = registerSpec.getProfileImage();
-        File file = null;
-
-        if(profileImage != null){
-            file = fileService.generate(profileImage,"profileImage", "image");
-        }
+        File file = generateFile(registerSpec.getProfileImage(), null);
 
         UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_USER"));
 
@@ -92,15 +87,12 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/auth/registerAdmin")
     public UserDto registerAdmin(@Valid @ModelAttribute RegisterSpec registerSpec) throws IOException {
-        MultipartFile profileImage = registerSpec.getProfileImage();
-        File file = null;
+        File file = generateFile(registerSpec.getProfileImage(), null);
 
-        if(profileImage != null){
-            file = fileService.generate(profileImage,"profileImage", "image");
-        }
+        UserModel user = new UserModel(registerSpec, file, "ROLE_ADMIN");
+        user.setEnabled(true);
 
-        UserModel newUser = userService.create(new UserModel(registerSpec, file, "ROLE_ADMIN"));
-        newUser.setEnabled(true);
+        UserModel newUser = userService.create(user);
 
         if(file != null){
             fileService.save(file.getResourceType() + newUser.getId(), registerSpec.getProfileImage());
@@ -145,6 +137,18 @@ public class UserController {
         return new PageDto<>(page.stream().map(UserDto::new).collect(Collectors.toList()), page.getTotalPages(), page.getTotalElements());
     }
 
+    @DeleteMapping(value = "/auth/delete/{id}")
+    public void delete(@PathVariable("id") long id){
+        UserDetails loggedUser = (UserDetails)SecurityContextHolder
+                .getContext().getAuthentication().getDetails();
+
+        UserModel user = userService.findById(id, loggedUser);
+        String fileName = "profileImage" + id + "." + user.getProfileImage().getExtensionType();
+
+        userService.delete(user);
+        fileService.deleteFromSystem(fileName);
+    }
+
     @PreAuthorize("hasRole('ROLE_USER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/auth/changePassword")
     public UserDto changePassword(@Valid @RequestBody NewPasswordSpec newPasswordSpec){
@@ -154,12 +158,29 @@ public class UserController {
         return new UserDto(userService.changePassword(newPasswordSpec, loggedUser));
     }
 
-    @PatchMapping(value = "/auth/changeUserInfo")
-    public UserDto changeUserInfo(@Valid @RequestBody UserSpec userSpec){
+    @PostMapping(value = "/auth/changeUserInfo")
+    public UserDto changeUserInfo(@Valid @ModelAttribute UserSpec userSpec) throws IOException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getDetails();
+        UserModel user = userService.findById(loggedUser.getId(), loggedUser);
 
-        return new UserDto(userService.changeUserInfo(userSpec, loggedUser));
+        String imageName = user.getProfileImage() != null
+                ? "profileImage" + loggedUser.getId() + "." + user.getProfileImage().getExtensionType() : null;
+
+        File file = generateFile(userSpec.getProfileImage(), user.getProfileImage());
+        user.setProfileImage(file == null ? user.getProfileImage() : file);
+
+        UserModel newUser = userService.changeUserInfo(userSpec, user);
+
+        if(file != null){
+            fileService.save(file.getResourceType() + newUser.getId(), userSpec.getProfileImage());
+
+            if(imageName != null && !imageName.equals("profileImage" + newUser.getId() + "." + file.getExtensionType())){
+                fileService.deleteFromSystem(imageName);
+            }
+        }
+
+        return new UserDto(newUser);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -167,6 +188,17 @@ public class UserController {
     public void setEnable(@PathVariable(name = "state") boolean state,
                           @PathVariable(name = "id") long id){
         userService.setEnabled(state, id);
+    }
+
+    public File generateFile(MultipartFile profileImage, File oldImage){
+        if(profileImage == null){
+            return null;
+        }
+
+        File file = fileService.generate(profileImage,"profileImage", "image");
+        file.setId(oldImage != null ? oldImage.getId() : 0);
+
+        return file;
     }
 
     @ExceptionHandler

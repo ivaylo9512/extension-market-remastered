@@ -162,7 +162,6 @@ public class ExtensionController {
         generateFiles(extensionUpdateSpec, extension, user);
         saveFiles(extensionUpdateSpec, oldExtension);
 
-
         ExtensionDto extensionDto = new ExtensionDto(extensionService.update(extension));
         int rating = ratingService.userRatingForExtension(extension.getId(), loggedUser.getId());
         extensionDto.setCurrentUserRatingValue(rating);
@@ -217,9 +216,11 @@ public class ExtensionController {
         if(image != null){
             fileService.save("logo" + id, image);
         }
+
         if(file != null){
             fileService.save("file" + id, file);
         }
+
         if(cover != null){
             fileService.save("cover" + id, cover);
         }

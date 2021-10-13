@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserModel, Long> {
     Optional<UserModel> findByUsername(String username);
 
-    UserModel findFirstByUsernameOrEmail(String username, String email);
+    Optional<UserModel> findFirstByUsernameOrEmail(String username, String email);
 
     @Query(value = "FROM UserModel as u WHERE lower(username) LIKE lower(concat(:name, '%')) AND username > :lastName")
     Page<UserModel> findByName(@Param("name") String name,

@@ -1,4 +1,4 @@
-package com.tick42.quicksilver.services;
+package unit;
 
 import com.tick42.quicksilver.exceptions.UnauthorizedException;
 import com.tick42.quicksilver.models.GitHubModel;
@@ -7,6 +7,7 @@ import com.tick42.quicksilver.models.UserModel;
 import com.tick42.quicksilver.models.specs.SettingsSpec;
 import com.tick42.quicksilver.repositories.base.GitHubRepository;
 import com.tick42.quicksilver.repositories.base.SettingsRepository;
+import com.tick42.quicksilver.services.GitHubServiceImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
