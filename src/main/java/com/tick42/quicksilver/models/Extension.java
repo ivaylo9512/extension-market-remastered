@@ -57,7 +57,9 @@ public class Extension {
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(unique = true)
     private String name;
+
     private String version;
     private boolean pending = true;
     private boolean featured;
